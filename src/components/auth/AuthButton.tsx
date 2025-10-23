@@ -37,10 +37,10 @@ export default function AuthButton() {
     logout();
     setShowDropdown(false);
     
-    // Reload the page to ensure all state is cleared
-    // Use replace to prevent back button issues
+    // Redirect to sign-in page after logout
+    // Use replace to prevent back button from bringing user back to authenticated page
     if (typeof window !== 'undefined') {
-      window.location.replace('/');
+      window.location.replace('/signin');
     }
   };
 

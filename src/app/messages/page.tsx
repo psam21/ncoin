@@ -84,11 +84,23 @@ function MessagesPageContent() {
         setCurrentUserPubkey(pubkey);
         
         // If we have a signer but no authenticated user, auto-sign in
-        const { user, isAuthenticated } = useAuthStore.getState();
+        // BUT: Don't auto sign-in if user explicitly logged out
+        const { user, isAuthenticated, _hasLoggedOut } = useAuthStore.getState();
+        
+        if (_hasLoggedOut) {
+          logger.info('Skipping auto sign-in - user previously logged out', {
+            service: 'MessagesPage',
+            method: 'useEffect[signer]',
+            pubkey,
+          });
+          return;
+        }
+        
         if (!isAuthenticated || !user) {
           logger.info('Signer available but not authenticated, auto-signing in', {
             service: 'MessagesPage',
             method: 'useEffect[signer]',
+            pubkey,
           });
           
           try {

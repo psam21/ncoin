@@ -29,6 +29,9 @@ export interface AuthState {
   _hasHydrated: boolean;
   setHasHydrated: (hasHydrated: boolean) => void;
   
+  // Logout flag - prevents auto sign-in after explicit logout
+  _hasLoggedOut: boolean;
+  
   // Actions
   setSignerAvailable: (available: boolean) => void;
   setLoading: (loading: boolean) => void;
@@ -65,6 +68,7 @@ export const useAuthStore = create<AuthState>()(
       
       // Hydration state
       _hasHydrated: false,
+      _hasLoggedOut: false,
       
       // Actions
       setHasHydrated: (hasHydrated) => set({ _hasHydrated: hasHydrated }),
@@ -79,7 +83,8 @@ export const useAuthStore = create<AuthState>()(
       
       setUser: (user) => set({ 
         user,
-        isAuthenticated: !!user
+        isAuthenticated: !!user,
+        _hasLoggedOut: false, // Clear logout flag on successful sign-in
       }),
       
       setAuthenticated: (authenticated) => set({ isAuthenticated: authenticated }),
@@ -99,13 +104,14 @@ export const useAuthStore = create<AuthState>()(
           }
         })();
         
-        // Clear authentication state
+        // Clear authentication state and set logout flag
         set({
           user: null,
           isAuthenticated: false,
           signer: null,
           nsec: null,
           error: null,
+          _hasLoggedOut: true, // Prevent auto sign-in after logout
         });
         
         // Clear ONLY Culture Bridge's browser storage (not other sites)
@@ -209,6 +215,7 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: state.isAuthenticated,
           isAvailable: state.isAvailable,
           nsec: state.nsec, // Persist nsec for signing events
+          _hasLoggedOut: state._hasLoggedOut, // Persist logout flag to prevent auto sign-in
         }),
         onRehydrateStorage: () => (state) => {
           // Called when rehydration is complete
