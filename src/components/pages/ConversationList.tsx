@@ -366,9 +366,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   )}
                 </div>
                 {/* Unread indicator dot */}
-                {conversation.unreadCount && conversation.unreadCount > 0 && (
+                {(conversation.unreadCount ?? 0) > 0 && (
                   <div className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-purple-600 rounded-full border-2 border-white shadow-md flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">{conversation.unreadCount > 9 ? '9+' : conversation.unreadCount}</span>
+                    <span className="text-white text-xs font-bold">{conversation.unreadCount! > 9 ? '9+' : conversation.unreadCount}</span>
                   </div>
                 )}
               </div>
