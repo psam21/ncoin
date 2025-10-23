@@ -26,6 +26,7 @@ import { GenericAttachment } from '@/types/attachments';
 function MessagesPageContent() {
   const searchParams = useSearchParams();
   const isHydrated = useAuthHydration();
+  const { isAuthenticated } = useAuthStore();
   const { signer, isLoading: signerLoading } = useNostrSigner();
   const [selectedPubkey, setSelectedPubkey] = useState<string | null>(null);
   const [currentUserPubkey, setCurrentUserPubkey] = useState<string | null>(null);
@@ -244,20 +245,8 @@ function MessagesPageContent() {
     );
   }
 
-  // Loading state for signer
-  if (signerLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-primary-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
-          <p className="text-primary-600">Detecting Nostr signer...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Not signed in state - only show if not loading and no signer
-  if (!signer && !signerLoading) {
+  // Not authenticated - redirect to sign in
+  if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary-50">
         <div className="text-center max-w-md px-6">
@@ -278,7 +267,7 @@ function MessagesPageContent() {
             Sign in required
           </h2>
           <p className="text-primary-600 mb-6">
-            Please sign in with your Nostr extension (Alby, nos2x, etc.) to access encrypted messages
+            Please sign in to access encrypted messages
           </p>
           <a
             href="/signin"
@@ -286,6 +275,18 @@ function MessagesPageContent() {
           >
             Sign In
           </a>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading signer (needed for encryption/decryption)
+  if (signerLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-primary-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-primary-600">Initializing encryption...</p>
         </div>
       </div>
     );
