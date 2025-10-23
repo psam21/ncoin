@@ -287,8 +287,11 @@ export class MessagingBusinessService {
       }
 
       // Create message object for return
+      // CRITICAL: Use sender's self-copy ID (giftWrapToSelf) because that's what the sender
+      // will receive from subscription. Using giftWrapToRecipient.id would create duplicate
+      // messages in UI (one from subscription with self-copy ID, one from onSuccess with recipient ID)
       const message: Message = {
-        id: giftWrapToRecipient.id,
+        id: giftWrapToSelf.id, // Use self-copy ID for deduplication with subscription
         senderPubkey: senderPubkeyResolved,
         recipientPubkey,
         content,
@@ -302,6 +305,8 @@ export class MessagingBusinessService {
         service: 'MessagingBusinessService',
         method: 'sendMessage',
         messageId: message.id,
+        selfCopyId: giftWrapToSelf.id,
+        recipientCopyId: giftWrapToRecipient.id,
         publishedToRecipient: publishResultRecipient.publishedRelays.length,
         publishedToSelf: publishResultSelf.publishedRelays.length,
       });
