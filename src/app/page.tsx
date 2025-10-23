@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
-import HomeContent from './home-content';
+import { redirect } from 'next/navigation';
 
 export const metadata: Metadata = {
-  title: 'Culture Bridge – Preserve Heritage, Empower Communities',
+  title: 'Nostr for India – Encrypted Messaging',
   description:
-    'A decentralized platform built on Nostr to permanently preserve cultural practices, languages, and traditions. Empowering communities to self-document their heritage.',
+    'A decentralized messaging platform built on Nostr for secure, private communication.',
 };
 
 export default function HomePage() {
-  return <HomeContent />;
+  redirect('/messages');
 }

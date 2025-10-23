@@ -3,9 +3,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, ShoppingCart } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import AuthButton from './auth/AuthButton';
-import { useCartStore } from '@/stores/useCartStore';
 
 interface NavigationItem {
   name: string;
@@ -14,15 +13,7 @@ interface NavigationItem {
 }
 
 const navigationLine1: NavigationItem[] = [
-  // Home link removed; users access home via the top-left icon
-  { name: 'Explore', href: '/explore' },
-  { name: 'Contribute', href: '/contribute' },
-  { name: 'Shop', href: '/shop' },
-  { name: 'Community', href: '/community', comingSoon: true },
-  { name: 'Courses', href: '/courses', comingSoon: true },
-  { name: 'Elder Voices', href: '/elder-voices', comingSoon: true },
-  { name: 'Exhibitions', href: '/exhibitions', comingSoon: true },
-  { name: 'Meetups', href: '/meetups', comingSoon: true },
+  { name: 'Messages', href: '/messages' },
 ];
 
 const navigationLine2: NavigationItem[] = [];
@@ -38,7 +29,6 @@ export default function Header() {
   const menuRef = useRef<HTMLDivElement | null>(null);
   const firstLinkRef = useRef<HTMLAnchorElement | null>(null);
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
-  const itemCount = useCartStore(state => state.itemCount);
 
   // Close on ESC
   useEffect(() => {
@@ -116,21 +106,9 @@ export default function Header() {
             ))}
           </div>
 
-          {/* Auth & Cart Section - Separate area on the right */}
+          {/* Auth Section - Separate area on the right */}
           <div className="hidden lg:flex items-center gap-3 shrink-0">
             <AuthButton />
-            {itemCount > 0 && (
-              <Link
-                href="/cart"
-                className="relative p-2 rounded-md text-white hover:text-accent-200 hover:bg-primary-700 transition-colors duration-200"
-                aria-label={`Shopping cart with ${itemCount} items`}
-              >
-                <ShoppingCart className="w-6 h-6" />
-                <span className="absolute -top-1 -right-1 bg-accent-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {itemCount > 9 ? '9+' : itemCount}
-                </span>
-              </Link>
-            )}
           </div>
 
           {/* Mobile menu button - only visible on mobile */}

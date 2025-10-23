@@ -336,13 +336,12 @@ export function useUserProfile(): UseUserProfileReturn {
 
     try {
       setIsLoadingContributions(true);
-      const { fetchHeritageByAuthor } = await import('@/services/business/HeritageContentService');
-      const contributions = await fetchHeritageByAuthor(user.pubkey);
-      setContributionsCount(contributions.length);
+      // Heritage service removed - set to 0 for messages-only app
+      setContributionsCount(0);
 
-      logger.debug('Contributions count loaded', { 
+      logger.debug('Contributions count (messages-only mode)', { 
         pubkey: user.pubkey.substring(0, 8) + '...',
-        count: contributions.length
+        count: 0
       });
     } catch (error) {
       logger.error('Failed to load contributions count', error instanceof Error ? error : new Error('Unknown error'));

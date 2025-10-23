@@ -226,19 +226,16 @@ export class ProfileBusinessService {
    */
   public async getProfileStats(pubkey: string): Promise<ProfileStats> {
     try {
-      // Import shop service to get product count
-      const { shopBusinessService } = await import('./ShopBusinessService');
-      const products = await shopBusinessService.listProducts();
-      
+      // Shop service removed - messages-only app
       const stats: ProfileStats = {
-        productsCreated: products.length,
-        lastActive: products.length > 0 ? Math.max(...products.map(p => p.publishedAt)) : 0,
+        productsCreated: 0,
+        lastActive: 0,
       };
 
-      logger.debug('Generated profile stats', { 
+      logger.debug('Generated profile stats (messages-only mode)', { 
         pubkey: pubkey.substring(0, 8) + '...',
-        productsCreated: stats.productsCreated,
-        lastActive: stats.lastActive
+        productsCreated: 0,
+        lastActive: 0
       });
 
       return stats;
