@@ -14,6 +14,7 @@ import { messagingBusinessService } from '@/services/business/MessagingBusinessS
 import { Message, ConversationContext } from '@/types/messaging';
 import { GenericAttachment } from '@/types/attachments';
 import { useNostrSigner } from './useNostrSigner';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { AppError } from '@/errors/AppError';
 import { ErrorCode, HttpStatus, ErrorCategory, ErrorSeverity } from '@/errors/ErrorTypes';
 
@@ -83,15 +84,61 @@ export const useMessageSending = () => {
       setIsSending(true);
       setSendError(null);
 
-      // Get sender pubkey
-      const senderPubkey = await signer.getPublicKey();
+      // CRITICAL: Use authenticated user pubkey from auth store, never rely on signer alone
+      const { user, isAuthenticated } = useAuthStore.getState();
+      if (!isAuthenticated || !user) {
+        throw new AppError(
+          'User not authenticated. Please sign in.',
+          ErrorCode.SIGNER_NOT_DETECTED,
+          HttpStatus.UNAUTHORIZED,
+          ErrorCategory.AUTHENTICATION,
+          ErrorSeverity.HIGH
+        );
+      }
 
-      // Create temporary message for optimistic UI
+      const authPubkey = user.pubkey;
+
+      // Integrity check: verify signer pubkey matches auth store
+      try {
+        const signerPubkey = await signer.getPublicKey();
+        if (signerPubkey !== authPubkey) {
+          logger.error('Signer pubkey mismatch on send - aborting to prevent identity confusion', new Error('Pubkey mismatch'), {
+            service: 'useMessageSending',
+            method: 'sendMessage',
+            authPubkey: authPubkey.substring(0, 8) + '...',
+            signerPubkey: signerPubkey.substring(0, 8) + '...',
+            recipientPubkey,
+          });
+          throw new AppError(
+            'Identity mismatch detected. Please sign in again.',
+            ErrorCode.SIGNER_NOT_DETECTED,
+            HttpStatus.UNAUTHORIZED,
+            ErrorCategory.AUTHENTICATION,
+            ErrorSeverity.HIGH
+          );
+        }
+      } catch (err) {
+        if (err instanceof AppError) throw err;
+        logger.error('Failed to verify signer identity before sending', err instanceof Error ? err : new Error('Unknown error'), {
+          service: 'useMessageSending',
+          method: 'sendMessage',
+          recipientPubkey,
+        });
+        throw new AppError(
+          'Failed to verify signing credentials. Please sign in again.',
+          ErrorCode.SIGNER_NOT_DETECTED,
+          HttpStatus.UNAUTHORIZED,
+          ErrorCategory.AUTHENTICATION,
+          ErrorSeverity.HIGH
+        );
+      }
+
+      // Create temporary message for optimistic UI using authenticated pubkey
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).substring(7)}`;
       const tempMessage: Message = {
         id: '',
         tempId,
-        senderPubkey,
+        senderPubkey: authPubkey,
         recipientPubkey,
         content,
         attachments,
