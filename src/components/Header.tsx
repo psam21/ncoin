@@ -14,6 +14,7 @@ interface NavigationItem {
 
 const navigationLine1: NavigationItem[] = [
   { name: 'Messages', href: '/messages' },
+  { name: 'Profile', href: '/profile' },
 ];
 
 const navigationLine2: NavigationItem[] = [];
