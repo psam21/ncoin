@@ -31,6 +31,7 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
   
   // Track message IDs we've added via onSuccess to prevent subscription duplicates
   const recentlyAddedIds = useRef<Set<string>>(new Set());
+  const currentUserPubkey = useRef<string | null>(null);
 
   /**
    * Load messages for the conversation
@@ -64,6 +65,21 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
     }
 
     try {
+      // CRITICAL: Check if user changed and clear state to prevent cross-contamination
+      const userPubkey = await signer.getPublicKey();
+      if (currentUserPubkey.current && currentUserPubkey.current !== userPubkey) {
+        logger.info('User changed - clearing message state', {
+          service: 'useMessages',
+          method: 'loadMessages',
+          oldUser: currentUserPubkey.current.substring(0, 8) + '...',
+          newUser: userPubkey.substring(0, 8) + '...',
+        });
+        // Clear recently added IDs to prevent cross-user contamination
+        recentlyAddedIds.current.clear();
+        setMessages([]);
+      }
+      currentUserPubkey.current = userPubkey;
+
       logger.info('Loading messages for conversation', {
         service: 'useMessages',
         method: 'loadMessages',

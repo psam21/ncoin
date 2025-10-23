@@ -22,6 +22,7 @@ export const useConversations = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const processedMessageIds = useRef<Set<string>>(new Set());
+  const currentUserPubkey = useRef<string | null>(null);
 
   /**
    * Load conversations from relays
@@ -45,6 +46,21 @@ export const useConversations = () => {
     }
 
     try {
+      // CRITICAL: Check if user changed and clear state to prevent cross-contamination
+      const userPubkey = await signer.getPublicKey();
+      if (currentUserPubkey.current && currentUserPubkey.current !== userPubkey) {
+        logger.info('User changed - clearing conversation state', {
+          service: 'useConversations',
+          method: 'loadConversations',
+          oldUser: currentUserPubkey.current.substring(0, 8) + '...',
+          newUser: userPubkey.substring(0, 8) + '...',
+        });
+        // Clear processed message IDs to prevent cross-user contamination
+        processedMessageIds.current.clear();
+        setConversations([]);
+      }
+      currentUserPubkey.current = userPubkey;
+
       logger.info('Loading conversations', {
         service: 'useConversations',
         method: 'loadConversations',
