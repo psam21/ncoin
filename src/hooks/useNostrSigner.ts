@@ -42,13 +42,16 @@ export const useNostrSigner = () => {
 
   // Helper to get signer when needed
   const getSigner = async (): Promise<NostrSigner> => {
+    // CRITICAL: Only use authenticated user's signer, never mix with browser extension
+    const { isAuthenticated, user, nsec: nsecFromStore } = useAuthStore.getState();
+    
     // First priority: Check for nsec (persisted from sign-up)
-    const nsecFromStore = useAuthStore.getState().nsec;
-    if (nsecFromStore) {
-      logger.info('Getting signer from memoized nsec signer', {
+    if (nsecFromStore && isAuthenticated && user) {
+      logger.info('Getting signer from authenticated user nsec', {
         service: 'useNostrSigner',
         method: 'getSigner',
         hasNsec: true,
+        userPubkey: user.pubkey.substring(0, 8) + '...',
       });
       
       // Use memoized signer if available, otherwise create new one
@@ -59,18 +62,31 @@ export const useNostrSigner = () => {
       return await createNsecSigner(nsecFromStore);
     }
     
-    // Second priority: Check for cached signer
-    if (signer) {
-      logger.info('Getting cached Nostr signer instance', {
+    // Second priority: Check for cached signer (only if user is authenticated)
+    if (signer && isAuthenticated && user) {
+      logger.info('Getting cached Nostr signer instance for authenticated user', {
         service: 'useNostrSigner',
         method: 'getSigner',
+        userPubkey: user.pubkey.substring(0, 8) + '...',
       });
       return signer;
     }
     
-    // Third priority: Check for browser extension signer
-    if (typeof window !== 'undefined' && window.nostr) {
-      logger.info('Getting Nostr signer instance from browser extension', {
+    // NEVER fall back to browser extension for authenticated users
+    // This prevents privacy breaches where extension user != authenticated user
+    if (isAuthenticated) {
+      throw new AppError(
+        'Authenticated user has no valid signer - sign in required',
+        ErrorCode.SIGNER_NOT_DETECTED,
+        HttpStatus.UNAUTHORIZED,
+        ErrorCategory.AUTHENTICATION,
+        ErrorSeverity.HIGH
+      );
+    }
+    
+    // Only use browser extension for non-authenticated users (sign-in flow)
+    if (typeof window !== 'undefined' && window.nostr && !isAuthenticated) {
+      logger.info('Getting Nostr signer from browser extension for sign-in', {
         service: 'useNostrSigner',
         method: 'getSigner',
       });
@@ -86,28 +102,32 @@ export const useNostrSigner = () => {
     );
   };
 
-  // Unified signer management: handles both browser extension and nsec
-  // Priority: Nsec > Browser Extension > None
-  // Also listens for extension becoming available after page load
+  // Unified signer management: Strict user isolation - no extension fallback for authenticated users
+  // Priority: Authenticated user's nsec > Browser Extension (sign-in only) > None
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const initializeSigner = async () => {
+      const { isAuthenticated, user } = useAuthStore.getState();
+      
       logger.info('Initializing signer', {
         service: 'useNostrSigner',
         method: 'initializeSigner',
         hasExtension: !!(typeof window !== 'undefined' && window.nostr),
         hasNsec: !!nsec,
+        isAuthenticated,
+        hasUser: !!user,
       });
 
       // Set loading state
       useAuthStore.getState().setLoading(true);
 
-      // Priority 1: Nsec (persisted from sign-up - maintain consistent identity)
-      if (nsec && nsecSigner) {
+      // Priority 1: Nsec (authenticated user - maintain consistent identity)
+      if (nsec && nsecSigner && isAuthenticated && user) {
         try {
-          logger.info('Using memoized signer from nsec', {
+          logger.info('Using authenticated user nsec signer', {
             service: 'useNostrSigner',
             method: 'initializeSigner',
+            userPubkey: user.pubkey.substring(0, 8) + '...',
           });
 
           const resolvedSigner = await nsecSigner;
@@ -116,15 +136,17 @@ export const useNostrSigner = () => {
           setSignerAvailable(true);
           useAuthStore.getState().setLoading(false);
           
-          logger.info('Signer initialized for nsec user with NIP-44 support', {
+          logger.info('Signer initialized for authenticated user with NIP-44 support', {
             service: 'useNostrSigner',
             method: 'initializeSigner',
+            userPubkey: user.pubkey.substring(0, 8) + '...',
           });
         } catch (error) {
-          logger.error('Failed to initialize signer from nsec', 
+          logger.error('Failed to initialize signer for authenticated user', 
             error instanceof Error ? error : new Error('Unknown error'), {
             service: 'useNostrSigner',
             method: 'initializeSigner',
+            userPubkey: user?.pubkey.substring(0, 8) + '...',
           });
           setSigner(null);
           setSignerAvailable(false);
@@ -133,23 +155,34 @@ export const useNostrSigner = () => {
         return;
       }
 
-      // Priority 2: Browser extension (if available)
-      if (typeof window !== 'undefined' && window.nostr) {
+      // Priority 2: Browser extension (ONLY for non-authenticated users during sign-in)
+      if (typeof window !== 'undefined' && window.nostr && !isAuthenticated) {
         setSigner(window.nostr);
         setSignerAvailable(true);
         useAuthStore.getState().setLoading(false);
-        logger.info('Using browser extension signer', {
+        logger.info('Using browser extension signer for sign-in flow', {
           service: 'useNostrSigner',
           method: 'initializeSigner',
         });
         return;
       }
 
-      // Priority 3: No signer available
-      logger.info('No signer available', {
-        service: 'useNostrSigner',
-        method: 'initializeSigner',
-      });
+      // Priority 3: No signer available or authenticated user without valid signer
+      if (isAuthenticated && user) {
+        logger.error('Authenticated user has no valid signer - forcing re-authentication', new Error('No valid signer for authenticated user'), {
+          service: 'useNostrSigner',
+          method: 'initializeSigner',
+          userPubkey: user.pubkey.substring(0, 8) + '...',
+        });
+        // Force logout to prevent security issues
+        useAuthStore.getState().logout();
+      } else {
+        logger.info('No signer available for non-authenticated user', {
+          service: 'useNostrSigner',
+          method: 'initializeSigner',
+        });
+      }
+      
       setSigner(null);
       setSignerAvailable(false);
       useAuthStore.getState().setLoading(false);
@@ -159,7 +192,6 @@ export const useNostrSigner = () => {
     
     // No need for polling - signer initialization happens once on mount
     // and re-runs only when nsec or nsecSigner changes (due to sign-in/sign-up/logout)
-    // Extension detection happens synchronously above
     
     // Cleanup (nothing to clean up now)
     return () => {};

@@ -27,7 +27,7 @@ function MessagesPageContent() {
   const searchParams = useSearchParams();
   const isHydrated = useAuthHydration();
   const { isAuthenticated } = useAuthStore();
-  const { signer, isLoading: signerLoading } = useNostrSigner();
+  const { isLoading: signerLoading } = useNostrSigner();
   const [selectedPubkey, setSelectedPubkey] = useState<string | null>(null);
   const [currentUserPubkey, setCurrentUserPubkey] = useState<string | null>(null);
   const [conversationContext, setConversationContext] = useState<{
@@ -77,53 +77,54 @@ function MessagesPageContent() {
     }
   }, [searchParams, selectedPubkey]);
 
-  // Load user pubkey and ensure cache is properly initialized for this user
+  // Load user pubkey ONLY from authenticated user in auth store
+  // NEVER use signer extension automatically to prevent cross-user contamination
   React.useEffect(() => {
-    if (signer && !currentUserPubkey && isAuthenticated) {
-      signer.getPublicKey().then(async (pubkey) => {
-        logger.info('Loading user pubkey for authenticated user', {
-          service: 'MessagesPage',
-          method: 'useEffect[signer]',
-          pubkey: pubkey.substring(0, 8) + '...',
-        });
-        
-        // CRITICAL: Initialize cache for this user to prevent cross-contamination
-        // This ensures fresh signups don't see previous users' cached messages
+    const { user } = useAuthStore.getState();
+    
+    if (isAuthenticated && user && !currentUserPubkey) {
+      const pubkey = user.pubkey;
+      
+      logger.info('Loading user pubkey from authenticated auth store user', {
+        service: 'MessagesPage',
+        method: 'useEffect[authUser]',
+        pubkey: pubkey.substring(0, 8) + '...',
+        source: 'authStore',
+      });
+      
+      // CRITICAL: Initialize cache for this user to prevent cross-contamination
+      // This ensures fresh signups don't see previous users' cached messages
+      (async () => {
         try {
           const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
           await messagingBusinessService.initializeCache(pubkey);
           
           logger.info('Message cache initialized for current user', {
             service: 'MessagesPage', 
-            method: 'useEffect[signer]',
+            method: 'useEffect[authUser]',
             pubkey: pubkey.substring(0, 8) + '...',
           });
         } catch (error) {
           logger.error('Failed to initialize message cache', error instanceof Error ? error : new Error('Unknown error'), {
             service: 'MessagesPage',
-            method: 'useEffect[signer]',
+            method: 'useEffect[authUser]',
             pubkey: pubkey.substring(0, 8) + '...',
           });
         }
-        
-        setCurrentUserPubkey(pubkey);
-      }).catch(err => {
-        logger.error('Failed to get public key', err instanceof Error ? err : new Error('Unknown error'), {
-          service: 'MessagesPage',
-          method: 'useEffect[signer]',
-        });
-      });
+      })();
+      
+      setCurrentUserPubkey(pubkey);
     } else if (!isAuthenticated) {
       // Clear pubkey when not authenticated
       if (currentUserPubkey) {
         logger.info('Clearing user pubkey - user not authenticated', {
           service: 'MessagesPage',
-          method: 'useEffect[signer]',
+          method: 'useEffect[authUser]',
         });
         setCurrentUserPubkey(null);
       }
     }
-  }, [signer, currentUserPubkey, isAuthenticated]);
+  }, [isAuthenticated, currentUserPubkey]);
 
   // Conversations hook
   const {
@@ -381,17 +382,15 @@ function MessagesPageContent() {
                   showMobileHeader={true}
                 />
 
-                {selectedPubkey && (
-                  <MessageComposer
-                    onSend={handleSendMessage}
-                    disabled={!signer && !currentUserPubkey}
-                    isSending={isSending}
-                    conversationKey={selectedPubkey}
-                    uploadProgress={uploadProgress}
-                  />
-                )}
-
-                {/* Send error display */}
+              {selectedPubkey && (
+                <MessageComposer
+                  onSend={handleSendMessage}
+                  disabled={!isAuthenticated || !currentUserPubkey}
+                  isSending={isSending}
+                  conversationKey={selectedPubkey}
+                  uploadProgress={uploadProgress}
+                />
+              )}                {/* Send error display */}
                 {sendError && (
                   <div className="px-4 py-2 bg-red-50 border-t border-red-200">
                     <p className="text-sm text-red-600">{sendError}</p>
@@ -433,7 +432,7 @@ function MessagesPageContent() {
               {selectedPubkey && (
                 <MessageComposer
                   onSend={handleSendMessage}
-                  disabled={!signer && !currentUserPubkey}
+                  disabled={!isAuthenticated || !currentUserPubkey}
                   isSending={isSending}
                   conversationKey={selectedPubkey}
                   uploadProgress={uploadProgress}
