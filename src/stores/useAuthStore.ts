@@ -94,13 +94,18 @@ export const useAuthStore = create<AuthState>()(
       logout: () => {
         // Cart service removed for messages-only app
         
-        // Clear message cache
+        // Clear message cache (async, non-blocking)
         (async () => {
           try {
-            const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
-            await messagingBusinessService.clearCache();
+            // Import service and clear cache
+            const messagingModule = await import('@/services/business/MessagingBusinessService');
+            const { messagingBusinessService } = messagingModule;
+            if (messagingBusinessService) {
+              await messagingBusinessService.clearCache();
+            }
           } catch (error) {
-            console.warn('Failed to clear message cache on logout:', error);
+            // Log but don't throw - logout should proceed regardless of cache cleanup
+            console.warn('Failed to clear message cache on logout:', error instanceof Error ? error.message : 'Unknown error');
           }
         })();
         

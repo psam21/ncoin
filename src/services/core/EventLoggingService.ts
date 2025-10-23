@@ -20,6 +20,7 @@ export class EventLoggingService {
 
   /**
    * Log event publishing analytics to the user activity log
+   * Failures are logged but do NOT throw - telemetry never blocks main flow
    */
   public async logEventPublishing(
     event: NostrEvent,
@@ -71,35 +72,63 @@ export class EventLoggingService {
         processingDuration: publishResult.processingDuration,
       });
 
-      // Send to logging API
-      const response = await fetch('/api/log-event', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(eventData),
-      });
+      // Send to logging API with timeout to prevent hanging
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
+      
+      try {
+        const response = await fetch('/api/log-event', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(eventData),
+          signal: controller.signal,
+        });
 
-      const result = await response.json();
+        clearTimeout(timeout);
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to log event');
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          // Log but don't throw
+          logger.warn('Event logging API returned error', {
+            service: 'EventLoggingService',
+            method: 'logEventPublishing',
+            eventId: event.id,
+            status: response.status,
+            error: result.error || 'Unknown error',
+          });
+          return;
+        }
+
+        logger.info('Event analytics logged successfully', {
+          service: 'EventLoggingService',
+          method: 'logEventPublishing',
+          eventId: event.id,
+          loggedEventId: result.eventId,
+        });
+
+      } catch (fetchError) {
+        clearTimeout(timeout);
+        // Network or timeout error - log at info level, don't throw
+        const reason = fetchError instanceof Error && fetchError.name === 'AbortError' 
+          ? 'Timeout' 
+          : (fetchError instanceof Error ? fetchError.message : 'Network error');
+        logger.info('Event logging request failed (non-blocking)', {
+          service: 'EventLoggingService',
+          method: 'logEventPublishing',
+          eventId: event.id,
+          reason,
+        });
       }
 
-      logger.info('Event analytics logged successfully', {
-        service: 'EventLoggingService',
-        method: 'logEventPublishing',
-        eventId: event.id,
-        loggedEventId: result.eventId,
-      });
-
     } catch (error) {
-      // Log the error but don't throw - we don't want logging failures to break the main flow
+      // Catch-all: log but don't throw - telemetry must never block
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Failed to log event analytics', error instanceof Error ? error : new Error(errorMessage), {
+      logger.warn('Event logging encountered error (non-blocking)', {
         service: 'EventLoggingService',
         method: 'logEventPublishing',
-        eventId: event.id,
         error: errorMessage,
       });
     }
