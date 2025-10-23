@@ -155,16 +155,12 @@ export const useAuthStore = create<AuthState>()(
             document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname}`;
           });
           
-          // Clear IndexedDB - only Culture Bridge databases
+          // Clear ALL IndexedDB databases on logout (nuclear option for security)
           if (window.indexedDB) {
             indexedDB.databases().then((databases) => {
               databases.forEach((db) => {
-                // Only delete databases that belong to Culture Bridge
-                if (db.name && (
-                  db.name.includes('culture-bridge') || 
-                  db.name.includes('nostr') ||
-                  db.name.includes('auth')
-                )) {
+                if (db.name) {
+                  console.log(`[Logout] Deleting IndexedDB database: ${db.name}`);
                   indexedDB.deleteDatabase(db.name);
                 }
               });
