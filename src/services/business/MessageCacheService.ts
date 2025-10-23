@@ -59,13 +59,13 @@ interface MessageCacheDB extends DBSchema {
   };
 }
 
-const DB_NAME = 'nostr-message-cache';
 const DB_VERSION = 1;
 const CACHE_TTL_DAYS = 30; // Auto-delete cached data older than 30 days
 
 export class MessageCacheService {
   private db: IDBPDatabase<MessageCacheDB> | null = null;
   private encryption: CacheEncryptionService;
+  private currentUserPubkey: string | null = null; // Track current user for DB isolation
   private static instance: MessageCacheService;
   
   // In-memory cache for decrypted messages (per session)
@@ -91,11 +91,33 @@ export class MessageCacheService {
    */
   async initialize(pubkey: string): Promise<void> {
     try {
+      // Close existing database if user changed
+      if (this.currentUserPubkey && this.currentUserPubkey !== pubkey && this.db) {
+        console.log('🔄 User changed, closing previous database', {
+          oldUser: this.currentUserPubkey.substring(0, 8) + '...',
+          newUser: pubkey.substring(0, 8) + '...',
+        });
+        this.db.close();
+        this.db = null;
+        this.decryptedMessagesCache.clear();
+        this.decryptedConversationsCache.clear();
+      }
+
+      // Set current user
+      this.currentUserPubkey = pubkey;
+
       // Initialize encryption key
       await this.encryption.initializeKey(pubkey);
 
+      // Create user-specific database name to ensure complete isolation
+      const userDbName = `nostr-messages-${pubkey.substring(0, 16)}`;
+      console.log('📂 Opening user-specific database', {
+        user: pubkey.substring(0, 8) + '...',
+        dbName: userDbName,
+      });
+
       // Open/create database
-      this.db = await openDB<MessageCacheDB>(DB_NAME, DB_VERSION, {
+      this.db = await openDB<MessageCacheDB>(userDbName, DB_VERSION, {
         upgrade(db) {
           // Messages store
           if (!db.objectStoreNames.contains('messages')) {
@@ -524,28 +546,36 @@ export class MessageCacheService {
     this.decryptedConversationsCache.clear();
     console.log('[Cache] 🗑️ Cleared in-memory decryption caches');
 
-    if (!this.db) {
-      return;
+    const userDbName = this.currentUserPubkey ? `nostr-messages-${this.currentUserPubkey.substring(0, 16)}` : null;
+
+    if (this.db) {
+      try {
+        const tx = this.db.transaction(['messages', 'conversations', 'metadata'], 'readwrite');
+        await tx.objectStore('messages').clear();
+        await tx.objectStore('conversations').clear();
+        await tx.objectStore('metadata').clear();
+        await tx.done;
+
+        // Close database
+        this.db.close();
+        this.db = null;
+
+        console.log('🗑️ Cleared database for user', {
+          user: this.currentUserPubkey?.substring(0, 8) + '...',
+          dbName: userDbName,
+        });
+      } catch (error) {
+        console.error('❌ Failed to clear cache:', error);
+      }
     }
 
-    try {
-      const tx = this.db.transaction(['messages', 'conversations', 'metadata'], 'readwrite');
-      await tx.objectStore('messages').clear();
-      await tx.objectStore('conversations').clear();
-      await tx.objectStore('metadata').clear();
-      await tx.done;
+    // Clear user tracking
+    this.currentUserPubkey = null;
 
-      // Close database
-      this.db.close();
-      this.db = null;
+    // Clear encryption key
+    this.encryption.clearKey();
 
-      // Clear encryption key
-      this.encryption.clearKey();
-
-      console.log('🔒 Cache cleared');
-    } catch (error) {
-      console.error('❌ Failed to clear cache:', error);
-    }
+    console.log('🔒 Cache cleared completely');
   }
 
   /**

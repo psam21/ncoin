@@ -53,14 +53,16 @@ export class MessagingBusinessService {
   public async initializeCache(pubkey: string): Promise<void> {
     try {
       await this.cache.initialize(pubkey);
-      logger.info('Message cache initialized', {
+      logger.info('Message cache initialized for user', {
         service: 'MessagingBusinessService',
         method: 'initializeCache',
+        user: pubkey.substring(0, 8) + '...',
       });
     } catch (error) {
       logger.error('Failed to initialize message cache', error instanceof Error ? error : new Error('Unknown error'), {
         service: 'MessagingBusinessService',
         method: 'initializeCache',
+        user: pubkey.substring(0, 8) + '...',
       });
       // Don't throw - cache is optional, continue without it
     }
