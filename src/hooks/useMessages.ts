@@ -13,6 +13,7 @@ import { logger } from '@/services/core/LoggingService';
 import { messagingBusinessService } from '@/services/business/MessagingBusinessService';
 import { Message } from '@/types/messaging';
 import { useNostrSigner } from './useNostrSigner';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { AppError } from '@/errors/AppError';
 import { ErrorCode, HttpStatus, ErrorCategory, ErrorSeverity } from '@/errors/ErrorTypes';
 
@@ -65,20 +66,49 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
     }
 
     try {
-      // CRITICAL: Check if user changed and clear state to prevent cross-contamination
-      const userPubkey = await signer.getPublicKey();
-      if (currentUserPubkey.current && currentUserPubkey.current !== userPubkey) {
-        logger.info('User changed - clearing message state', {
+      // CRITICAL: Use authenticated user pubkey strictly from auth store to avoid extension-based identity switching
+      const { isAuthenticated, user } = useAuthStore.getState();
+      if (!isAuthenticated || !user) {
+        logger.warn('Aborting loadMessages - user not authenticated', {
+          service: 'useMessages',
+          method: 'loadMessages',
+        });
+        setMessages([]);
+        setIsLoading(false);
+        return;
+      }
+
+      const authPubkey = user.pubkey;
+      // Integrity check against signer.getPublicKey (non-fatal)
+      try {
+        const signerPubkey = await signer.getPublicKey();
+        if (signerPubkey !== authPubkey) {
+          logger.warn('Signer pubkey mismatch detected - ignoring signer identity for message load', {
+            service: 'useMessages',
+            method: 'loadMessages',
+            authPubkey: authPubkey.substring(0, 8) + '...',
+            signerPubkey: signerPubkey.substring(0, 8) + '...',
+          });
+        }
+      } catch (e) {
+        logger.warn('Failed signer pubkey integrity check', {
+          service: 'useMessages',
+          method: 'loadMessages',
+          error: e instanceof Error ? e.message : 'Unknown error',
+        });
+      }
+
+      if (currentUserPubkey.current && currentUserPubkey.current !== authPubkey) {
+        logger.info('Auth user changed - clearing message state', {
           service: 'useMessages',
           method: 'loadMessages',
           oldUser: currentUserPubkey.current.substring(0, 8) + '...',
-          newUser: userPubkey.substring(0, 8) + '...',
+          newUser: authPubkey.substring(0, 8) + '...',
         });
-        // Clear recently added IDs to prevent cross-user contamination
         recentlyAddedIds.current.clear();
         setMessages([]);
       }
-      currentUserPubkey.current = userPubkey;
+      currentUserPubkey.current = authPubkey;
 
       logger.info('Loading messages for conversation', {
         service: 'useMessages',

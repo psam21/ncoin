@@ -13,6 +13,7 @@ import { logger } from '@/services/core/LoggingService';
 import { messagingBusinessService } from '@/services/business/MessagingBusinessService';
 import { Conversation, Message } from '@/types/messaging';
 import { useNostrSigner } from './useNostrSigner';
+import { useAuthStore } from '@/stores/useAuthStore';
 import { AppError } from '@/errors/AppError';
 import { ErrorCode, HttpStatus, ErrorCategory, ErrorSeverity } from '@/errors/ErrorTypes';
 
@@ -28,13 +29,18 @@ export const useConversations = () => {
    * Load conversations from relays
    */
   const loadConversations = useCallback(async () => {
-    if (!signer) {
-      logger.warn('No signer available', {
+    const { isAuthenticated, user } = useAuthStore.getState();
+
+    if (!signer || !isAuthenticated || !user) {
+      logger.warn('Cannot load conversations - missing signer or auth', {
         service: 'useConversations',
         method: 'loadConversations',
+        hasSigner: !!signer,
+        isAuthenticated,
+        hasUser: !!user,
       });
       const error = new AppError(
-        'No signer detected. Please sign in.',
+        'Not authenticated. Please sign in.',
         ErrorCode.SIGNER_NOT_DETECTED,
         HttpStatus.UNAUTHORIZED,
         ErrorCategory.AUTHENTICATION,
@@ -46,20 +52,41 @@ export const useConversations = () => {
     }
 
     try {
-      // CRITICAL: Check if user changed and clear state to prevent cross-contamination
-      const userPubkey = await signer.getPublicKey();
-      if (currentUserPubkey.current && currentUserPubkey.current !== userPubkey) {
-        logger.info('User changed - clearing conversation state', {
+      // Use auth store pubkey as single source of truth
+      const authPubkey = user.pubkey;
+      // Integrity check: signer.getPublicKey should match auth user; if not, log warning
+      let signerPubkey: string | null = null;
+      try {
+        signerPubkey = await signer.getPublicKey();
+      } catch (e) {
+        logger.warn('Failed to obtain signer pubkey for integrity check', {
+          service: 'useConversations',
+          method: 'loadConversations',
+          error: e instanceof Error ? e.message : 'Unknown error',
+        });
+      }
+
+      if (signerPubkey && signerPubkey !== authPubkey) {
+        logger.warn('Signer pubkey mismatch detected - ignoring signer identity to prevent cross-contamination', {
+          service: 'useConversations',
+          method: 'loadConversations',
+          authPubkey: authPubkey.substring(0, 8) + '...',
+          signerPubkey: signerPubkey.substring(0, 8) + '...',
+        });
+      }
+
+      // Detect authenticated user change (auth store only) and clear state
+      if (currentUserPubkey.current && currentUserPubkey.current !== authPubkey) {
+        logger.info('Auth user changed - clearing conversation state', {
           service: 'useConversations',
           method: 'loadConversations',
           oldUser: currentUserPubkey.current.substring(0, 8) + '...',
-          newUser: userPubkey.substring(0, 8) + '...',
+          newUser: authPubkey.substring(0, 8) + '...',
         });
-        // Clear processed message IDs to prevent cross-user contamination
         processedMessageIds.current.clear();
         setConversations([]);
       }
-      currentUserPubkey.current = userPubkey;
+      currentUserPubkey.current = authPubkey;
 
       logger.info('Loading conversations', {
         service: 'useConversations',
