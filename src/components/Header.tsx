@@ -91,7 +91,7 @@ export default function Header() {
           <Link href="/" className="flex items-center space-x-3 group shrink-0">
             {/* Logo icon removed, only text remains */}
             <div className="hidden sm:block">
-              <h1 className="text-xl font-serif font-bold text-white">Culture Bridge</h1>
+              <h1 className="text-xl font-serif font-bold text-white">Nostr for India</h1>
               <p className="text-xs text-white -mt-1 opacity-80">Heritage Preservation Network</p>
             </div>
           </Link>
