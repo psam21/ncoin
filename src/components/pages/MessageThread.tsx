@@ -9,9 +9,8 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { logger } from '@/services/core/LoggingService';
 import { Message } from '@/types/messaging';
-import { UserCircle2, X, Check, CheckCheck } from 'lucide-react';
+import { X, Check, CheckCheck } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 
 interface MessageThreadProps {
@@ -37,6 +36,11 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
 
   // Debug logging
   useEffect(() => {
+    console.log('MessageThread - Current state:', {
+      currentUserPubkey,
+      otherUserPubkey,
+      messageCount: messages.length,
+      messages: messages.map(m => ({
         senderPubkey: m.senderPubkey,
         recipientPubkey: m.recipientPubkey,
         isSent: m.isSent,
@@ -60,40 +64,6 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
       messagesEndRef.current.scrollIntoView({ behavior: 'instant', block: 'end' });
     }
   }, [otherUserPubkey]);
-
-  const formatTimestamp = (timestamp: number) => {
-    const date = new Date(timestamp * 1000);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
-
-    if (isToday) {
-      return date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
-      });
-    }
-
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const isYesterday = date.toDateString() === yesterday.toDateString();
-
-    if (isYesterday) {
-      return `Yesterday ${date.toLocaleTimeString('en-US', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
-      })}`;
-    }
-
-    return date.toLocaleString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: 'numeric', 
-      minute: '2-digit',
-      hour12: true 
-    });
-  };
 
   if (!otherUserPubkey) {
     return (

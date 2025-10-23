@@ -107,11 +107,6 @@ export const ConversationList: React.FC<ConversationListProps> = ({
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
-  const truncateMessage = (content: string, maxLength: number = 60) => {
-    if (content.length <= maxLength) return content;
-    return content.substring(0, maxLength) + '...';
-  };
-
   const formatPubkey = (pubkey: string) => {
     // Format as npub1...xyz (first 8 and last 4 chars)
     if (pubkey.length > 12) {

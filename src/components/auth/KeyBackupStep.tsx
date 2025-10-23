@@ -41,6 +41,8 @@ export default function KeyBackupStep({
   // displayName is used in backup file name generation by parent
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   displayName,
+  // npub is passed for consistency but not displayed in this step
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   npub,
   isCreatingBackup,
   error,

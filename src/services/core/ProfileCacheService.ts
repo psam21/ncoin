@@ -196,6 +196,7 @@ export class ProfileCacheService {
     avgMissTime: string;
     entries: Array<{ pubkey: string; displayName: string; age: number }>;
   } {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const totalLookups = this.metrics.hits + this.metrics.misses + this.metrics.expirations;
     const hitRate = this.calculateHitRate(this.metrics.hits, this.metrics.misses + this.metrics.expirations);
     

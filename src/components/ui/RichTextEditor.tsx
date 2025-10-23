@@ -112,6 +112,7 @@ export default function RichTextEditor({
     onCreate: ({ editor }) => {
       // Debug: Check how content was parsed
       const storage = editor.storage as unknown as MarkdownStorage;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const parsedMarkdown = storage.markdown?.getMarkdown();
     },
     onUpdate: ({ editor }) => {

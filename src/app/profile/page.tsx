@@ -40,7 +40,10 @@ export default function ProfilePage() {
     publishError,
     publishedRelays,
     failedRelays,
+    // contributionsCount and isLoadingContributions reserved for future features
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     contributionsCount,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isLoadingContributions,
     isNip05Verified,
     isVerifyingNip05,
