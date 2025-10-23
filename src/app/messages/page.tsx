@@ -193,7 +193,7 @@ function MessagesPageContent() {
     await sendMessage(selectedPubkey, content, attachments, conversationContext, {
       onOptimisticUpdate: (tempMessage: Message) => {
         // Add to messages list immediately
-        addMessage(tempMessage);
+        addMessage(tempMessage, 'optimistic');
         // Update conversation list
         updateConversationWithMessage(tempMessage);
       },
@@ -208,7 +208,7 @@ function MessagesPageContent() {
         setUploadProgress(null);
         
         // Replace temp message with real message (has uploaded URLs)
-        addMessage(message);
+        addMessage(message, 'cache');
         
         // Update conversation list with real message
         updateConversationWithMessage(message);

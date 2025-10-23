@@ -176,7 +176,7 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
   /**
    * Add a new message to the conversation (for real-time updates or optimistic UI)
    */
-  const addMessage = useCallback((message: Message) => {
+  const addMessage = useCallback((message: Message, source: 'subscription' | 'cache' | 'optimistic' = 'subscription') => {
     setMessages(prev => {
       // Create a map to track existing messages
       const messageMap = new Map<string, Message>();
@@ -203,6 +203,7 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
         messageId: message.id?.substring(0, 8),
         tempId: message.tempId,
         messageKey,
+        source,
         prevCount: prev.length,
         mapSize: messageMap.size,
         hasInMap: messageMap.has(messageKey),
@@ -217,17 +218,30 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
           messageId: message.id,
           tempId: message.tempId,
           messageKey,
+          source,
         });
         return prev;
       }
       
-      // Track this message ID to prevent subscription from re-adding it
-      if (message.id) {
+      // Track this message ID immediately when added from cache/optimistic
+      // This MUST happen before subscription can add it as duplicate
+      if (message.id && source !== 'subscription') {
         recentlyAddedIds.current.add(message.id);
-        // Clear after 5 seconds to prevent memory leak
+        logger.info('📌 Tracking message ID to prevent subscription duplicate', {
+          service: 'useMessages',
+          method: 'addMessage',
+          messageId: message.id?.substring(0, 8),
+          source,
+        });
+        // Clear after 10 seconds to prevent memory leak
         setTimeout(() => {
           recentlyAddedIds.current.delete(message.id!);
-        }, 5000);
+          logger.debug('🗑️ Removed message ID from tracking', {
+            service: 'useMessages',
+            method: 'addMessage',
+            messageId: message.id?.substring(0, 8),
+          });
+        }, 10000);
       }
       
       // Check if it's a duplicate by tempId
@@ -379,12 +393,13 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
         if (
           (message.senderPubkey === otherPubkey || message.recipientPubkey === otherPubkey)
         ) {
-          // Skip if we just added this message via onSuccess
+          // Skip if we just added this message via cache/optimistic update
           if (message.id && recentlyAddedIds.current.has(message.id)) {
-            logger.info('⏭️ Skipping message - already added via onSuccess', {
+            logger.info('⏭️ Skipping message - already added via cache/optimistic', {
               service: 'useMessages',
               method: 'messageCallback',
-              messageId: message.id,
+              messageId: message.id?.substring(0, 8),
+              otherPubkey,
             });
             return;
           }
@@ -392,11 +407,11 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
           logger.info('New message received for conversation', {
             service: 'useMessages',
             method: 'messageCallback',
-            messageId: message.id,
+            messageId: message.id?.substring(0, 8),
             otherPubkey,
           });
           
-          addMessage(message);
+          addMessage(message, 'subscription');
         }
       }
     );
