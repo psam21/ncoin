@@ -77,61 +77,33 @@ function MessagesPageContent() {
     }
   }, [searchParams, selectedPubkey]);
 
-  // Load user pubkey and authenticate if needed
+  // Load user pubkey for message encryption/decryption (if authenticated)
   React.useEffect(() => {
-    if (signer && !currentUserPubkey) {
+    if (signer && !currentUserPubkey && isAuthenticated) {
       signer.getPublicKey().then(async (pubkey) => {
+        logger.info('Loading user pubkey for authenticated user', {
+          service: 'MessagesPage',
+          method: 'useEffect[signer]',
+          pubkey: pubkey.substring(0, 8) + '...',
+        });
         setCurrentUserPubkey(pubkey);
-        
-        // If we have a signer but no authenticated user, auto-sign in
-        // BUT: Don't auto sign-in if user explicitly logged out
-        const { user, isAuthenticated, _hasLoggedOut } = useAuthStore.getState();
-        
-        if (_hasLoggedOut) {
-          logger.info('Skipping auto sign-in - user previously logged out', {
-            service: 'MessagesPage',
-            method: 'useEffect[signer]',
-            pubkey,
-          });
-          return;
-        }
-        
-        if (!isAuthenticated || !user) {
-          logger.info('Signer available but not authenticated, auto-signing in', {
-            service: 'MessagesPage',
-            method: 'useEffect[signer]',
-            pubkey,
-          });
-          
-          try {
-            const { profileService } = await import('@/services/business/ProfileBusinessService');
-            const result = await profileService.signInWithExtension(signer);
-            
-            if (result.success && result.user) {
-              useAuthStore.getState().setUser(result.user);
-              useAuthStore.getState().setAuthenticated(true);
-              
-              logger.info('Auto sign-in successful', {
-                service: 'MessagesPage',
-                method: 'useEffect[signer]',
-                pubkey: result.user.pubkey.substring(0, 8) + '...',
-              });
-            }
-          } catch (error) {
-            logger.error('Auto sign-in failed', error instanceof Error ? error : new Error('Unknown error'), {
-              service: 'MessagesPage',
-              method: 'useEffect[signer]',
-            });
-          }
-        }
       }).catch(err => {
         logger.error('Failed to get public key', err instanceof Error ? err : new Error('Unknown error'), {
           service: 'MessagesPage',
           method: 'useEffect[signer]',
         });
       });
+    } else if (!isAuthenticated) {
+      // Clear pubkey when not authenticated
+      if (currentUserPubkey) {
+        logger.info('Clearing user pubkey - user not authenticated', {
+          service: 'MessagesPage',
+          method: 'useEffect[signer]',
+        });
+        setCurrentUserPubkey(null);
+      }
     }
-  }, [signer, currentUserPubkey]);
+  }, [signer, currentUserPubkey, isAuthenticated]);
 
   // Conversations hook
   const {
@@ -244,9 +216,28 @@ function MessagesPageContent() {
     });
   };
 
+  // Debug logging for auth state
+  React.useEffect(() => {
+    const { isAuthenticated, _hasLoggedOut, user, signer } = useAuthStore.getState();
+    logger.info('MessagesPage auth state debug', {
+      service: 'MessagesPage',
+      method: 'authStateDebug',
+      isHydrated,
+      isAuthenticated,
+      hasLoggedOut: _hasLoggedOut,
+      hasUser: !!user,
+      hasSigner: !!signer,
+      signerLoading,
+    });
+  }, [isHydrated, isAuthenticated, signerLoading]);
+
   // Wait for auth store to hydrate before checking authentication
   // This prevents false redirects when the page first loads and persisted state hasn't loaded yet
   if (!isHydrated) {
+    logger.info('MessagesPage waiting for hydration', {
+      service: 'MessagesPage',
+      method: 'render',
+    });
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary-50">
         <div className="text-center">
@@ -259,6 +250,12 @@ function MessagesPageContent() {
 
   // Not authenticated - redirect to sign in
   if (!isAuthenticated) {
+    logger.info('MessagesPage showing sign-in required', {
+      service: 'MessagesPage',
+      method: 'render',
+      isAuthenticated,
+      hasLoggedOut: useAuthStore.getState()._hasLoggedOut,
+    });
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary-50">
         <div className="text-center max-w-md px-6">
