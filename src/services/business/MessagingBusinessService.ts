@@ -423,6 +423,14 @@ export class MessagingBusinessService {
   }
 
   /**
+   * Get cached conversations (fast, synchronous-ish)
+   * Used to check latest read status without blocking
+   */
+  public async getCachedConversations(): Promise<Conversation[]> {
+    return await this.cache.getConversations();
+  }
+
+  /**
    * Background sync for new messages (since last sync)
    * Does NOT block UI - runs in background
    * 
@@ -747,6 +755,16 @@ export class MessagingBusinessService {
   private async fetchConversationsFromRelays(signer: NostrSigner, pubkey: string): Promise<Conversation[]> {
     const userPubkey = pubkey;
 
+      // Get cached conversations to preserve read status
+      const cachedConversations = await this.cache.getConversations();
+      const cachedReadStatus = new Map<string, { lastReadTimestamp: number; unreadCount: number }>();
+      cachedConversations.forEach(conv => {
+        cachedReadStatus.set(conv.pubkey, {
+          lastReadTimestamp: conv.lastReadTimestamp || 0,
+          unreadCount: conv.unreadCount || 0,
+        });
+      });
+
       // Query for gift-wrapped messages addressed to us (includes received + sent)
       const filters = [
         {
@@ -815,11 +833,27 @@ export class MessagingBusinessService {
       }
 
       // Calculate unread count for each conversation
-      // Count all received messages (not sent by user)
+      // CRITICAL: Preserve cached read status to prevent resetting read state
       for (const [otherPubkey, conversation] of conversationMap.entries()) {
-        const conversationMessages = messagesByConversation.get(otherPubkey) || [];
-        const unreadCount = conversationMessages.filter(msg => !msg.isSent).length;
-        conversation.unreadCount = unreadCount;
+        const cached = cachedReadStatus.get(otherPubkey);
+        
+        if (cached && cached.lastReadTimestamp > 0) {
+          // User has read this conversation before - preserve read status
+          // Only count messages AFTER lastReadTimestamp as unread
+          const conversationMessages = messagesByConversation.get(otherPubkey) || [];
+          const unreadCount = conversationMessages.filter(
+            msg => !msg.isSent && msg.createdAt > cached.lastReadTimestamp
+          ).length;
+          
+          conversation.unreadCount = unreadCount;
+          conversation.lastReadTimestamp = cached.lastReadTimestamp;
+        } else {
+          // New conversation or never read - count all received messages as unread
+          const conversationMessages = messagesByConversation.get(otherPubkey) || [];
+          const unreadCount = conversationMessages.filter(msg => !msg.isSent).length;
+          conversation.unreadCount = unreadCount;
+          conversation.lastReadTimestamp = 0; // Never read
+        }
       }
 
       const conversations = Array.from(conversationMap.values())

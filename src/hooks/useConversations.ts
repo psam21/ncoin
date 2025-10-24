@@ -101,6 +101,7 @@ export const useConversations = () => {
 
   /**
    * Update conversation with new message
+   * CRITICAL: Always checks cache for latest lastReadTimestamp to avoid race conditions
    */
   const updateConversationWithMessage = useCallback(async (message: Message) => {
     console.log('[useConversations] 📨 Message received', {
@@ -131,6 +132,12 @@ export const useConversations = () => {
     processedMessageIds.current.add(message.id);
     
     const otherPubkey = message.isSent ? message.recipientPubkey : message.senderPubkey;
+    
+    // CRITICAL: Check cache for latest read status to avoid race with markAsRead
+    const cachedConvos = await messagingBusinessService.getCachedConversations();
+    const cachedConvo = cachedConvos.find(c => c.pubkey === otherPubkey);
+    const latestLastRead = cachedConvo?.lastReadTimestamp || 0;
+    
     let updatedConversation: Conversation | undefined;
     
     setConversations(prev => {
@@ -149,11 +156,12 @@ export const useConversations = () => {
           oldLastMessageAt: updated[existingIndex].lastMessageAt,
           messageTimestamp: message.createdAt,
           usingTimestamp: newestTimestamp,
+          cachedLastRead: latestLastRead,
         });
         
+        // Use cached lastReadTimestamp (latest source of truth)
         const currentUnreadCount = updated[existingIndex].unreadCount || 0;
-        const lastRead = updated[existingIndex].lastReadTimestamp || 0;
-        const shouldIncrementUnread = !message.isSent && message.createdAt > lastRead;
+        const shouldIncrementUnread = !message.isSent && message.createdAt > latestLastRead;
         const newUnreadCount = shouldIncrementUnread ? currentUnreadCount + 1 : currentUnreadCount;
         
         updatedConversation = {
@@ -161,6 +169,7 @@ export const useConversations = () => {
           lastMessage: message,
           lastMessageAt: newestTimestamp,
           unreadCount: newUnreadCount,
+          lastReadTimestamp: latestLastRead, // Preserve from cache
         };
         
         updated[existingIndex] = updatedConversation;
