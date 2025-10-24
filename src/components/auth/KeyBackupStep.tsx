@@ -1,14 +1,3 @@
-/**
- * KeyBackupStep Component
- * 
- * Step 3 of sign-up: Backup private key
- * - Download backup file button
- * - Confirmation checkbox
- * - Security warnings and best practices
- * 
- * @module components/auth/KeyBackupStep
- */
-
 'use client';
 
 import React, { useState } from 'react';
@@ -16,33 +5,21 @@ import React, { useState } from 'react';
 type PublishingStatus = 'idle' | 'uploading' | 'publishing-profile' | 'publishing-note' | 'complete' | 'error';
 
 interface KeyBackupStepProps {
-  /** Display name */
   displayName: string;
-  /** Generated npub */
   npub: string;
-  /** Loading state for backup creation */
   isCreatingBackup: boolean;
-  /** Error message for backup */
   error: string | null;
-  /** Background publishing states */
   isPublishingInBackground: boolean;
   publishingStatus: PublishingStatus;
   publishingMessage: string;
   publishingError: string | null;
-  /** Callback to create and download backup */
   onCreateBackup: () => void;
-  /** Callback to go to next step */
   onNext: () => void;
-  /** Callback to go back to previous step */
   onBack: () => void;
 }
 
 export default function KeyBackupStep({
-  // displayName is used in backup file name generation by parent
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   displayName,
-  // npub is passed for consistency but not displayed in this step
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   npub,
   isCreatingBackup,
   error,
@@ -57,18 +34,15 @@ export default function KeyBackupStep({
   const [hasDownloaded, setHasDownloaded] = useState(false);
   const [hasConfirmed, setHasConfirmed] = useState(false);
 
-  // Handle download backup
   const handleDownload = () => {
     onCreateBackup();
     setHasDownloaded(true);
   };
 
-  // Can only proceed if downloaded and confirmed
   const canProceed = hasDownloaded && hasConfirmed;
 
   return (
     <div className="space-y-6">
-      {/* Publishing Status (Non-blocking) */}
       {publishingStatus !== 'idle' && (
         <div className={`border rounded-lg p-4 ${
           publishingStatus === 'complete' ? 'bg-green-50 border-green-200' :
@@ -124,7 +98,6 @@ export default function KeyBackupStep({
         </div>
       )}
 
-      {/* Main Backup Section */}
       <div className="bg-white border border-gray-200 rounded-lg p-6">
         <div className="text-center mb-6">
           <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -169,7 +142,6 @@ export default function KeyBackupStep({
           </div>
         )}
 
-        {/* Concise 4-Item Storage Guide */}
         <div className="bg-gray-50 rounded-lg p-4">
           <h4 className="text-sm font-semibold text-gray-900 mb-3">🔐 Storage Guidelines</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
@@ -193,7 +165,6 @@ export default function KeyBackupStep({
         </div>
       </div>
 
-      {/* Confirmation Checkbox */}
       {hasDownloaded && (
         <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
           <label className="flex items-start cursor-pointer">
@@ -210,7 +181,6 @@ export default function KeyBackupStep({
         </div>
       )}
 
-      {/* Navigation Buttons */}
       <div className="flex justify-between pt-4">
         <button
           type="button"

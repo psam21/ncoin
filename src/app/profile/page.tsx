@@ -10,7 +10,6 @@ import { useNostrSigner } from '@/hooks/useNostrSigner';
 import { UserProfile } from '@/services/business/ProfileBusinessService';
 import { ImageUpload } from '@/components/profile/ImageUpload';
 
-// Dynamic import for RichTextEditor (client-only for Vercel compatibility)
 const RichTextEditor = dynamic(
   () => import('@/components/ui/RichTextEditor'),
   { 
@@ -21,7 +20,6 @@ const RichTextEditor = dynamic(
   }
 );
 
-// Dynamic import for MarkdownRenderer
 const MarkdownRenderer = dynamic(
   () => import('@/components/ui/MarkdownRenderer').then(mod => ({ default: mod.MarkdownRenderer })),
   { ssr: false }
@@ -40,10 +38,7 @@ export default function ProfilePage() {
     publishError,
     publishedRelays,
     failedRelays,
-    // contributionsCount and isLoadingContributions reserved for future features
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     contributionsCount,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     isLoadingContributions,
     isNip05Verified,
     isVerifyingNip05,
@@ -58,12 +53,10 @@ export default function ProfilePage() {
   const [isClient, setIsClient] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
-  // Ensure we're on the client side
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  // Show loading state during hydration
   if (!isClient) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -75,7 +68,6 @@ export default function ProfilePage() {
     );
   }
 
-  // Redirect if not authenticated
   if (!isAuthenticated || !user) {
     router.push('/signin');
     return (
@@ -165,16 +157,14 @@ export default function ProfilePage() {
   };
 
   const handleProfilePictureUploaded = async (url: string) => {
-    // Update editForm if in editing mode
     if (isEditing) {
       setEditForm(prev => ({
         ...prev,
         picture: url
       }));
-      return; // Don't publish immediately if editing - let user click Publish button
+      return;
     }
 
-    // If not editing, immediately publish the profile with new picture
     setSaveError(null);
     setPublishSuccess(false);
 
@@ -199,16 +189,14 @@ export default function ProfilePage() {
   };
 
   const handleBannerUploaded = async (url: string) => {
-    // Update editForm if in editing mode
     if (isEditing) {
       setEditForm(prev => ({
         ...prev,
         banner: url
       }));
-      return; // Don't publish immediately if editing - let user click Publish button
+      return;
     }
 
-    // If not editing, immediately publish the profile with new banner
     setSaveError(null);
     setPublishSuccess(false);
 
@@ -269,7 +257,6 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50">
       <div className="container-width section-padding">
-        {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div>
@@ -309,16 +296,11 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Banner Section - Moved to end and reduced height */}
-
-        {/* Profile Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Profile Info */}
           <div className="lg:col-span-2">
             <div className="card">
               <div className="p-6">
                 
-                {/* Success Message */}
                 {publishSuccess && (
                   <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
                     <div className="flex">
@@ -342,7 +324,6 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                {/* Error Message */}
                 {saveError && (
                   <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                     <div className="flex">
@@ -360,7 +341,6 @@ export default function ProfilePage() {
                 )}
 
                 <div className="space-y-6">
-                  {/* Display Name */}
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-2">
                       Display Name
@@ -388,7 +368,6 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* About */}
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-2">
                       About
@@ -412,7 +391,6 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* Website */}
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-2">
                       Website
@@ -450,7 +428,6 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* Birthday */}
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-2">
                       Birthday
@@ -469,7 +446,6 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* Bot Status */}
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-2">
                       Account Type
@@ -493,7 +469,6 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* Lightning Address (lud16) */}
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-2">
                       Lightning Address (lud16)
@@ -524,7 +499,6 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* LNURL (lud06) */}
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-2">
                       LNURL (lud06)
@@ -555,7 +529,6 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* NIP-05 Verification */}
                   <div>
                     <label className="block text-sm font-medium text-orange-700 mb-2">
                       NIP-05 Identifier
@@ -635,11 +608,9 @@ export default function ProfilePage() {
                     )}
                   </div>
 
-                  {/* Quick Actions */}
                   <div className="mt-8 pt-6 border-t border-purple-200">
                     <h3 className="text-lg font-serif font-bold text-purple-800 mb-4">Quick Actions</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {/* Messages */}
                       <Link 
                         href="/messages"
                         className="block p-4 bg-gradient-to-br from-purple-50 to-orange-50 rounded-lg border border-purple-200 hover:border-purple-300 hover:shadow-md transition-all group"
@@ -659,9 +630,7 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Profile Picture */}
             <div className="card">
               <div className="p-6">
                 <ImageUpload
@@ -678,7 +647,6 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Banner Section - At bottom with reduced height */}
         <div className="mt-8">
           <div className="h-32">
             <ImageUpload

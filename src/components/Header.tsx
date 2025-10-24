@@ -12,7 +12,6 @@ export default function Header() {
   const toggleBtnRef = useRef<HTMLButtonElement | null>(null);
   const { user, isAuthenticated, logout } = useAuthStore();
 
-  // Close on ESC
   useEffect(() => {
     if (!isOpen) return;
     function onKey(e: KeyboardEvent) {
@@ -20,7 +19,6 @@ export default function Header() {
         setIsOpen(false);
         toggleBtnRef.current?.focus();
       }
-      // Basic focus trap: cycle Tab within menu when open
       if (e.key === 'Tab' && menuRef.current) {
         const focusables = menuRef.current.querySelectorAll<HTMLElement>(
           'a[href], button:not([disabled])'
@@ -44,28 +42,22 @@ export default function Header() {
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gradient-to-r from-purple-600 to-purple-700 shadow-lg`}
-    >
+      >
       <nav className="container-width px-4 sm:px-6 lg:px-8">
-        {/* Main header content - Logo + Navigation + Auth/Cart */}
         <div className="flex items-center justify-between h-16 gap-8">
-          {/* Logo */}
           <Link href="/" className="flex items-center group shrink-0" aria-label="Messages">
             <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all">
               <MessageCircle className="w-6 h-6 text-white" />
             </div>
           </Link>
 
-          {/* Desktop Navigation - Empty now, items are in AuthButton dropdown */}
           <div className="hidden lg:flex items-center justify-between flex-1">
-            {/* Navigation items removed - now in profile dropdown */}
           </div>
 
-          {/* Auth Section - Separate area on the right */}
           <div className="hidden lg:flex items-center gap-3 shrink-0">
             <AuthButton />
           </div>
 
-          {/* Mobile menu button - only visible on mobile */}
           <button
             ref={toggleBtnRef}
             onClick={() => setIsOpen((prev: boolean) => !prev)}
@@ -78,7 +70,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Mobile Navigation */}
         {isOpen && (
           <div className="lg:hidden" role="dialog" aria-modal="true">
             <div
@@ -87,14 +78,11 @@ export default function Header() {
               className="px-2 pt-2 pb-3 space-y-1 bg-white rounded-lg shadow-lg border border-gray-100 mt-2"
             >
               {!isAuthenticated || !user ? (
-                /* Not authenticated - show sign in/sign up buttons */
                 <div className="px-3 py-2">
                   <AuthButton />
                 </div>
               ) : (
-                /* Authenticated - show menu items directly */
                 <div className="py-1">
-                  {/* User Info Header */}
                   <div className="px-4 py-3 border-b border-purple-100">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">

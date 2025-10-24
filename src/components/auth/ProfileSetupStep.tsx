@@ -1,14 +1,3 @@
-/**
- * ProfileSetupStep Component
- * 
- * Step 1 of sign-up: Collect profile information
- * - Display name (required, max 100 chars)
- * - Bio (optional, max 1000 chars)
- * - Avatar (optional, simple file input - cropping happens in Step 2)
- * 
- * @module components/auth/ProfileSetupStep
- */
-
 'use client';
 
 import React, { useState } from 'react';
@@ -20,7 +9,7 @@ interface ProfileSetupStepProps {
   onDisplayNameChange: (name: string) => void;
   onBioChange: (bio: string) => void;
   onAvatarChange: (file: File | null) => void;
-  onNext: () => void | Promise<void>; // Can be async (generates keys)
+  onNext: () => void | Promise<void>;
   isGeneratingKeys?: boolean;
   error?: string | null;
 }
@@ -28,8 +17,6 @@ interface ProfileSetupStepProps {
 export default function ProfileSetupStep({
   displayName,
   bio,
-  // avatarFile is used by parent but not displayed in this component
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   avatarFile,
   onDisplayNameChange,
   onBioChange,
@@ -42,7 +29,6 @@ export default function ProfileSetupStep({
   const [bioError, setBioError] = useState<string>('');
   const [avatarPreview, setAvatarPreview] = useState<string>('');
 
-  // Validate display name
   const validateDisplayName = (name: string): boolean => {
     if (!name.trim()) {
       setDisplayNameError('Display name is required');
@@ -56,7 +42,6 @@ export default function ProfileSetupStep({
     return true;
   };
 
-  // Validate bio
   const validateBio = (bioText: string): boolean => {
     if (bioText.length > 1000) {
       setBioError('Bio must be 1000 characters or less');
@@ -66,32 +51,27 @@ export default function ProfileSetupStep({
     return true;
   };
 
-  // Handle display name change
   const handleDisplayNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     onDisplayNameChange(value);
     validateDisplayName(value);
   };
 
-  // Handle bio change
   const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
     onBioChange(value);
     validateBio(value);
   };
 
-  // Handle avatar file selection
   const handleAvatarSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     
-    // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('Please select an image file');
       return;
     }
     
-    // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       alert('Image must be less than 10MB');
       return;
@@ -99,23 +79,19 @@ export default function ProfileSetupStep({
     
     onAvatarChange(file);
     
-    // Create preview URL
     const previewUrl = URL.createObjectURL(file);
     setAvatarPreview(previewUrl);
   };
 
-  // Handle remove avatar
   const handleRemoveAvatar = () => {
     onAvatarChange(null);
     setAvatarPreview('');
     
-    // Clean up preview URL
     if (avatarPreview) {
       URL.revokeObjectURL(avatarPreview);
     }
   };
 
-  // Handle next button
   const handleNext = () => {
     const isNameValid = validateDisplayName(displayName);
     const isBioValid = validateBio(bio);
@@ -127,9 +103,7 @@ export default function ProfileSetupStep({
 
   return (
     <div className="space-y-8">
-      {/* Form Section */}
       <div className="space-y-6">
-        {/* Display Name */}
         <div>
           <label htmlFor="displayName" className="block text-sm font-medium text-gray-700 mb-2">
             Display Name <span className="text-red-500">*</span>
@@ -158,7 +132,6 @@ export default function ProfileSetupStep({
           </p>
         </div>
 
-        {/* Bio */}
         <div>
           <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-2">
             Bio (Optional)
@@ -187,7 +160,6 @@ export default function ProfileSetupStep({
         </p>
       </div>
 
-      {/* Avatar */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Profile Picture (Optional)
@@ -237,7 +209,6 @@ export default function ProfileSetupStep({
       </div>
       </div>
 
-      {/* Loading/Error Messages */}
       {isGeneratingKeys && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <p className="text-sm text-blue-800">
@@ -252,7 +223,6 @@ export default function ProfileSetupStep({
         </div>
       )}
 
-      {/* Next Button */}
       <div className="flex justify-end">
         <button
           onClick={handleNext}

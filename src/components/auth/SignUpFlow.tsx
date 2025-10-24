@@ -1,13 +1,3 @@
-/**
- * SignUpFlow Component
- * 
- * Multi-step wizard for Nostr sign-up
- * - Step 1: Profile Setup (display name, bio, avatar) → Auto-generates keys on "Next"
- * - Step 2: Key Backup (download backup file, confirm) → Success Modal → Home
- * 
- * @module components/auth/SignUpFlow
- */
-
 'use client';
 
 import React, { useState } from 'react';
@@ -40,18 +30,15 @@ export const SignUpFlow: React.FC = () => {
     previousStep,
   } = useNostrSignUp();
 
-  // Step titles for progress indicator (2 steps)
   const stepTitles = [
     'Create Profile',
     'Backup Keys',
   ];
 
-  // Handle completion - show modal then redirect
   const handleComplete = () => {
     setShowSuccessModal(true);
   };
 
-  // Handle modal close - complete signup and redirect
   const handleModalClose = () => {
     completeSignUp();
     router.push('/');
@@ -59,7 +46,6 @@ export const SignUpFlow: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
       <section className="py-6 bg-gradient-to-br from-orange-400 to-orange-600 text-white">
         <div className="container-width">
           <div className="text-center max-w-3xl mx-auto">
@@ -70,10 +56,8 @@ export const SignUpFlow: React.FC = () => {
         </div>
       </section>
 
-      {/* Main Content */}
       <section className="section-padding bg-white">
         <div className="container-width max-w-4xl mx-auto">
-        {/* Progress Indicator */}
         <div className="mb-12">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
             {stepTitles.map((title, index) => {
@@ -83,7 +67,6 @@ export const SignUpFlow: React.FC = () => {
 
               return (
                 <React.Fragment key={stepNumber}>
-                  {/* Step */}
                   <div className="flex flex-col items-center">
                     <div
                       className={`
@@ -113,7 +96,6 @@ export const SignUpFlow: React.FC = () => {
                     </p>
                   </div>
 
-                  {/* Connector Line */}
                   {index < stepTitles.length - 1 && (
                     <div
                       className={`
@@ -128,9 +110,7 @@ export const SignUpFlow: React.FC = () => {
           </div>
         </div>
 
-        {/* Step Content */}
         <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 sm:p-12">
-          {/* Step 1: Profile Setup (auto-generates keys on Next) */}
           {currentStep === 1 && (
             <ProfileSetupStep
               displayName={formData.displayName}
@@ -145,7 +125,6 @@ export const SignUpFlow: React.FC = () => {
             />
           )}
 
-          {/* Step 2: Key Backup */}
           {currentStep === 2 && generatedKeys && (
             <KeyBackupStep
               displayName={formData.displayName}
@@ -165,7 +144,6 @@ export const SignUpFlow: React.FC = () => {
         </div>
       </section>
 
-      {/* Success Modal */}
       {showSuccessModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center">
@@ -182,7 +160,6 @@ export const SignUpFlow: React.FC = () => {
                 Your Nostr identity has been created successfully. You&apos;re now part of the decentralized web.
               </p>
               
-              {/* Publishing Status in Modal */}
               {publishingStatus === 'complete' && (
                 <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
                   <p className="text-sm text-green-700">
