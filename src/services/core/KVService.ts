@@ -61,14 +61,15 @@ export class KVService {
 
   private async connectToRedis(): Promise<void> {
     try {
-      // Check for Redis URL in environment variables (with fallback)
-      const redisUrl = process.env.cb_redis_storage_REDIS_URL || process.env.REDIS_URL;
+      // Check for Vercel KV environment variables
+      // Vercel KV provides: KV_REST_API_URL, KV_REST_API_TOKEN, KV_REST_API_READ_ONLY_TOKEN, KV_URL
+      const redisUrl = process.env.KV_URL || process.env.REDIS_URL;
       
       if (!redisUrl) {
         logger.warn('Redis URL not configured - KV service will not be available', {
           service: 'KVService',
           method: 'connectToRedis',
-          checkedVars: ['cb_redis_storage_REDIS_URL', 'REDIS_URL'],
+          checkedVars: ['KV_URL', 'REDIS_URL'],
         });
         throw new Error('Redis URL not configured');
       }
