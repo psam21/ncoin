@@ -519,6 +519,11 @@ export class KVService {
         error: errorMessage,
       });
 
+      // TEMPORARY: Pass through debug messages
+      if (errorMessage.startsWith('DEBUG:')) {
+        throw error;
+      }
+
       throw new AppError(
         'Failed to retrieve all events',
         ErrorCode.INTERNAL_ERROR,
