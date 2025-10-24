@@ -45,7 +45,7 @@ export const SignUpFlow: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white pt-24">
+    <div className="min-h-screen bg-white">
       <section className="section-padding bg-white">
         <div className="container-width max-w-4xl mx-auto">
         <div className="mb-12">

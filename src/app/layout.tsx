@@ -62,7 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to main content
         </a>
         <Header />
-        <main id="main-content" tabIndex={-1}>
+        <main id="main-content" className="pt-16 lg:pt-20" tabIndex={-1}>
           {children}
         </main>
         <Footer />
