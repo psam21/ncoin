@@ -21,67 +21,36 @@ export function createBackupFile(
 
 function formatBackupContent(npub: string, nsec: string): string {
   return `
-════════════════════════════════════════════════════════════════════════════════
-                         CULTURE BRIDGE - NOSTR KEY BACKUP
-════════════════════════════════════════════════════════════════════════════════
+═══════════════════════════════════════════════════════════════════════════
+                        NOSTR KEY BACKUP - KEEP SECRET!
+═══════════════════════════════════════════════════════════════════════════
 
-⚠️  CRITICAL SECURITY WARNING ⚠️
+⚠️  WARNING: Anyone with your private key can impersonate you!
 
-This file contains your Nostr private key (nsec). Anyone with access to this key
-can impersonate you, post as you, and access your Nostr account.
-
-🔒 SECURITY GUIDELINES:
-
-1. Store this file in a SECURE location (password manager, encrypted drive)
-2. NEVER share your nsec (private key) with anyone
-3. NEVER post your nsec online or send it via email/messaging
-4. Consider importing to a browser extension for better security
-5. Make multiple backups in different secure locations
-6. If you lose this file, you will PERMANENTLY lose access to your account
-
-────────────────────────────────────────────────────────────────────────────────
-
-YOUR NOSTR KEYS:
-
-Public Key (npub):
+PUBLIC KEY (npub) - Safe to share:
 ${npub}
 
-✅ Safe to share - This is your public identity on Nostr
-
-────────────────────────────────────────────────────────────────────────────────
-
-Private Key (nsec):
+PRIVATE KEY (nsec) - NEVER SHARE:
 ${nsec}
 
-❌ NEVER SHARE - Keep this secret and secure
+───────────────────────────────────────────────────────────────────────────
 
-────────────────────────────────────────────────────────────────────────────────
+DO THIS NOW:
+1. Store in password manager or encrypted drive
+2. Make 2+ backups in different secure places
+3. Import to browser extension: Alby (getalby.com) or nos2x
 
-NEXT STEPS:
+DON'T DO THIS:
+❌ Share your nsec with anyone
+❌ Post online or send via email/text
+❌ Store in plain text on your computer
 
-1. Import this nsec into a Nostr browser extension (recommended):
-   - nos2x: https://github.com/fiatjaf/nos2x
-   - Alby: https://getalby.com
-   - Flamingo: https://flamingo.me
+If lost, your account is gone forever. No recovery possible.
 
-2. After importing to extension, sign out of Culture Bridge
-
-3. Sign in again using your browser extension (NIP-07)
-
-4. Store it in a highly secure location
-
-────────────────────────────────────────────────────────────────────────────────
-
-CULTURE BRIDGE:
-https://culturebridge.vercel.app
-
-Preserving Culture and Heritage on Nostr 🌍✨
-
-────────────────────────────────────────────────────────────────────────────────
-
+───────────────────────────────────────────────────────────────────────────
 Generated: ${new Date().toISOString()}
-
-════════════════════════════════════════════════════════════════════════════════
+Nostr Messenger: https://nostrcoin.vercel.app
+═══════════════════════════════════════════════════════════════════════════
 `;
 }
 
