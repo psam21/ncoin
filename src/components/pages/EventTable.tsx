@@ -93,16 +93,16 @@ export function EventTable({ events, sortField, sortDirection, onSort }: EventTa
 
   const getEventKindName = (kind: number) => {
     const kindNames: Record<number, string> = {
-      0: 'Profile',
-      1: 'Text Note',
-      3: 'Contacts',
-      4: 'DM',
-      5: 'Deletion',
-      7: 'Reaction',
+      0: 'Profile (NIP-01)',
+      1: 'Text Note (NIP-01)',
+      3: 'Contacts (NIP-02)',
+      4: 'DM (NIP-04)',
+      5: 'Deletion (NIP-09)',
+      7: 'Reaction (NIP-25)',
       23: 'Long-form (Legacy)',
-      30023: 'Long-form (NIP-33)',
-      30078: 'App Data',
-      1059: 'Gift Wrap',
+      30023: 'Long-form (NIP-23)',
+      30078: 'App Data (NIP-78)',
+      1059: 'Gift Wrap (NIP-59)',
       10063: 'File Server List',
       24242: 'Blossom Auth',
     };
@@ -150,6 +150,9 @@ export function EventTable({ events, sortField, sortDirection, onSort }: EventTa
                 <SortButton field="eventKind">Event Kind</SortButton>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <SortButton field="npub">User (npub)</SortButton>
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 <SortButton field="processedTimestamp">Processed</SortButton>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -165,9 +168,6 @@ export function EventTable({ events, sortField, sortDirection, onSort }: EventTa
                 <SortButton field="totalRelaysAttempted">Relays</SortButton>
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                <SortButton field="tagsCount">Tags</SortButton>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Link
               </th>
             </tr>
@@ -181,6 +181,11 @@ export function EventTable({ events, sortField, sortDirection, onSort }: EventTa
                       {getEventKindName(event.eventKind)}
                     </span>
                   </div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className="text-sm text-gray-900 font-mono">
+                    {event.npub}
+                  </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
@@ -287,11 +292,6 @@ export function EventTable({ events, sortField, sortDirection, onSort }: EventTa
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">
-                    {event.tagsCount}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
                   <a
                     href={`https://njump.me/${event.eventId}`}
                     target="_blank"
@@ -327,6 +327,11 @@ export function EventTable({ events, sortField, sortDirection, onSort }: EventTa
             
             <div className="grid grid-cols-2 gap-2 text-sm mt-3">
               <div>
+                <span className="text-gray-500">User:</span>
+                <div className="font-medium font-mono text-xs break-all">{event.npub}</div>
+              </div>
+              
+              <div>
                 <span className="text-gray-500">Processed:</span>
                 <div className="font-medium">{formatTimestamp(event.processedTimestamp)}</div>
               </div>
@@ -349,11 +354,6 @@ export function EventTable({ events, sortField, sortDirection, onSort }: EventTa
                   )}
                   <span className="text-xs text-gray-500">/{event.totalRelaysAttempted}</span>
                 </div>
-              </div>
-              
-              <div>
-                <span className="text-gray-500">Tags:</span>
-                <span className="font-medium ml-1">{event.tagsCount}</span>
               </div>
             </div>
             
