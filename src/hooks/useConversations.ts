@@ -151,9 +151,10 @@ export const useConversations = () => {
           usingTimestamp: newestTimestamp,
         });
         
-        // Increment unread count if message is from the other person (not sent by current user)
         const currentUnreadCount = updated[existingIndex].unreadCount || 0;
-        const newUnreadCount = message.isSent ? currentUnreadCount : currentUnreadCount + 1;
+        const lastRead = updated[existingIndex].lastReadTimestamp || 0;
+        const shouldIncrementUnread = !message.isSent && message.createdAt > lastRead;
+        const newUnreadCount = shouldIncrementUnread ? currentUnreadCount + 1 : currentUnreadCount;
         
         updatedConversation = {
           ...updated[existingIndex],
@@ -184,7 +185,8 @@ export const useConversations = () => {
           lastMessage: message,
           lastMessageAt: message.createdAt,
           context: message.context,
-          unreadCount: message.isSent ? 0 : 1, // Mark as unread if message is from other person
+          unreadCount: message.isSent ? 0 : 1,
+          lastReadTimestamp: message.isSent ? message.createdAt : 0,
         };
         
         // Add new conversation and sort to maintain order
@@ -311,13 +313,16 @@ export const useConversations = () => {
       pubkey: pubkey.substring(0, 8),
     });
     
+    const now = Math.floor(Date.now() / 1000);
+    
     setConversations(prev => {
       const updated = prev.map(conv => {
         if (conv.pubkey === pubkey) {
           return {
             ...conv,
             unreadCount: 0,
-            lastViewedAt: Math.floor(Date.now() / 1000),
+            lastViewedAt: now,
+            lastReadTimestamp: now,
           };
         }
         return conv;
@@ -325,14 +330,14 @@ export const useConversations = () => {
       return updated;
     });
 
-    // Update cache
     const conversation = conversations.find(c => c.pubkey === pubkey);
     if (conversation) {
       try {
         await messagingBusinessService.updateConversationCache({
           ...conversation,
           unreadCount: 0,
-          lastViewedAt: Math.floor(Date.now() / 1000),
+          lastViewedAt: now,
+          lastReadTimestamp: now,
         });
       } catch (error) {
         logger.error('Failed to update conversation cache', error instanceof Error ? error : new Error('Unknown error'), {

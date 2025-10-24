@@ -26,6 +26,9 @@ export interface Conversation {
   
   /** Timestamp when conversation was last viewed */
   lastViewedAt?: number;
+  
+  /** Timestamp of last read message (used to determine unread status) */
+  lastReadTimestamp?: number;
 }
 
 export interface Message {

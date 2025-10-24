@@ -28,6 +28,7 @@ interface MessageCacheDB extends DBSchema {
       iv: string;
       lastMessageTime: number;
       unreadCount: number;
+      lastReadTimestamp?: number;
       cachedAt: number;
     };
     indexes: {
