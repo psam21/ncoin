@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, MessageCircle } from 'lucide-react';
 import AuthButton from './auth/AuthButton';
 
 export default function Header() {
@@ -47,11 +47,9 @@ export default function Header() {
         {/* Main header content - Logo + Navigation + Auth/Cart */}
         <div className="flex items-center justify-between h-16 gap-8">
           {/* Logo */}
-          <Link href="/" className="flex items-center group shrink-0" aria-label="Home">
+          <Link href="/" className="flex items-center group shrink-0" aria-label="Messages">
             <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
+              <MessageCircle className="w-6 h-6 text-white" />
             </div>
           </Link>
 

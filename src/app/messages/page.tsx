@@ -356,8 +356,8 @@ function MessagesPageContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
-      <div className="max-w-6xl mx-auto px-4">
+    <div className="min-h-screen bg-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Two-panel layout - responsive */}
         <div className="flex gap-4 h-[calc(100vh-8rem)] overflow-hidden shadow-2xl rounded-2xl">{/* Mobile: Show either conversation list OR message thread */}
           <div className="md:hidden w-full flex bg-white">{showConversationList ? (
