@@ -397,10 +397,24 @@ export class KVService {
         endIndex: offset + limit - 1,
       });
 
-      // Get event keys from global index (newest first, so zrevrange)
-      const eventKeys = await this.redis!.zrange(globalIndexKey, offset, offset + limit - 1, {
+      // Get event keys from global index (newest first)
+      // Use BYLEX scoring for string members
+      const eventKeysRaw = await this.redis!.zrange(globalIndexKey, offset, offset + limit - 1, {
         rev: true,
-      }) as string[];
+      });
+
+      logger.info('Raw zrange result', {
+        service: 'KVService',
+        method: 'getAllEvents',
+        resultType: typeof eventKeysRaw,
+        isArray: Array.isArray(eventKeysRaw),
+        rawResult: eventKeysRaw,
+      });
+
+      // Ensure eventKeys is a string array
+      const eventKeys: string[] = Array.isArray(eventKeysRaw) 
+        ? eventKeysRaw.filter((key): key is string => typeof key === 'string')
+        : [];
 
       logger.info('Retrieved event keys from index', {
         service: 'KVService',
