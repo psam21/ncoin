@@ -215,11 +215,31 @@ export class MessageCacheService {
 
     await tx.done;
 
-    // Invalidate in-memory cache for affected conversations
-    affectedConversations.forEach(conversationId => {
-      this.decryptedMessagesCache.delete(conversationId);
-      console.log(`[Cache] 🗑️ Invalidated decrypted cache for ${conversationId.substring(0, 8)}...`);
-    });
+    // Update in-memory cache for affected conversations by appending new messages
+    // instead of invalidating (prevents re-decryption of all messages)
+    for (const conversationId of affectedConversations) {
+      const existingCache = this.decryptedMessagesCache.get(conversationId);
+      if (existingCache) {
+        // Append new messages to existing cache
+        const newMessagesForConv = messages.filter(m => {
+          const msgConvId = m.isSent ? m.recipientPubkey : m.senderPubkey;
+          return msgConvId === conversationId;
+        });
+        
+        // Merge and sort by timestamp
+        const updatedMessages = [...existingCache, ...newMessagesForConv]
+          .sort((a, b) => a.createdAt - b.createdAt);
+        
+        // Deduplicate by message ID
+        const uniqueMessages = Array.from(
+          new Map(updatedMessages.map(m => [m.id, m])).values()
+        );
+        
+        this.decryptedMessagesCache.set(conversationId, uniqueMessages);
+        console.log(`[Cache] � Updated decrypted cache for ${conversationId.substring(0, 8)}... (${newMessagesForConv.length} new, ${uniqueMessages.length} total)`);
+      }
+      // If no existing cache, it will be populated on next getMessages call
+    }
 
     console.log(`✅ Cached ${validMessages.length} messages`);
   }
