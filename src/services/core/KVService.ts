@@ -411,6 +411,14 @@ export class KVService {
         rawResult: eventKeysRaw,
       });
 
+      // DEBUG: Throw error with debug info to see in API response
+      if (Array.isArray(eventKeysRaw) && eventKeysRaw.length > 0) {
+        const firstItem = eventKeysRaw[0];
+        throw new Error(`DEBUG: zrange returned array with ${eventKeysRaw.length} items. First item type: ${typeof firstItem}, value: ${JSON.stringify(firstItem)}, full array: ${JSON.stringify(eventKeysRaw.slice(0, 3))}`);
+      } else {
+        throw new Error(`DEBUG: zrange returned non-array or empty. Type: ${typeof eventKeysRaw}, isArray: ${Array.isArray(eventKeysRaw)}, value: ${JSON.stringify(eventKeysRaw)}`);
+      }
+
       // Ensure eventKeys is a string array
       const eventKeys: string[] = Array.isArray(eventKeysRaw) 
         ? eventKeysRaw.filter((key): key is string => typeof key === 'string')
