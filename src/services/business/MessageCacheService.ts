@@ -1,23 +1,8 @@
-/**
- * MessageCacheService
- * 
- * Persistent encrypted cache for Nostr messages using IndexedDB.
- * 
- * Features:
- * - Encrypts all messages before storing (AES-GCM)
- * - Caches conversations and messages
- * - Tracks last sync timestamp for incremental updates
- * - Auto-cleanup of old cached data
- * - Fast indexed queries by conversation and timestamp
- */
 
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import { CacheEncryptionService } from '../core/CacheEncryptionService';
 import type { Message, Conversation } from '@/types/messaging';
 
-/**
- * IndexedDB Schema
- */
 interface MessageCacheDB extends DBSchema {
   messages: {
     key: string; // messageId

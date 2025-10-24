@@ -1,10 +1,3 @@
-/**
- * useMessageSending.ts
- * Hook Layer - Message Sending with Optimistic UI
- * 
- * Handles sending messages with optimistic updates and error handling.
- * Follows battle-tested Shop hook patterns.
- */
 
 'use client';
 

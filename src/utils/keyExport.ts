@@ -1,26 +1,4 @@
-/**
- * Key Export Utilities
- * 
- * Functions for generating and downloading Nostr key backup files.
- * Plain text format with security warnings and instructions.
- * 
- * @module utils/keyExport
- */
 
-/**
- * Create and download a plain text backup file
- * 
- * Generates a backup file containing the user's Nostr keys and security warnings.
- * File format: {displayName}_culturebridge.txt
- * 
- * @param displayName - User's display name (used in filename)
- * @param npub - User's public key (npub1...)
- * @param nsec - User's secret key (nsec1...)
- * 
- * @example
- * createBackupFile("Alice", "npub1...", "nsec1...");
- * // Downloads: Alice_culturebridge.txt
- */
 export function createBackupFile(
   displayName: string,
   npub: string,
@@ -41,15 +19,6 @@ export function createBackupFile(
   
 }
 
-/**
- * Format backup file content
- * 
- * Creates the plain text content for the backup file with warnings and keys.
- * 
- * @param npub - Public key
- * @param nsec - Secret key
- * @returns Formatted backup content
- */
 function formatBackupContent(npub: string, nsec: string): string {
   return `
 ════════════════════════════════════════════════════════════════════════════════
@@ -116,14 +85,6 @@ Generated: ${new Date().toISOString()}
 `;
 }
 
-/**
- * Download text file
- * 
- * Creates a downloadable text file using a temporary anchor element.
- * 
- * @param content - Text content to download
- * @param filename - Name of the file to download
- */
 function downloadTextFile(content: string, filename: string): void {
   // Create blob with UTF-8 encoding
   const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
@@ -146,21 +107,6 @@ function downloadTextFile(content: string, filename: string): void {
   URL.revokeObjectURL(url);
 }
 
-/**
- * Validate backup file content
- * 
- * Checks if a backup file contains valid nsec and npub keys.
- * Useful for verifying backup file integrity.
- * 
- * @param content - Backup file content
- * @returns Object with validation results
- * 
- * @example
- * const result = validateBackupContent(fileContent);
- * if (result.isValid) {
- *   console.log("Valid backup file");
- * }
- */
 export function validateBackupContent(content: string): {
   isValid: boolean;
   hasNpub: boolean;

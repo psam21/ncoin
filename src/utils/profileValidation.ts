@@ -1,16 +1,9 @@
-/**
- * Validation utilities for profile fields
- */
 
 export interface ValidationResult {
   isValid: boolean;
   error?: string;
 }
 
-/**
- * Validate Lightning Address (lud16)
- * Format: user@domain.com
- */
 export const validateLud16 = (value: string): ValidationResult => {
   if (!value) return { isValid: true }; // Optional field
   
@@ -25,10 +18,6 @@ export const validateLud16 = (value: string): ValidationResult => {
   return { isValid: true };
 };
 
-/**
- * Validate LNURL (lud06)
- * Format: starts with "lnurl1"
- */
 export const validateLud06 = (value: string): ValidationResult => {
   if (!value) return { isValid: true }; // Optional field
   
@@ -50,10 +39,6 @@ export const validateLud06 = (value: string): ValidationResult => {
   return { isValid: true };
 };
 
-/**
- * Validate NIP-05 identifier
- * Format: user@domain.com
- */
 export const validateNip05 = (value: string): ValidationResult => {
   if (!value) return { isValid: true }; // Optional field
   
@@ -68,9 +53,6 @@ export const validateNip05 = (value: string): ValidationResult => {
   return { isValid: true };
 };
 
-/**
- * Validate website URL
- */
 export const validateWebsite = (value: string): ValidationResult => {
   if (!value) return { isValid: true }; // Optional field
   
@@ -91,9 +73,6 @@ export const validateWebsite = (value: string): ValidationResult => {
   }
 };
 
-/**
- * Validate display name
- */
 export const validateDisplayName = (value: string): ValidationResult => {
   if (!value) return { isValid: true }; // Optional field
   
@@ -107,9 +86,6 @@ export const validateDisplayName = (value: string): ValidationResult => {
   return { isValid: true };
 };
 
-/**
- * Validate about text
- */
 export const validateAbout = (value: string): ValidationResult => {
   if (!value) return { isValid: true }; // Optional field
   
@@ -123,9 +99,6 @@ export const validateAbout = (value: string): ValidationResult => {
   return { isValid: true };
 };
 
-/**
- * Validate birthday
- */
 export const validateBirthday = (value: string): ValidationResult => {
   if (!value) return { isValid: true }; // Optional field
   
@@ -160,9 +133,6 @@ export const validateBirthday = (value: string): ValidationResult => {
   return { isValid: true };
 };
 
-/**
- * Validate all profile fields
- */
 export const validateProfileFields = (profile: Partial<{
   display_name?: string;
   about?: string;

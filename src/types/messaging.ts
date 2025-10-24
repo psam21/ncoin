@@ -1,14 +1,7 @@
-/**
- * messaging.ts
- * Type definitions for messaging system (NIP-17 gift-wrapped messages)
- */
 
 import type { NostrEvent } from './nostr';
 import type { GenericAttachment } from './attachments';
 
-/**
- * Conversation between two users
- */
 export interface Conversation {
   /** Public key of the other user */
   pubkey: string;
@@ -35,9 +28,6 @@ export interface Conversation {
   lastViewedAt?: number;
 }
 
-/**
- * Individual message in a conversation
- */
 export interface Message {
   /** Message ID (event ID of the kind 14 rumor) */
   id: string;
@@ -67,9 +57,6 @@ export interface Message {
   tempId?: string;
 }
 
-/**
- * Message metadata (for internal use)
- */
 export interface MessageMetadata {
   /** Kind 1059 gift-wrapped event */
   giftWrap: NostrEvent;
@@ -87,9 +74,6 @@ export interface MessageMetadata {
   error?: string;
 }
 
-/**
- * Conversation context - reference to product or heritage content
- */
 export interface ConversationContext {
   /** Type of content */
   type: 'product' | 'heritage';
@@ -104,9 +88,6 @@ export interface ConversationContext {
   imageUrl?: string;
 }
 
-/**
- * Message sending result
- */
 export interface SendMessageResult {
   /** Whether send was successful */
   success: boolean;

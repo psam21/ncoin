@@ -1,10 +1,3 @@
-/**
- * useConversations.ts
- * Hook Layer - Conversation List Management
- * 
- * Manages conversation list with real-time updates via WebSocket subscriptions.
- * Follows battle-tested Shop hook patterns.
- */
 
 'use client';
 

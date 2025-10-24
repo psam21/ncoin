@@ -1,11 +1,3 @@
-/**
- * Authentication Business Service
- * 
- * SOA-compliant orchestration service for authentication and key management.
- * Handles sign-up workflow coordination without implementing low-level logic.
- * 
- * @module services/business/AuthBusinessService
- */
 
 import { generateKeys } from '@/utils/keyManagement';
 import { createBackupFile } from '@/utils/keyExport';
@@ -16,19 +8,12 @@ import { GenericRelayService } from '@/services/generic/GenericRelayService';
 import { NostrSigner } from '@/types/nostr';
 import { logger } from '@/services/core/LoggingService';
 
-/**
- * Result of key generation
- */
 export interface KeyGenerationResult {
   nsec: string;
   npub: string;
   pubkey: string;
 }
 
-/**
- * Authentication Business Service
- * Orchestrates sign-up workflow with delegation to utilities and services
- */
 export class AuthBusinessService {
   private static instance: AuthBusinessService;
   

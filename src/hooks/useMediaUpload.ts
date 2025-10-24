@@ -1,7 +1,3 @@
-/**
- * Hook for managing media upload state and operations
- * Provides a clean interface for file upload workflows with progress tracking
- */
 
 import { useState, useCallback, useRef } from 'react';
 import { logger } from '../services/core/LoggingService';
@@ -58,9 +54,6 @@ const initialState: MediaUploadState = {
   failedFiles: [],
 };
 
-/**
- * Hook for managing media upload operations with Enhanced Sequential Upload
- */
 export const useMediaUpload = (): UseMediaUploadReturn => {
   const [uploadState, setUploadState] = useState<MediaUploadState>(initialState);
   const currentFilesRef = useRef<File[]>([]);

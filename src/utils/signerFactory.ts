@@ -2,14 +2,6 @@ import { nip19, nip44 } from 'nostr-tools';
 import { getPublicKey, finalizeEvent } from 'nostr-tools/pure';
 import { NostrSigner } from '@/types/nostr';
 
-/**
- * Creates a NostrSigner instance from an nsec (private key).
- * Includes NIP-44 encryption/decryption support.
- * 
- * @param nsec - The nsec string (e.g., "nsec1...")
- * @returns Promise resolving to a NostrSigner with signing and NIP-44 capabilities
- * @throws Error if nsec format is invalid
- */
 export async function createNsecSigner(nsec: string): Promise<NostrSigner> {
   const decoded = nip19.decode(nsec);
   if (decoded.type !== 'nsec') {

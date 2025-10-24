@@ -20,13 +20,6 @@ export interface UseNostrSignInReturn {
   isLoading: boolean;
 }
 
-/**
- * Hook for sign-in orchestration
- * Follows SOA pattern: Hook → Business Service
- * Supports both browser extension (NIP-07) and direct nsec login
- * 
- * Returns boolean success status - navigation handled by page component
- */
 export function useNostrSignIn(): UseNostrSignInReturn {
   const { isAvailable, isLoading, signer } = useNostrSigner();
   const { setUser, setAuthenticated } = useAuthStore();

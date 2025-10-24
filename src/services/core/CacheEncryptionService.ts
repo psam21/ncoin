@@ -1,15 +1,3 @@
-/**
- * CacheEncryptionService
- * 
- * Handles encryption/decryption of cached data using WebCrypto API.
- * Uses AES-GCM 256-bit encryption with key derived from user's Nostr nsec.
- * 
- * Security Model:
- * - Derives encryption key from user's nsec (existing private key)
- * - Generates random IV for each encryption operation
- * - Key only exists in memory while user is logged in
- * - Cleared on logout
- */
 
 import { nip19 } from 'nostr-tools';
 

@@ -1,11 +1,3 @@
-/**
- * useNostrSignUp Hook
- * 
- * State management hook for sign-up workflow orchestration.
- * Manages 4-step wizard state and calls AuthBusinessService.
- * 
- * @module hooks/useNostrSignUp
- */
 
 import { useState, useCallback } from 'react';
 import { authBusinessService } from '@/services/business/AuthBusinessService';
@@ -15,37 +7,22 @@ import { createNsecSigner } from '@/utils/signerFactory';
 import { AppError } from '@/errors/AppError';
 import { ErrorCode, HttpStatus, ErrorCategory, ErrorSeverity } from '@/errors/ErrorTypes';
 
-/**
- * Sign-up form data
- */
 interface SignUpFormData {
   displayName: string;
   bio: string;
   avatarFile: File | null;
 }
 
-/**
- * Generated keys
- */
 interface GeneratedKeys {
   nsec: string;
   npub: string;
   pubkey: string;
 }
 
-/**
- * Sign-up step numbers (now 2 steps)
- */
 type SignUpStep = 1 | 2;
 
-/**
- * Publishing status for background operations
- */
 type PublishingStatus = 'idle' | 'uploading' | 'publishing-profile' | 'publishing-note' | 'complete' | 'error';
 
-/**
- * Hook return type
- */
 interface UseNostrSignUpReturn {
   // Current state
   currentStep: SignUpStep;
@@ -83,9 +60,6 @@ interface UseNostrSignUpReturn {
   completeSignUp: () => void;
 }
 
-/**
- * Sign-up workflow state management
- */
 export function useNostrSignUp(): UseNostrSignUpReturn {
   // Step state
   const [currentStep, setCurrentStep] = useState<SignUpStep>(1);

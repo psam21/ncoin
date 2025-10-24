@@ -1,11 +1,3 @@
-/**
- * Hook for managing user consent dialog for multi-file operations
- * Integrates UserConsentDialog with business logic
- * 
- * NOTE: Consent dialog is only needed for browser extension users who get
- * multiple signature popups. Users who signed in with nsec don't need this
- * because signing happens automatically without popups.
- */
 
 import { useState, useCallback } from 'react';
 import { logger } from '../services/core/LoggingService';

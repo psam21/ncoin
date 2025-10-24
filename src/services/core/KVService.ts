@@ -1,7 +1,3 @@
-/**
- * Redis service for user event logging
- * Handles storage and retrieval of Nostr event publishing analytics
- */
 import { createClient, RedisClientType } from 'redis';
 import { logger } from './LoggingService';
 import { AppError } from '../../errors/AppError';

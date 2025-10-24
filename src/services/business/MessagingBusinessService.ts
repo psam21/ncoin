@@ -1,12 +1,3 @@
-/**
- * MessagingBusinessService.ts
- * Business Layer - Messaging Operations
- * 
- * Handles private messaging between users using NIP-17 gift-wrapped messages.
- * SOA-compliant: Business Layer → Event Layer → Generic Layer
- * 
- * @see docs/requirements/messaging-system.md
- */
 
 import { logger } from '../core/LoggingService';
 import { NostrSigner, NostrEvent } from '../../types/nostr';

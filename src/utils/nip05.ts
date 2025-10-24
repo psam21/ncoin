@@ -1,9 +1,3 @@
-/**
- * NIP-05 Verification Utilities
- * 
- * Implements Nostr Improvement Proposal 05 for identity verification
- * https://github.com/nostr-protocol/nips/blob/master/05.md
- */
 
 import { logger } from '@/services/core/LoggingService';
 
@@ -13,10 +7,6 @@ export interface NIP05Result {
   domain: string;
 }
 
-/**
- * Extract NIP-05 identifier from profile metadata
- * Format: name@domain.com or just domain.com (implies _@domain.com)
- */
 export function extractNIP05(nip05String: string | undefined): { name: string; domain: string } | null {
   if (!nip05String) return null;
 
@@ -33,13 +23,6 @@ export function extractNIP05(nip05String: string | undefined): { name: string; d
   return null;
 }
 
-/**
- * Verify NIP-05 identifier and get pubkey
- * 
- * @param nip05 - NIP-05 identifier (e.g., "alice@example.com")
- * @param expectedPubkey - Optional pubkey to verify against
- * @returns NIP05Result if valid, null otherwise
- */
 export async function verifyNIP05(
   nip05: string,
   expectedPubkey?: string
@@ -146,14 +129,6 @@ export async function verifyNIP05(
   }
 }
 
-/**
- * Get display name from NIP-05 identifier
- * If verified, returns the name part (before @)
- * 
- * @param nip05 - NIP-05 identifier
- * @param pubkey - Pubkey to verify against
- * @returns Display name or null
- */
 export async function getDisplayNameFromNIP05(
   nip05: string | undefined,
   pubkey: string

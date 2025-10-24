@@ -1,7 +1,3 @@
-/**
- * Hook to wait for auth store hydration
- * Prevents hydration mismatches when using persisted zustand stores
- */
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/stores/useAuthStore';
 

@@ -1,7 +1,3 @@
-/**
- * Generic Nostr event service for centralized event creation and validation
- * Handles all event creation operations following CultureBridge patterns
- */
 import { logger } from '../core/LoggingService';
 import { NostrSigner, NostrEvent, NIP23Event, NIP23Content } from '../../types/nostr';
 
@@ -45,9 +41,6 @@ export interface SigningResult {
   error?: string;
 }
 
-/**
- * Generic Nostr event service for centralized event operations
- */
 export class GenericEventService {
   private static instance: GenericEventService;
 

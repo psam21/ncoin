@@ -1,7 +1,3 @@
-/**
- * Multi-File Progress Tracker for Enhanced Sequential Upload
- * Provides real-time status updates and progress analytics
- */
 
 import { logger } from '../core/LoggingService';
 import type { SequentialUploadProgress, BlossomFileMetadata } from './GenericBlossomService';
@@ -40,10 +36,6 @@ export interface ProgressCallback {
   (progress: SequentialUploadProgress, analytics: ProgressAnalytics): void;
 }
 
-/**
- * Multi-File Progress Tracker for real-time status updates
- * Transforms raw upload events into rich progress analytics
- */
 export class MultiFileProgressTracker {
   private files: Map<string, FileProgressState> = new Map();
   private startTime: number = 0;

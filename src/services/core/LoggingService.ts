@@ -1,7 +1,3 @@
-/**
- * Centralized logging service for the application
- * Provides structured, context-aware logging with different levels
- */
 import { ErrorCode, getErrorMetadata } from '../../errors/ErrorTypes';
 
 export enum LogLevel {
@@ -38,9 +34,6 @@ export interface LoggingServiceConfig {
   includeContext: boolean;
 }
 
-/**
- * Centralized logging service
- */
 export class LoggingService {
   private static instance: LoggingService;
   private config: LoggingServiceConfig;

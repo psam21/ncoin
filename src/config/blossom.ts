@@ -1,10 +1,3 @@
-/**
- * Blossom Configuration
- * 
- * Centralized configuration for Blossom file hosting following Nostr's decentralized ethos.
- * Supports both user-owned infrastructure and shared fallback servers.
- */
-
 export interface BlossomServerConfig {
   url: string;
   name: string;
@@ -13,10 +6,6 @@ export interface BlossomServerConfig {
   description: string;
 }
 
-/**
- * Primary Blossom servers (shared infrastructure)
- * Used as fallback when user-owned servers are unavailable
- */
 export const SHARED_BLOSSOM_SERVERS: BlossomServerConfig[] = [
   {
     url: 'https://blossom.nostr.build',
@@ -34,18 +23,11 @@ export const SHARED_BLOSSOM_SERVERS: BlossomServerConfig[] = [
   }
 ];
 
-/**
- * User-owned Blossom server patterns
- * Following Nostr's self-sovereignty principles
- */
 export const USER_OWNED_PATTERNS = {
   blossomBand: 'https://{npub}.blossom.band',
   blosstrCom: 'https://{npub}.blosstr.com',
 } as const;
 
-/**
- * Default configuration
- */
 export const BLOSSOM_CONFIG = {
   // Prefer user-owned infrastructure (Nostr ethos)
   preferUserOwned: true,
@@ -66,9 +48,6 @@ export const BLOSSOM_CONFIG = {
   connectionTimeout: 10000,
 } as const;
 
-/**
- * Construct user-specific Blossom URL
- */
 export function constructUserBlossomUrl(
   userNpub: string, 
   imageHash: string, 
@@ -77,9 +56,6 @@ export function constructUserBlossomUrl(
   return pattern.replace('{npub}', userNpub) + `/${imageHash}`;
 }
 
-/**
- * Get fallback shared server URL
- */
 export function getSharedBlossomUrl(
   imageHash: string,
   serverIndex: number = 0
@@ -88,9 +64,6 @@ export function getSharedBlossomUrl(
   return `${server.url}/${imageHash}`;
 }
 
-/**
- * Get all supported Blossom domains for Next.js image configuration
- */
 export function getAllBlossomDomains(): string[] {
   const userOwnedDomains = Object.values(USER_OWNED_PATTERNS).map(pattern => {
     const url = new URL(pattern.replace('{npub}', 'example'));

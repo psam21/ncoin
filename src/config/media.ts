@@ -1,8 +1,3 @@
-/**
- * Media configuration for multiple attachments feature
- * Centralized settings for file types, limits, and validation rules
- */
-
 export interface MediaConfig {
   maxAttachments: number;
   maxFileSize: number; // bytes
@@ -59,9 +54,6 @@ export const MEDIA_CONFIG: MediaConfig = {
   ]
 };
 
-/**
- * Get media type from MIME type
- */
 export const getMediaTypeFromMime = (mimeType: string): 'image' | 'video' | 'audio' | null => {
   if (mimeType.startsWith('image/')) return 'image';
   if (mimeType.startsWith('video/')) return 'video';
@@ -71,9 +63,6 @@ export const getMediaTypeFromMime = (mimeType: string): 'image' | 'video' | 'aud
   return null;
 };
 
-/**
- * Get media type from file extension
- */
 export const getMediaTypeFromExtension = (filename: string): 'image' | 'video' | 'audio' | null => {
   const extension = filename.toLowerCase().split('.').pop();
   if (!extension) return null;
@@ -84,9 +73,6 @@ export const getMediaTypeFromExtension = (filename: string): 'image' | 'video' |
   return null;
 };
 
-/**
- * Check if file type is supported
- */
 export const isSupportedFileType = (file: File): boolean => {
   // Check MIME type first (more reliable)
   if (MEDIA_CONFIG.supportedMimeTypes.includes(file.type)) {
@@ -98,9 +84,6 @@ export const isSupportedFileType = (file: File): boolean => {
   return mediaType !== null;
 };
 
-/**
- * Get file format description for user display
- */
 export const getFileFormatDescription = (mediaType: 'image' | 'video' | 'audio'): string => {
   switch (mediaType) {
     case 'image':
@@ -114,9 +97,6 @@ export const getFileFormatDescription = (mediaType: 'image' | 'video' | 'audio')
   }
 };
 
-/**
- * Get all supported formats as user-friendly string
- */
 export const getAllSupportedFormats = (): string => {
   return [
     getFileFormatDescription('image'),
@@ -125,9 +105,6 @@ export const getAllSupportedFormats = (): string => {
   ].join(', ');
 };
 
-/**
- * Format file size for display
- */
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -136,9 +113,6 @@ export const formatFileSize = (bytes: number): string => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 
-/**
- * Validate file against media configuration
- */
 export interface FileValidationResult {
   valid: boolean;
   error?: string;
@@ -175,9 +149,6 @@ export const validateMediaFile = (file: File): FileValidationResult => {
   };
 };
 
-/**
- * Validate multiple files for batch upload
- */
 export interface BatchValidationResult {
   valid: boolean;
   validFiles: File[];

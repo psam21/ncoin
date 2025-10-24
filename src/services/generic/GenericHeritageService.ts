@@ -1,22 +1,8 @@
-/**
- * Generic Heritage Service
- * Layer 4: Service (Business Logic)
- * 
- * SOA Compliance:
- * - ✅ Queries relays for public heritage events
- * - ✅ Accepts limit and until parameters for pagination
- * - ✅ Returns normalized heritage events
- * - ❌ NO state management (stateless)
- * - ❌ NO UI concerns
- */
 
 import { logger } from '../core/LoggingService';
 import { queryEvents } from './GenericRelayService';
 import type { NostrEvent } from '@/types/nostr';
 
-/**
- * Heritage event from relay (Kind 30023)
- */
 export interface HeritageEvent {
   id: string;
   dTag: string;
@@ -38,10 +24,6 @@ export interface HeritageEvent {
   publishedAt: number;
 }
 
-/**
- * Parse imeta tag to extract media metadata
- * Format: ["imeta", "url <url>", "m <mime>", ...]
- */
 function parseImetaTag(imetaTag: string[]): { url: string; mimeType?: string } | null {
   if (!imetaTag || imetaTag[0] !== 'imeta') return null;
   
@@ -60,9 +42,6 @@ function parseImetaTag(imetaTag: string[]): { url: string; mimeType?: string } |
   return { url, mimeType };
 }
 
-/**
- * Extract media URLs from event tags and categorize by type
- */
 function extractMedia(tags: string[][]): {
   images: string[];
   audio: string[];
@@ -102,9 +81,6 @@ function extractMedia(tags: string[][]): {
   return { images, audio, videos };
 }
 
-/**
- * Parse Nostr event to HeritageEvent
- */
 function parseHeritageEvent(event: NostrEvent): HeritageEvent | null {
   try {
     const tags = event.tags as string[][];
@@ -167,18 +143,6 @@ function parseHeritageEvent(event: NostrEvent): HeritageEvent | null {
   }
 }
 
-/**
- * Fetch public heritage contributions from relays
- * 
- * SOA Compliance:
- * - Service layer handles relay queries and parsing
- * - Stateless: accepts parameters, returns data
- * - No UI concerns, no state management
- * 
- * @param limit - Number of events to fetch (default: 8)
- * @param until - Unix timestamp for pagination (fetch events before this time)
- * @returns Array of parsed heritage events
- */
 export async function fetchPublicHeritage(
   limit = 8,
   until?: number

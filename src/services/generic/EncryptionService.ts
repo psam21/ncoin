@@ -1,15 +1,3 @@
-/**
- * EncryptionService.ts
- * Generic Layer - NIP-44 Encryption/Decryption
- * 
- * Handles NIP-44 encrypted payloads (version 2) for private messaging.
- * Uses @noble/ciphers for ChaCha20 encryption with HMAC-SHA256 authentication.
- * 
- * Protocol: secp256k1 ECDH + HKDF + ChaCha20 + HMAC-SHA256
- * Security Audit: Cure53 (December 2023)
- * 
- * @see https://github.com/nostr-protocol/nips/blob/master/44.md
- */
 
 import { nip44 } from 'nostr-tools';
 import { hexToBytes } from '@noble/hashes/utils';

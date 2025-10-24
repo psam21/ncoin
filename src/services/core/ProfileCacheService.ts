@@ -1,9 +1,6 @@
 import { logger } from '@/services/core/LoggingService';
 import { UserProfile } from '@/services/business/ProfileBusinessService';
 
-/**
- * Performance metrics for cache operations
- */
 interface CacheMetrics {
   hits: number;
   misses: number;
@@ -14,16 +11,6 @@ interface CacheMetrics {
   totalMissTime: number; // Milliseconds
 }
 
-/**
- * In-memory profile cache to avoid redundant relay queries
- * Profiles are cached for 5 minutes with comprehensive performance tracking
- * 
- * Features:
- * - TTL-based expiration (5 minutes)
- * - Hit/miss/expiration tracking
- * - Performance metrics
- * - Detailed logging for debugging
- */
 export class ProfileCacheService {
   private static instance: ProfileCacheService;
   private cache: Map<string, { profile: UserProfile; timestamp: number }> = new Map();

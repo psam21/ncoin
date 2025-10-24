@@ -1,13 +1,3 @@
-/**
- * Generic attachment types and interfaces for modular, reusable attachment management
- * Supports selective operations across multiple content types and projects
- */
-
-// File type is available globally in browser environments
-
-/**
- * Generic attachment interface that can be extended for specific content types
- */
 export interface GenericAttachment {
   id: string;
   type: 'image' | 'video' | 'audio' | 'document';
@@ -22,9 +12,6 @@ export interface GenericAttachment {
   updatedAt?: number;
 }
 
-/**
- * Attachment metadata for different media types
- */
 export interface AttachmentMetadata {
   // Image metadata
   width?: number;
@@ -56,14 +43,8 @@ export interface AttachmentMetadata {
   license?: string;
 }
 
-/**
- * Attachment operation types for selective management
- */
 export type AttachmentOperationType = 'add' | 'remove' | 'reorder' | 'replace' | 'update';
 
-/**
- * Individual attachment operation
- */
 export interface AttachmentOperation {
   id: string;
   type: AttachmentOperationType;
@@ -77,9 +58,6 @@ export interface AttachmentOperation {
   error?: string;
 }
 
-/**
- * Result of selective attachment operations
- */
 export interface SelectiveUpdateResult<T> {
   success: boolean;
   content: T;
@@ -92,9 +70,6 @@ export interface SelectiveUpdateResult<T> {
   warnings?: string[];
 }
 
-/**
- * Attachment selection state for UI management
- */
 export interface AttachmentSelectionState {
   selectedIds: Set<string>;
   isSelecting: boolean;
@@ -104,9 +79,6 @@ export interface AttachmentSelectionState {
   lastOperation?: AttachmentOperation;
 }
 
-/**
- * Attachment validation result
- */
 export interface AttachmentValidationResult {
   valid: boolean;
   errors: string[];
@@ -117,9 +89,6 @@ export interface AttachmentValidationResult {
   estimatedUploadTime: number;
 }
 
-/**
- * Attachment operation batch for efficient processing
- */
 export interface AttachmentOperationBatch {
   id: string;
   operations: AttachmentOperation[];
@@ -130,9 +99,6 @@ export interface AttachmentOperationBatch {
   error?: string;
 }
 
-/**
- * Attachment manager configuration
- */
 export interface AttachmentManagerConfig {
   maxAttachments: number;
   maxFileSize: number;
@@ -147,9 +113,6 @@ export interface AttachmentManagerConfig {
   showMetadata: boolean;
 }
 
-/**
- * Attachment manager state
- */
 export interface AttachmentManagerState<T extends GenericAttachment = GenericAttachment> {
   attachments: T[];
   operations: AttachmentOperation[];
@@ -162,9 +125,6 @@ export interface AttachmentManagerState<T extends GenericAttachment = GenericAtt
   config: AttachmentManagerConfig;
 }
 
-/**
- * Generic attachment manager interface
- */
 export interface GenericAttachmentManager<T extends GenericAttachment = GenericAttachment> {
   // State
   state: AttachmentManagerState<T>;
@@ -216,14 +176,7 @@ export interface GenericAttachmentManager<T extends GenericAttachment = GenericA
   updateConfig(config: Partial<AttachmentManagerConfig>): void;
 }
 
-/**
- * Content-specific attachment interfaces
- */
 
-/**
- * Shop product attachment
- * Used for actual product listings with Blossom file storage
- */
 export interface ProductAttachment {
   id: string; // unique identifier for this attachment
   hash: string; // Blossom file hash
@@ -238,9 +191,6 @@ export interface ProductAttachment {
   };
 }
 
-/**
- * Event attachment
- */
 export interface EventAttachment extends GenericAttachment {
   type: 'image' | 'video' | 'audio' | 'document';
   eventId?: string;
@@ -249,9 +199,6 @@ export interface EventAttachment extends GenericAttachment {
   category?: 'photo' | 'video' | 'audio' | 'document';
 }
 
-/**
- * Resource attachment
- */
 export interface ResourceAttachment extends GenericAttachment {
   type: 'document' | 'image' | 'video' | 'audio';
   resourceId?: string;
@@ -260,9 +207,6 @@ export interface ResourceAttachment extends GenericAttachment {
   category?: 'guide' | 'media' | 'document' | 'reference';
 }
 
-/**
- * Profile attachment
- */
 export interface ProfileAttachment extends GenericAttachment {
   type: 'image' | 'video' | 'audio';
   profileId?: string;
@@ -271,9 +215,6 @@ export interface ProfileAttachment extends GenericAttachment {
   category?: 'avatar' | 'banner' | 'gallery' | 'audio';
 }
 
-/**
- * Generic attachment manager factory
- */
 export interface AttachmentManagerFactory {
   createManager<T extends GenericAttachment>(
     config: AttachmentManagerConfig
@@ -285,9 +226,6 @@ export interface AttachmentManagerFactory {
   createProfileManager(config?: Partial<AttachmentManagerConfig>): GenericAttachmentManager<ProfileAttachment>;
 }
 
-/**
- * Default attachment manager configuration
- */
 export const DEFAULT_ATTACHMENT_CONFIG: AttachmentManagerConfig = {
   maxAttachments: 5,
   maxFileSize: 100 * 1024 * 1024, // 100MB
@@ -302,9 +240,6 @@ export const DEFAULT_ATTACHMENT_CONFIG: AttachmentManagerConfig = {
   showMetadata: true,
 };
 
-/**
- * Attachment operation type guards
- */
 export const isAttachmentOperation = (obj: unknown): obj is AttachmentOperation => {
   return obj !== null && 
     typeof obj === 'object' &&
@@ -333,9 +268,6 @@ export const isGenericAttachment = (obj: unknown): obj is GenericAttachment => {
     typeof (obj as Record<string, unknown>).mimeType === 'string';
 };
 
-/**
- * Utility functions for attachment management
- */
 export const createAttachmentOperation = (
   type: AttachmentOperationType,
   attachmentId?: string,

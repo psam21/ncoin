@@ -1,10 +1,3 @@
-/**
- * useMessages.ts
- * Hook Layer - Message Thread Management
- * 
- * Manages messages for a specific conversation with real-time updates.
- * Follows battle-tested Shop hook patterns.
- */
 
 'use client';
 

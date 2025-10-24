@@ -1,30 +1,8 @@
-/**
- * Key Management Utilities
- * 
- * Pure utility functions for Nostr key generation and encoding/decoding.
- * Wraps nostr-tools functionality with no business logic or storage.
- * 
- * @module utils/keyManagement
- */
 
 import { generateSecretKey, getPublicKey } from 'nostr-tools/pure';
 import { nip19 } from 'nostr-tools';
 import { bytesToHex } from '@noble/hashes/utils';
 
-/**
- * Generate a new Nostr key pair
- * 
- * Creates a cryptographically secure random key pair using nostr-tools.
- * Returns both hex and bech32-encoded (nsec/npub) formats.
- * 
- * @returns Object containing secret key, public key, and encoded formats
- * @throws Error if key generation fails
- * 
- * @example
- * const keys = generateKeys();
- * console.log(keys.nsec); // "nsec1..."
- * console.log(keys.npub); // "npub1..."
- */
 export function generateKeys(): {
   secretKey: Uint8Array;
   pubkey: string;
@@ -70,16 +48,6 @@ export function generateKeys(): {
   }
 }
 
-/**
- * Decode nsec to hex secret key
- * 
- * @param nsec - Bech32-encoded secret key (nsec1...)
- * @returns Hex-encoded secret key
- * @throws Error if decoding fails or invalid format
- * 
- * @example
- * const secretKeyHex = decodeNsec("nsec1...");
- */
 export function decodeNsec(nsec: string): string {
   try {
     const decoded = nip19.decode(nsec);
@@ -96,16 +64,6 @@ export function decodeNsec(nsec: string): string {
   }
 }
 
-/**
- * Decode npub to hex public key
- * 
- * @param npub - Bech32-encoded public key (npub1...)
- * @returns Hex-encoded public key
- * @throws Error if decoding fails or invalid format
- * 
- * @example
- * const pubkeyHex = decodeNpub("npub1...");
- */
 export function decodeNpub(npub: string): string {
   try {
     const decoded = nip19.decode(npub);
@@ -121,20 +79,6 @@ export function decodeNpub(npub: string): string {
   }
 }
 
-/**
- * Validate nsec format
- * 
- * Checks if a string is a valid bech32-encoded nsec key.
- * Does not verify cryptographic validity, only format.
- * 
- * @param nsec - String to validate
- * @returns true if valid nsec format
- * 
- * @example
- * if (isValidNsec(userInput)) {
- *   // Process nsec
- * }
- */
 export function isValidNsec(nsec: string): boolean {
   try {
     const decoded = nip19.decode(nsec);
@@ -144,20 +88,6 @@ export function isValidNsec(nsec: string): boolean {
   }
 }
 
-/**
- * Validate npub format
- * 
- * Checks if a string is a valid bech32-encoded npub key.
- * Does not verify cryptographic validity, only format.
- * 
- * @param npub - String to validate
- * @returns true if valid npub format
- * 
- * @example
- * if (isValidNpub(userInput)) {
- *   // Process npub
- * }
- */
 export function isValidNpub(npub: string): boolean {
   try {
     const decoded = nip19.decode(npub);

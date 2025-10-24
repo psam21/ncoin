@@ -1,7 +1,3 @@
-/**
- * Generic authentication service for Nostr signer management
- * Handles all authentication operations following CultureBridge patterns
- */
 import { logger } from '../core/LoggingService';
 import { AppError } from '../../errors/AppError';
 import { ErrorCode, HttpStatus, ErrorCategory, ErrorSeverity } from '../../errors/ErrorTypes';
@@ -28,9 +24,6 @@ export interface SignerDetectionResult {
   error?: string;
 }
 
-/**
- * Generic authentication service for centralized auth operations
- */
 export class GenericAuthService {
   private static instance: GenericAuthService;
 

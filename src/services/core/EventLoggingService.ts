@@ -1,7 +1,3 @@
-/**
- * Event Logging Service
- * Handles logging of Nostr event publishing analytics to the user activity log
- */
 import { logger } from './LoggingService';
 import { RelayPublishingResult } from '../generic/GenericRelayService';
 import { NostrEvent } from '../../types/nostr';

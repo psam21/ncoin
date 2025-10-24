@@ -1,16 +1,3 @@
-/**
- * Nostr Relay Configuration
- * 
- * This file contains the list of Nostr relays used for publishing products and messages.
- * Only the most reliable and fastest relays are included based on performance testing.
- * 
- * Each relay includes:
- * - url: WebSocket URL for the relay
- * - name: Human-readable name for display
- * - description: Brief description of the relay with response time
- * - region: Geographic region for optimization
- * - reliability: Reliability rating (high/medium/low)
- */
 
 export interface RelayConfig {
   url: string;
