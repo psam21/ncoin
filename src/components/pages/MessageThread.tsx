@@ -34,22 +34,6 @@ export const MessageThread: React.FC<MessageThreadProps> = ({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const [fullscreenImage, setFullscreenImage] = useState<{ url: string; alt: string } | null>(null);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('MessageThread - Current state:', {
-      currentUserPubkey,
-      otherUserPubkey,
-      messageCount: messages.length,
-      messages: messages.map(m => ({
-        senderPubkey: m.senderPubkey,
-        recipientPubkey: m.recipientPubkey,
-        isSent: m.isSent,
-        content: m.content.substring(0, 30),
-        createdAt: m.createdAt,
-      })),
-    });
-  }, [messages, currentUserPubkey, otherUserPubkey]);
-
   // Auto-scroll to bottom when new messages arrive (only within the messages container)
   useEffect(() => {
     if (messagesContainerRef.current && messagesEndRef.current) {

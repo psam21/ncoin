@@ -136,6 +136,17 @@ export const useNostrSigner = () => {
           setSignerAvailable(true);
           useAuthStore.getState().setLoading(false);
           
+          // Initialize message cache proactively to avoid lazy initialization delay
+          (async () => {
+            try {
+              const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
+              await messagingBusinessService.initializeCache(user.pubkey);
+            } catch (error) {
+              // Non-blocking - cache will be initialized lazily if this fails
+              console.warn('Failed to proactively initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
+            }
+          })();
+          
           logger.info('Signer initialized for authenticated user with NIP-44 support', {
             service: 'useNostrSigner',
             method: 'initializeSigner',
@@ -165,6 +176,18 @@ export const useNostrSigner = () => {
               setSigner(window.nostr);
               setSignerAvailable(true);
               useAuthStore.getState().setLoading(false);
+              
+              // Initialize message cache proactively to avoid lazy initialization delay
+              (async () => {
+                try {
+                  const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
+                  await messagingBusinessService.initializeCache(user.pubkey);
+                } catch (error) {
+                  // Non-blocking - cache will be initialized lazily if this fails
+                  console.warn('Failed to proactively initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
+                }
+              })();
+              
               logger.info('Using extension signer for authenticated user (extension-only session)', {
                 service: 'useNostrSigner',
                 method: 'initializeSigner',
