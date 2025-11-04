@@ -39,7 +39,7 @@ export function MeetingDashboard({ onCreateMeeting, meetings, onJoinMeeting }: M
   return (
     <div className="space-y-6">
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <button
           onClick={() => onCreateMeeting('video')}
           className="group relative overflow-hidden bg-gradient-to-br from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-200"
@@ -52,24 +52,6 @@ export function MeetingDashboard({ onCreateMeeting, meetings, onJoinMeeting }: M
               <div className="text-left">
                 <h3 className="text-lg font-semibold">New Video Meeting</h3>
                 <p className="text-sm text-purple-100">Start an instant call</p>
-              </div>
-            </div>
-            <Plus className="w-6 h-6 opacity-50 group-hover:opacity-100 transition-opacity" />
-          </div>
-        </button>
-
-        <button
-          onClick={() => onCreateMeeting('chat')}
-          className="group relative overflow-hidden bg-gradient-to-br from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-200"
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center group-hover:bg-opacity-30 transition-all">
-                <MessageSquare className="w-6 h-6" />
-              </div>
-              <div className="text-left">
-                <h3 className="text-lg font-semibold">New Burner Chat</h3>
-                <p className="text-sm text-orange-100">Temporary chat room</p>
               </div>
             </div>
             <Plus className="w-6 h-6 opacity-50 group-hover:opacity-100 transition-opacity" />

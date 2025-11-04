@@ -173,9 +173,9 @@ function MeetingsPageContent() {
       <div className="container-width section-padding">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-serif font-bold text-purple-800">Meetings</h1>
+          <h1 className="text-3xl font-serif font-bold text-purple-800">Video Meetings</h1>
           <p className="text-orange-600 mt-2 font-medium">
-            Create instant video meetings and temporary chat rooms
+            Create instant video meetings and conferences
           </p>
         </div>
 
@@ -196,54 +196,28 @@ function MeetingsPageContent() {
         )}
 
         {/* Info Cards */}
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-purple-900 mb-3">
-              🎥 Video Meetings
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 mt-0.5">•</span>
-                <span>Instant peer-to-peer video calls</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 mt-0.5">•</span>
-                <span>Screen sharing support</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 mt-0.5">•</span>
-                <span>No recording or storage</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-purple-600 mt-0.5">•</span>
-                <span>Temporary meeting links</span>
-              </li>
-            </ul>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-orange-900 mb-3">
-              💬 Burner Chats
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-700">
-              <li className="flex items-start gap-2">
-                <span className="text-orange-600 mt-0.5">•</span>
-                <span>Temporary chat rooms</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-orange-600 mt-0.5">•</span>
-                <span>Auto-expiring conversations</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-orange-600 mt-0.5">•</span>
-                <span>No message history saved</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-orange-600 mt-0.5">•</span>
-                <span>Share via link</span>
-              </li>
-            </ul>
-          </div>
+        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-purple-900 mb-3">
+            🎥 Video Meetings
+          </h3>
+          <ul className="space-y-2 text-sm text-gray-700">
+            <li className="flex items-start gap-2">
+              <span className="text-purple-600 mt-0.5">•</span>
+              <span>Instant peer-to-peer video calls</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-purple-600 mt-0.5">•</span>
+              <span>Screen sharing support</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-purple-600 mt-0.5">•</span>
+              <span>No recording or storage</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-purple-600 mt-0.5">•</span>
+              <span>Temporary meeting links</span>
+            </li>
+          </ul>
         </div>
       </div>
     </div>
