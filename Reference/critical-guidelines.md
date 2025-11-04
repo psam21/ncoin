@@ -97,13 +97,18 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 
 **EVERY. SINGLE. TIME.**
 
-1. **Build:** `npm run build` ; avoid -head or -tail to truncate and miss key details
+1. **Build:** `npm run build` (always run, it's auto-approved)
 2. **Fix:** ALL errors first but iteratively, and then get to iteratively fixing warnings
-3. **Commit:** use `git add .` and then Detailed commit message explaining WHAT changed and WHY
+3. **Commit:** use `git add .` with CONCISE commit message (auto-approves for faster push)
 4. **Push:** `git push origin main`
 5. **Verify:** User tests on https://nostrcoin.vercel.app and not localhost
 6. **Confirm:** Get explicit confirmation before marking complete
 7. **Avoid:** Creating new documentation without permission
+
+**COMMIT MESSAGE FORMAT:**
+- Keep it SHORT and focused (e.g., "feat: Add desktop nav tabs")
+- Detailed multi-section messages require manual approval (slower)
+- Concise messages = auto-approved = faster workflow
 
 **❌ NO SKIPPING STEPS**
 **❌ NO ASSUMING IT WORKS**
