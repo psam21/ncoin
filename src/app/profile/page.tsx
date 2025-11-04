@@ -38,8 +38,6 @@ export default function ProfilePage() {
     publishError,
     publishedRelays,
     failedRelays,
-    contributionsCount,
-    isLoadingContributions,
     isNip05Verified,
     isVerifyingNip05,
     verifyNip05,
