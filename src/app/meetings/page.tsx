@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { MeetingDashboard } from '@/components/meetings/MeetingDashboard';
 import { MeetingURLCreator } from '@/components/meetings/MeetingURLCreator';
 import { BurnerChat } from '@/components/meetings/BurnerChat';
