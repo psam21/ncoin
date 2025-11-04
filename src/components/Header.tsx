@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Menu, X, MessageCircle } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import AuthButton from './auth/AuthButton';
 import { useAuthStore } from '@/stores/useAuthStore';
 
@@ -45,10 +45,10 @@ export default function Header() {
       >
       <nav className="container-width px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-8">
-          <Link href="/" className="flex items-center group shrink-0" aria-label="Messages">
-            <div className="w-10 h-10 rounded-full bg-white bg-opacity-20 flex items-center justify-center hover:bg-opacity-30 transition-all">
-              <MessageCircle className="w-6 h-6 text-white" />
-            </div>
+          <Link href="/" className="flex items-center group shrink-0" aria-label="Nostr for Nomads">
+            <span className="text-white font-bold text-lg hover:text-orange-200 transition-colors">
+              Nostr for Nomads
+            </span>
           </Link>
 
           <div className="hidden lg:flex items-center justify-between flex-1">
