@@ -12,7 +12,7 @@ export function createBackupFile(
     .replace(/[^a-zA-Z0-9-_]/g, '_')
     .substring(0, 50); // Limit filename length
   
-  const filename = `${safeDisplayName}_nostrcoin.txt`;
+  const filename = `${safeDisplayName}_nostr_messenger.txt`;
   
   // Trigger download
   downloadTextFile(backupContent, filename);
@@ -48,7 +48,7 @@ If lost, your account is gone forever. No recovery possible.
 
 ───────────────────────────────────────────────────────────────────────────
 Generated: ${new Date().toISOString()}
-Nostr Coin: https://nostrcoin.vercel.app
+Nostr Messenger: https://nostrcoin.vercel.app
 
 Secure Messaging & Payments on Nostr 💬💰
 ═══════════════════════════════════════════════════════════════════════════

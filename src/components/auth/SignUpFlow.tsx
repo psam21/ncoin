@@ -144,7 +144,7 @@ export const SignUpFlow: React.FC = () => {
                 </svg>
               </div>
               <h2 className="text-3xl font-serif font-bold text-purple-800 mb-3">
-                Welcome to Nostr Coin!
+                Welcome to Nostr Messenger!
               </h2>
               <p className="text-lg text-gray-600 mb-4">
                 Your Nostr identity has been created successfully. You&apos;re now part of the decentralized web.

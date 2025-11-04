@@ -104,7 +104,7 @@ export default function FinalConfirmationStep({
             className="mt-1 h-4 w-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
           />
           <span className="ml-3 text-sm text-gray-700">
-            I understand that Nostr Coin is a decentralized platform built on Nostr. I am responsible for managing my own keys and there is no password recovery. I have safely stored my backup file and understand that losing my keys means losing access to this account permanently.
+            I understand that Nostr Messenger is a decentralized platform built on Nostr. I am responsible for managing my own keys and there is no password recovery. I have safely stored my backup file and understand that losing my keys means losing access to this account permanently.
           </span>
         </label>
       </div>
