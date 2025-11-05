@@ -255,11 +255,7 @@ export default function ShopPage() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-purple-600 mt-0.5">•</span>
-              <span>Pay with Bitcoin, Lightning, or other cryptocurrencies</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-purple-600 mt-0.5">•</span>
-              <span>No intermediaries or platform fees</span>
+              <span>Pay with Bitcoin, Lightning, or other modes of Payment</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="text-purple-600 mt-0.5">•</span>
