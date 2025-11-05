@@ -134,7 +134,7 @@ export default function Header() {
                 <div className="py-1">
                   <div className="px-4 py-3 border-b border-purple-100">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                      <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <svg className="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
@@ -143,8 +143,8 @@ export default function Header() {
                         <p className="text-sm font-medium text-purple-800 truncate">
                           {user.profile.display_name || 'Anonymous'}
                         </p>
-                        <p className="text-xs text-purple-500 truncate">
-                          {user.npub || user.pubkey.substring(0, 16) + '...'}
+                        <p className="text-xs text-purple-500 break-all select-all cursor-text font-mono leading-relaxed">
+                          {user.npub || user.pubkey}
                         </p>
                       </div>
                     </div>
