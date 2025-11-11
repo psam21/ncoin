@@ -93,7 +93,6 @@ export const ContributionCard: React.FC<ContributionCardProps> = ({
             
             <div className="absolute bottom-4 left-4 right-4">
               <div className="bg-black/50 rounded-lg p-4 text-white">
-                <h3 className="text-xl font-serif font-bold mb-1">{contribution.name}</h3>
                 <p className="text-sm opacity-90 flex items-center">
                   <MapPin className="w-4 h-4 mr-1" />
                   {contribution.location} · {contribution.region}
@@ -103,6 +102,10 @@ export const ContributionCard: React.FC<ContributionCardProps> = ({
           </div>
           
           <div className="p-6">
+            <h3 className="text-xl font-serif font-bold text-purple-800 mb-2 line-clamp-2">
+              {contribution.name}
+            </h3>
+            
             <p className="text-gray-700 mb-4 line-clamp-3">{contribution.description}</p>
             
             <div className="grid grid-cols-3 gap-4 mb-4 text-center">
