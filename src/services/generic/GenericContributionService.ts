@@ -3,14 +3,14 @@ import { logger } from '../core/LoggingService';
 import { queryEvents } from './GenericRelayService';
 import type { NostrEvent } from '@/types/nostr';
 
-export interface HeritageEvent {
+export interface ContributionEvent {
   id: string;
   dTag: string;
   pubkey: string;
   title: string;
   summary: string;
   category: string;
-  heritageType: string;
+  contributionType: string;
   location: string;
   region: string;
   country?: string;
@@ -81,7 +81,7 @@ function extractMedia(tags: string[][]): {
   return { images, audio, videos };
 }
 
-function parseHeritageEvent(event: NostrEvent): HeritageEvent | null {
+function parseContributionEvent(event: NostrEvent): ContributionEvent | null {
   try {
     const tags = event.tags as string[][];
     
@@ -92,9 +92,9 @@ function parseHeritageEvent(event: NostrEvent): HeritageEvent | null {
     
     // Skip events missing required fields
     if (!dTag || !title) {
-      logger.warn('Heritage event missing required fields', {
-        service: 'GenericHeritageService',
-        method: 'parseHeritageEvent',
+      logger.warn('Contribution event missing required fields', {
+        service: 'GenericContributionService',
+        method: 'parseContributionEvent',
         eventId: event.id,
         hasDTag: !!dTag,
         hasTitle: !!title,
@@ -104,7 +104,7 @@ function parseHeritageEvent(event: NostrEvent): HeritageEvent | null {
     
     // Extract optional fields
     const category = tags.find(t => t[0] === 'category')?.[1] || 'Uncategorized';
-    const heritageType = tags.find(t => t[0] === 'heritage-type')?.[1] || '';
+    const contributionType = tags.find(t => t[0] === 'contribution-type')?.[1] || '';
     const location = tags.find(t => t[0] === 'location')?.[1] || '';
     const region = tags.find(t => t[0] === 'region')?.[1] || '';
     const country = tags.find(t => t[0] === 'country')?.[1];
@@ -124,7 +124,7 @@ function parseHeritageEvent(event: NostrEvent): HeritageEvent | null {
       title,
       summary: summary || title, // Fallback to title if no summary
       category,
-      heritageType,
+      contributionType,
       location,
       region,
       country,
@@ -134,23 +134,23 @@ function parseHeritageEvent(event: NostrEvent): HeritageEvent | null {
       publishedAt: event.created_at,
     };
   } catch (error) {
-    logger.error('Error parsing heritage event', error instanceof Error ? error : new Error('Unknown error'), {
-      service: 'GenericHeritageService',
-      method: 'parseHeritageEvent',
+    logger.error('Error parsing contribution event', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericContributionService',
+      method: 'parseContributionEvent',
       eventId: event.id,
     });
     return null;
   }
 }
 
-export async function fetchPublicHeritage(
+export async function fetchPublicContributions(
   limit = 8,
   until?: number
-): Promise<HeritageEvent[]> {
+): Promise<ContributionEvent[]> {
   try {
-    logger.info('Fetching public heritage contributions', {
-      service: 'GenericHeritageService',
-      method: 'fetchPublicHeritage',
+    logger.info('Fetching public nomad contributions', {
+      service: 'GenericContributionService',
+      method: 'fetchPublicContributions',
       limit,
       until,
       hasPagination: !!until,
@@ -172,50 +172,50 @@ export async function fetchPublicHeritage(
     const queryResult = await queryEvents([filter]);
 
     if (!queryResult.success || !queryResult.events || queryResult.events.length === 0) {
-      logger.info('No heritage contributions found', {
-        service: 'GenericHeritageService',
-        method: 'fetchPublicHeritage',
+      logger.info('No nomad contributions found', {
+        service: 'GenericContributionService',
+        method: 'fetchPublicContributions',
         success: queryResult.success,
         eventCount: 0,
       });
       return [];
     }
 
-    logger.info('Found heritage events from relays', {
-      service: 'GenericHeritageService',
-      method: 'fetchPublicHeritage',
+    logger.info('Found contribution events from relays', {
+      service: 'GenericContributionService',
+      method: 'fetchPublicContributions',
       eventCount: queryResult.events.length,
       relayCount: queryResult.relayCount,
     });
 
     // Parse events
-    const heritageEvents: HeritageEvent[] = [];
+    const contributionEvents: ContributionEvent[] = [];
     const seenDTags = new Set<string>(); // Deduplication by dTag
 
     for (const event of queryResult.events) {
-      const parsed = parseHeritageEvent(event);
+      const parsed = parseContributionEvent(event);
       
       if (parsed && !seenDTags.has(parsed.dTag)) {
         seenDTags.add(parsed.dTag);
-        heritageEvents.push(parsed);
+        contributionEvents.push(parsed);
       }
     }
 
     // Sort by created_at DESC (newest first)
-    heritageEvents.sort((a, b) => b.createdAt - a.createdAt);
+    contributionEvents.sort((a, b) => b.createdAt - a.createdAt);
 
-    logger.info('Heritage contributions parsed successfully', {
-      service: 'GenericHeritageService',
-      method: 'fetchPublicHeritage',
-      parsedCount: heritageEvents.length,
-      deduplicatedCount: queryResult.events.length - heritageEvents.length,
+    logger.info('Nomad contributions parsed successfully', {
+      service: 'GenericContributionService',
+      method: 'fetchPublicContributions',
+      parsedCount: contributionEvents.length,
+      deduplicatedCount: queryResult.events.length - contributionEvents.length,
     });
 
-    return heritageEvents;
+    return contributionEvents;
   } catch (error) {
-    logger.error('Error fetching public heritage', error instanceof Error ? error : new Error('Unknown error'), {
-      service: 'GenericHeritageService',
-      method: 'fetchPublicHeritage',
+    logger.error('Error fetching public contributions', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericContributionService',
+      method: 'fetchPublicContributions',
       limit,
       until,
     });
@@ -223,6 +223,6 @@ export async function fetchPublicHeritage(
   }
 }
 
-export const GenericHeritageService = {
-  fetchPublicHeritage,
+export const GenericContributionService = {
+  fetchPublicContributions,
 };

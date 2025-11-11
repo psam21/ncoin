@@ -4,7 +4,7 @@ import { validateContributionData } from '@/types/contributions';
 import { nostrEventService } from '../nostr/NostrEventService';
 import type { NostrSigner } from '@/types/nostr';
 import { uploadSequentialWithConsent } from '@/services/generic/GenericBlossomService';
-import { fetchPublicHeritage, type HeritageEvent } from '@/services/generic/GenericHeritageService';
+import { fetchPublicContributions as fetchPublicContributionsFromRelay, type ContributionEvent } from '@/services/generic/GenericContributionService';
 
 export interface CreateContributionResult {
   success: boolean;
@@ -349,9 +349,9 @@ function getRelativeTime(timestamp: number): string {
 }
 
 /**
- * Transform heritage event to contribution explore item
+ * Transform contribution event to contribution explore item
  */
-function mapToExploreItem(event: HeritageEvent): ContributionExploreItem {
+function mapToExploreItem(event: ContributionEvent): ContributionExploreItem {
   const totalMedia = 
     event.media.images.length +
     event.media.audio.length +
@@ -401,7 +401,7 @@ export async function fetchPublicContributions(
     });
 
     // Fetch from generic service
-    const events = await fetchPublicHeritage(limit, until);
+    const events = await fetchPublicContributionsFromRelay(limit, until);
     
     // Transform to explore items (business logic)
     const items = events.map(mapToExploreItem);

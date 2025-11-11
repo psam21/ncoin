@@ -151,7 +151,7 @@ Handles external protocols and data sources:
 - **GenericRelayService**: WebSocket relay management
 - **GenericBlossomService**: Blossom media protocol (NIP-96)
 - **GenericAuthService**: Cryptographic authentication
-- **GenericHeritageService**: NIP-05 verification, metadata handling
+- **GenericContributionService**: Fetches and parses contribution events from Nostr relays
 - **GenericMediaService**: Media upload and management
 - **EncryptionService**: NIP-04 encrypted messaging
 - **MultiFileProgressTracker**: Batch file upload tracking
@@ -318,7 +318,7 @@ const [isOpen, setIsOpen] = useState(false) // Local
 │   │   ├── GenericAuthService.ts
 │   │   ├── GenericBlossomService.ts
 │   │   ├── GenericEventService.ts
-│   │   ├── GenericHeritageService.ts
+│   │   ├── GenericContributionService.ts
 │   │   ├── GenericMediaService.ts
 │   │   ├── GenericRelayService.ts
 │   │   ├── EncryptionService.ts
