@@ -135,7 +135,7 @@ export function ContributionDetail({ detail, backHref = '/explore' }: Contributi
         title={detail.title}
         actions={actions}
         backHref={backHref}
-        backLabel="Back to heritage"
+        backLabel="Back to explore"
         customButtons={
           <>
             <button

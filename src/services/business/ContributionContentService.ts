@@ -184,14 +184,32 @@ class ContributionContentService extends BaseContentProvider<ContributionCustomF
         .map((tag: string[]) => tag[1])
         .filter(Boolean);
 
+      // Parse description - handle both markdown string and JSON object in event.content
+      let fullDescription = summary;
+      if (event.content) {
+        try {
+          // Try parsing as JSON first (some events have structured content)
+          const parsed = JSON.parse(event.content);
+          // If it's an object with description field, use that
+          if (parsed && typeof parsed === 'object' && parsed.description) {
+            fullDescription = parsed.description;
+          } else if (typeof parsed === 'string') {
+            fullDescription = parsed;
+          }
+        } catch {
+          // If not JSON, treat as plain markdown text
+          fullDescription = event.content;
+        }
+      }
+
       return {
         success: true,
         content: {
           id,
           dTag: id,
           title,
-          description: event.content || summary,
-          summary: summary || event.content?.slice(0, 200) + '...',
+          description: fullDescription,
+          summary: summary || fullDescription.slice(0, 200) + '...',
           publishedAt,
           author: {
             pubkey: event.pubkey,
