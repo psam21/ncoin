@@ -51,8 +51,8 @@ export default function ExploreContent() {
   const grid = filteredItems.slice(2);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <section className="section-padding bg-primary-50 border-b border-gray-200">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50">
+      <section className="section-padding bg-white border-b border-gray-200">
         <div className="container-width">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -60,35 +60,35 @@ export default function ExploreContent() {
             transition={{ duration: 0.8 }}
             className="max-w-5xl mx-auto text-center"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-primary-800 mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-purple-800 mb-6">
               Explore Cultural Heritage
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
               Discover and learn about diverse cultural traditions from around the world. Use the
               filters below to find content that resonates with you.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-primary-700">
+            <div className="flex flex-wrap items-center justify-center gap-6 text-purple-700">
               <div
                 className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
                 title="Multiple dimensions of cultural data"
               >
-                <Layers className="w-4 h-4 mr-2 text-accent-500" />
+                <Layers className="w-4 h-4 mr-2 text-orange-500" />
                 <span>Deep Discovery</span>
               </div>
               <div
                 className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
                 title="Real-time sense of community growth & updates"
               >
-                <Activity className="w-4 h-4 mr-2 text-accent-500" />
+                <Activity className="w-4 h-4 mr-2 text-orange-500" />
                 <span>Live Activity</span>
               </div>
               <div
                 className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
                 title="Rich media formats: stories, audio, video, imagery"
               >
-                <Play className="w-4 h-4 mr-1 text-accent-500" />
-                <Headphones className="w-4 h-4 -ml-1 mr-1 text-accent-500" />
-                <ImageIcon className="w-4 h-4 -ml-1 mr-2 text-accent-500" />
+                <Play className="w-4 h-4 mr-1 text-orange-500" />
+                <Headphones className="w-4 h-4 -ml-1 mr-1 text-orange-500" />
+                <ImageIcon className="w-4 h-4 -ml-1 mr-2 text-orange-500" />
                 <span>Rich Media</span>
               </div>
             </div>
@@ -106,7 +106,7 @@ export default function ExploreContent() {
                 placeholder="Search for traditions, communities, or regions"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-4 py-3 text-base rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20"
+                className="w-full pl-14 pr-4 py-3 text-base rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function ExploreContent() {
         <div className="container-width">
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-12 h-12 text-primary-600 animate-spin mb-4" />
+              <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
               <p className="text-gray-600">Loading heritage contributions...</p>
             </div>
           )}
@@ -158,7 +158,7 @@ export default function ExploreContent() {
           {!isLoading && !error && filteredItems.length > 0 && (
             <>
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl font-serif font-bold text-primary-800">
+                <h2 className="text-2xl font-serif font-bold text-purple-800">
                   Discover Cultural Heritage
                 </h2>
                 <div className="text-gray-600">
@@ -170,7 +170,7 @@ export default function ExploreContent() {
 
               {featured.length > 0 && (
                 <div className="mb-12">
-                  <h3 className="text-xl font-serif font-bold text-primary-800 mb-6">
+                  <h3 className="text-xl font-serif font-bold text-purple-800 mb-6">
                     Featured Culture Contributions
                   </h3>
                   <div className="grid md:grid-cols-2 gap-8">
@@ -212,8 +212,8 @@ export default function ExploreContent() {
                           <div className="grid grid-cols-3 gap-4 mb-4 text-center">
                             <div>
                               <div className="flex items-center justify-center mb-1">
-                                <Users className="w-4 h-4 text-primary-600 mr-1" />
-                                <span className="font-semibold text-primary-800">
+                                <Users className="w-4 h-4 text-purple-600 mr-1" />
+                                <span className="font-semibold text-purple-800">
                                   {item.contributors}
                                 </span>
                               </div>
@@ -221,8 +221,8 @@ export default function ExploreContent() {
                             </div>
                             <div>
                               <div className="flex items-center justify-center mb-1">
-                                <ImageIcon className="w-4 h-4 text-primary-600 mr-1" />
-                                <span className="font-semibold text-primary-800">
+                                <ImageIcon className="w-4 h-4 text-purple-600 mr-1" />
+                                <span className="font-semibold text-purple-800">
                                   {item.mediaCount}
                                 </span>
                               </div>
@@ -230,8 +230,8 @@ export default function ExploreContent() {
                             </div>
                             <div>
                               <div className="flex items-center justify-center mb-1">
-                                <BookOpen className="w-4 h-4 text-primary-600 mr-1" />
-                                <span className="font-semibold text-primary-800">
+                                <BookOpen className="w-4 h-4 text-purple-600 mr-1" />
+                                <span className="font-semibold text-purple-800">
                                   {item.category}
                                 </span>
                               </div>
@@ -242,7 +242,7 @@ export default function ExploreContent() {
                             {item.tags.slice(0, 3).map((tag) => (
                               <span
                                 key={tag}
-                                className="px-2 py-1 bg-primary-50 text-primary-700 rounded-md text-xs"
+                                className="px-2 py-1 bg-purple-50 text-purple-700 rounded-md text-xs"
                               >
                                 {tag}
                               </span>
@@ -255,7 +255,7 @@ export default function ExploreContent() {
                           </div>
                           <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-500">{item.relativeTime}</span>
-                            <span className="text-primary-800 font-medium group-hover:text-accent-600 transition-colors duration-200 flex items-center w-full justify-center py-2">
+                            <span className="text-purple-800 font-medium group-hover:text-orange-600 transition-colors duration-200 flex items-center w-full justify-center py-2">
                               Explore Contribution
                               <ArrowRight className="w-4 h-4 ml-2" />
                             </span>
@@ -270,7 +270,7 @@ export default function ExploreContent() {
 
               {grid.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="text-xl font-serif font-bold text-primary-800 mb-6">
+                  <h3 className="text-xl font-serif font-bold text-purple-800 mb-6">
                     All Culture Contributions
                   </h3>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -296,7 +296,7 @@ export default function ExploreContent() {
                           />
                         </div>
                         <div className="p-6">
-                          <h3 className="text-xl font-serif font-bold text-primary-800 mb-2">
+                          <h3 className="text-xl font-serif font-bold text-purple-800 mb-2">
                             {item.name}
                           </h3>
                           <p className="text-gray-600 mb-4 flex items-center">
@@ -320,7 +320,7 @@ export default function ExploreContent() {
                             {item.tags.slice(0, 2).map((tag) => (
                               <span
                                 key={tag}
-                                className="px-2 py-1 bg-primary-50 text-primary-700 rounded-md text-xs"
+                                className="px-2 py-1 bg-purple-50 text-purple-700 rounded-md text-xs"
                               >
                                 {tag}
                               </span>
@@ -331,7 +331,7 @@ export default function ExploreContent() {
                               </span>
                             )}
                           </div>
-                          <span className="text-primary-800 font-medium group-hover:text-accent-600 transition-colors duration-200 flex items-center w-full justify-center py-2">
+                          <span className="text-purple-800 font-medium group-hover:text-orange-600 transition-colors duration-200 flex items-center w-full justify-center py-2">
                             Explore Contribution
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </span>
@@ -348,19 +348,19 @@ export default function ExploreContent() {
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.5 }}
-                        className="culture-card group cursor-pointer bg-gradient-to-br from-primary-50 to-accent-50 transition-all duration-300"
+                        className="culture-card group cursor-pointer bg-gradient-to-br from-purple-50 to-orange-50 transition-all duration-300"
                       >
                         <div className="h-full flex flex-col items-center justify-center p-8 min-h-[400px]">
-                          <div className="w-16 h-16 bg-primary-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
+                          <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
                             <ArrowRight className="w-8 h-8 text-white" />
                           </div>
-                          <h3 className="text-2xl font-serif font-bold text-primary-800 mb-2 text-center">
+                          <h3 className="text-2xl font-serif font-bold text-purple-800 mb-2 text-center">
                             See More Contributions
                           </h3>
                           <p className="text-gray-600 text-center mb-4">
                             Explore all culture and heritage contributions
                           </p>
-                          <span className="text-accent-600 font-semibold group-hover:text-accent-700 transition-colors duration-200 flex items-center">
+                          <span className="text-orange-600 font-semibold group-hover:text-orange-700 transition-colors duration-200 flex items-center">
                             View All Heritage
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </span>
