@@ -126,7 +126,7 @@ export function ContributionDetail({ detail, backHref = '/explore' }: Contributi
   }, [detail.customFields]);
 
   const tags = useMemo(() => {
-    return (detail.tags ?? []).filter(tag => tag.toLowerCase() !== 'culture-bridge-heritage-contribution');
+    return (detail.tags ?? []).filter(tag => tag.toLowerCase() !== 'nostr-for-nomads-contribution');
   }, [detail.tags]);
 
   return (
