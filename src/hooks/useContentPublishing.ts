@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { logger } from '@/services/core/LoggingService';
+import { useNostrSigner } from './useNostrSigner';
 import { useConsentDialog } from './useConsentDialog';
 import type { NostrSigner } from '@/types/nostr';
 
@@ -48,13 +49,16 @@ export type PublishFunction<TData, TResult extends PublishResult, TProgress exte
 
 /**
  * Options for the generic publishing wrapper
+ * Note: isAvailable, getSigner, and consentDialog are accepted but not used internally.
+ * The hook creates its own instances via useNostrSigner() and useConsentDialog().
+ * These parameters exist for API compatibility.
  */
 export interface UseContentPublishingOptions<TResult extends PublishResult, TProgress extends PublishProgress> {
   serviceName: string;
   methodName: string;
-  isAvailable: boolean;
-  getSigner: () => Promise<NostrSigner | null>;
-  consentDialog: ReturnType<typeof useConsentDialog>;
+  isAvailable?: boolean;
+  getSigner?: () => Promise<NostrSigner | null>;
+  consentDialog?: ReturnType<typeof useConsentDialog>;
   stateSetters: PublishStateSetters<TProgress>;
   onSuccess?: (result: TResult) => void;
 }
@@ -71,7 +75,9 @@ export function useContentPublishing<
   TResult extends PublishResult,
   TProgress extends PublishProgress
 >(options: UseContentPublishingOptions<TResult, TProgress>) {
-  const { serviceName, methodName, stateSetters, onSuccess, consentDialog, isAvailable, getSigner } = options;
+  const { serviceName, methodName, stateSetters, onSuccess } = options;
+  const { isAvailable, getSigner } = useNostrSigner();
+  const consentDialog = useConsentDialog();
 
   const publishWithWrapper = useCallback(async (
     publishFn: PublishFunction<TData, TResult, TProgress>,

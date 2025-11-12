@@ -2,7 +2,6 @@
 
 import { useState, useCallback } from 'react';
 import { useNostrSigner } from './useNostrSigner';
-import { useConsentDialog } from './useConsentDialog';
 import { useContentPublishing } from './useContentPublishing';
 import { createContribution } from '@/services/business/ContributionService';
 import type {
@@ -25,7 +24,6 @@ import type {
  */
 export function useContributionPublishing() {
   const { isAvailable, getSigner } = useNostrSigner();
-  const consentDialog = useConsentDialog();
   
   // Publishing state
   const [state, setState] = useState<ContributionPublishingState>({
@@ -66,7 +64,7 @@ export function useContributionPublishing() {
   };
 
   // Initialize generic publishing wrapper
-  const { publishWithWrapper } = useContentPublishing<
+  const { publishWithWrapper, consentDialog } = useContentPublishing<
     ContributionData,
     ContributionPublishingResult,
     ContributionPublishingProgress
@@ -75,7 +73,6 @@ export function useContributionPublishing() {
     methodName: 'createContribution',
     isAvailable,
     getSigner,
-    consentDialog,
     stateSetters,
   });
 
