@@ -190,9 +190,9 @@ class ContributionContentService extends BaseContentProvider<ContributionCustomF
         try {
           // Try parsing as JSON first (some events have structured content)
           const parsed = JSON.parse(event.content);
-          // If it's an object with description field, use that
-          if (parsed && typeof parsed === 'object' && parsed.description) {
-            fullDescription = parsed.description;
+          // If it's an object with content or description field, use that
+          if (parsed && typeof parsed === 'object') {
+            fullDescription = parsed.content || parsed.description || summary;
           } else if (typeof parsed === 'string') {
             fullDescription = parsed;
           }
