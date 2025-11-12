@@ -210,7 +210,8 @@ export function useUserProfile(): UseUserProfileReturn {
       });
 
       // Call ProfileBusinessService to publish
-      const result = await profileService.updateUserProfile(updates, profile, signer);
+      // Pass stored pubkey to avoid unnecessary signer prompt
+      const result = await profileService.updateUserProfile(updates, profile, signer, user.pubkey);
 
       if (!result.success) {
         setPublishError(result.error || 'Failed to publish profile');

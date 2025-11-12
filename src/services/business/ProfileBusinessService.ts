@@ -401,7 +401,8 @@ export class ProfileBusinessService {
    */
   public async createProfileEvent(
     profile: UserProfile,
-    signer: NostrSigner
+    signer: NostrSigner,
+    pubkey?: string // Optional: pass stored pubkey to avoid signer prompt
   ): Promise<{ success: boolean; event?: Omit<import('@/types/nostr').NostrEvent, 'id' | 'sig'>; error?: string }> {
     try {
       logger.info('Creating Kind 0 profile metadata event', {
@@ -412,7 +413,8 @@ export class ProfileBusinessService {
         hasNip05: !!profile.nip05,
       });
 
-      const pubkey = await signer.getPublicKey();
+      // Use stored pubkey if provided to avoid unnecessary signer prompt
+      const userPubkey = pubkey || await signer.getPublicKey();
       const now = Math.floor(Date.now() / 1000);
 
       // Validate profile before creating event
@@ -442,7 +444,7 @@ export class ProfileBusinessService {
       // Create Kind 0 event structure
       const event: Omit<import('@/types/nostr').NostrEvent, 'id' | 'sig'> = {
         kind: 0, // Kind 0 = user metadata
-        pubkey,
+        pubkey: userPubkey,
         created_at: now,
         tags: [], // Kind 0 events don't typically have tags
         content,
@@ -451,7 +453,7 @@ export class ProfileBusinessService {
       logger.info('Kind 0 event created successfully', {
         service: 'ProfileBusinessService',
         method: 'createProfileEvent',
-        pubkey: pubkey.substring(0, 8) + '...',
+        pubkey: userPubkey.substring(0, 8) + '...',
         contentLength: content.length,
       });
 
@@ -479,7 +481,8 @@ export class ProfileBusinessService {
    */
   public async publishProfile(
     profile: UserProfile,
-    signer: NostrSigner
+    signer: NostrSigner,
+    pubkey?: string // Optional: pass stored pubkey to avoid signer prompt
   ): Promise<{
     success: boolean;
     eventId?: string;
@@ -495,7 +498,8 @@ export class ProfileBusinessService {
       });
 
       // Create Kind 0 event
-      const eventResult = await this.createProfileEvent(profile, signer);
+      // Pass pubkey to avoid signer prompt if already authenticated
+      const eventResult = await this.createProfileEvent(profile, signer, pubkey);
       if (!eventResult.success || !eventResult.event) {
         return {
           success: false,
@@ -570,7 +574,8 @@ export class ProfileBusinessService {
   public async updateUserProfile(
     updates: Partial<UserProfile>,
     currentProfile: UserProfile,
-    signer: NostrSigner
+    signer: NostrSigner,
+    pubkey?: string // Optional: pass stored pubkey to avoid signer prompt
   ): Promise<{ success: boolean; error?: string; eventId?: string; publishedRelays?: string[]; failedRelays?: string[] }> {
     try {
       logger.info('Updating user profile', {
@@ -595,7 +600,8 @@ export class ProfileBusinessService {
       }
 
       // Publish to Nostr
-      const publishResult = await this.publishProfile(updatedProfile, signer);
+      // Pass pubkey to avoid signer prompt during publish
+      const publishResult = await this.publishProfile(updatedProfile, signer, pubkey);
 
       if (!publishResult.success) {
         return {
@@ -608,9 +614,10 @@ export class ProfileBusinessService {
       }
 
       // Invalidate cache for updated profile
-      const pubkey = await signer.getPublicKey();
+      // Use stored pubkey if provided to avoid unnecessary signer prompt
+      const userPubkey = pubkey || await signer.getPublicKey();
       const { profileCacheService } = await import('@/services/core/ProfileCacheService');
-      profileCacheService.invalidate(pubkey);
+      profileCacheService.invalidate(userPubkey);
 
       logger.info('User profile updated successfully', {
         service: 'ProfileBusinessService',
