@@ -171,6 +171,17 @@ export const useNostrSigner = () => {
         try {
           // For authenticated users: verify extension pubkey matches auth user
           if (isAuthenticated && user) {
+            // Only verify if we don't already have a validated signer for this user
+            if (signer && isAvailable) {
+              logger.info('Using existing validated extension signer', {
+                service: 'useNostrSigner',
+                method: 'initializeSigner',
+                userPubkey: user.pubkey.substring(0, 8) + '...',
+              });
+              useAuthStore.getState().setLoading(false);
+              return;
+            }
+            
             const extPubkey = await window.nostr.getPublicKey();
             if (extPubkey === user.pubkey) {
               setSigner(window.nostr);
