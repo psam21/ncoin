@@ -20,6 +20,8 @@ export function createBackupFile(
 }
 
 function formatBackupContent(npub: string, nsec: string): string {
+  const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://www.nostr.co.in';
+  
   return `
 ═══════════════════════════════════════════════════════════════════════════
                         NOSTR KEY BACKUP - KEEP SECRET!
@@ -48,7 +50,7 @@ If lost, your account is gone forever. No recovery possible.
 
 ───────────────────────────────────────────────────────────────────────────
 Generated: ${new Date().toISOString()}
-Nostr Messenger: https://nostrcoin.vercel.app
+Nostr Messenger: ${appUrl}
 
 Secure Messaging & Payments on Nostr 💬💰
 ═══════════════════════════════════════════════════════════════════════════
