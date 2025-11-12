@@ -169,56 +169,30 @@ export const useNostrSigner = () => {
       // Priority 2: Browser extension (for authenticated extension-only sessions or non-auth sign-in)
       if (typeof window !== 'undefined' && window.nostr) {
         try {
-          // For authenticated users: verify extension pubkey matches auth user
+          // For authenticated users: just use the extension without verification
+          // We already verified the pubkey during sign-in, no need to prompt again
           if (isAuthenticated && user) {
-            // Only verify if we don't already have a validated signer for this user
-            if (signer && isAvailable) {
-              logger.info('Using existing validated extension signer', {
-                service: 'useNostrSigner',
-                method: 'initializeSigner',
-                userPubkey: user.pubkey.substring(0, 8) + '...',
-              });
-              useAuthStore.getState().setLoading(false);
-              return;
-            }
+            setSigner(window.nostr);
+            setSignerAvailable(true);
+            useAuthStore.getState().setLoading(false);
             
-            const extPubkey = await window.nostr.getPublicKey();
-            if (extPubkey === user.pubkey) {
-              setSigner(window.nostr);
-              setSignerAvailable(true);
-              useAuthStore.getState().setLoading(false);
-              
-              // Initialize message cache proactively to avoid lazy initialization delay
-              (async () => {
-                try {
-                  const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
-                  await messagingBusinessService.initializeCache(user.pubkey);
-                } catch (error) {
-                  // Non-blocking - cache will be initialized lazily if this fails
-                  console.warn('Failed to proactively initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
-                }
-              })();
-              
-              logger.info('Using extension signer for authenticated user (extension-only session)', {
-                service: 'useNostrSigner',
-                method: 'initializeSigner',
-                userPubkey: user.pubkey.substring(0, 8) + '...',
-              });
-              return;
-            } else {
-              // Mismatch: authenticated user != extension user
-              logger.error('Extension pubkey mismatch - forcing re-authentication', new Error('Signer pubkey mismatch'), {
-                service: 'useNostrSigner',
-                method: 'initializeSigner',
-                authPubkey: user.pubkey.substring(0, 8) + '...',
-                extPubkey: extPubkey.substring(0, 8) + '...',
-              });
-              useAuthStore.getState().logout();
-              setSigner(null);
-              setSignerAvailable(false);
-              useAuthStore.getState().setLoading(false);
-              return;
-            }
+            // Initialize message cache proactively to avoid lazy initialization delay
+            (async () => {
+              try {
+                const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
+                await messagingBusinessService.initializeCache(user.pubkey);
+              } catch (error) {
+                // Non-blocking - cache will be initialized lazily if this fails
+                console.warn('Failed to proactively initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
+              }
+            })();
+            
+            logger.info('Using extension signer for authenticated user (extension-only session)', {
+              service: 'useNostrSigner',
+              method: 'initializeSigner',
+              userPubkey: user.pubkey.substring(0, 8) + '...',
+            });
+            return;
           }
 
           // For non-authenticated users: use extension for sign-in
