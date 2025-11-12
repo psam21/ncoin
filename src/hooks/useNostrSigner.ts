@@ -195,11 +195,13 @@ export const useNostrSigner = () => {
             return;
           }
 
-          // For non-authenticated users: use extension for sign-in
-          setSigner(window.nostr);
+          // For non-authenticated users: detect extension availability but DON'T set signer
+          // This prevents premature permission prompts on page load
+          // The signer will be set when user actually clicks "Sign In"
+          setSigner(null);
           setSignerAvailable(true);
           useAuthStore.getState().setLoading(false);
-          logger.info('Using browser extension signer for sign-in flow', {
+          logger.info('Browser extension detected - available for sign-in', {
             service: 'useNostrSigner',
             method: 'initializeSigner',
           });
