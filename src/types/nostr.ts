@@ -18,7 +18,7 @@ export interface NIP23Content {
   content: string;
   summary: string;
   published_at: number;
-  tags: string[];
+  tags?: string[];
   language: string;
   region: string;
   permissions: string;

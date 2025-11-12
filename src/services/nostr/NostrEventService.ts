@@ -230,7 +230,6 @@ export class NostrEventService {
         content: markdownContent,
         summary: heritageData.description.substring(0, 200),
         published_at: now,
-        tags: heritageData.tags,
         language: heritageData.language || 'en',
         region: heritageData.region,
         permissions: 'community',
