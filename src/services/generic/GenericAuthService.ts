@@ -72,39 +72,17 @@ export class GenericAuthService {
         };
       }
 
-      // Test the signer by getting public key
-      try {
-        const pubkey = await window.nostr.getPublicKey();
-        if (!pubkey) {
-          return {
-            isAvailable: false,
-            error: 'Signer returned empty public key',
-          };
-        }
+      // Signer detected - don't test it yet to avoid unnecessary prompts
+      // The actual getPublicKey() call will happen during sign-in
+      logger.info('Nostr signer detected successfully', {
+        service: 'GenericAuthService',
+        method: 'detectSigner',
+      });
 
-        logger.info('Nostr signer detected successfully', {
-          service: 'GenericAuthService',
-          method: 'detectSigner',
-          pubkey: pubkey.substring(0, 8) + '...',
-        });
-
-        return {
-          isAvailable: true,
-          signer: window.nostr,
-        };
-      } catch (signerError) {
-        const errorMessage = signerError instanceof Error ? signerError.message : 'Signer test failed';
-        logger.warn('Signer test failed', {
-          service: 'GenericAuthService',
-          method: 'detectSigner',
-          error: errorMessage,
-        });
-
-        return {
-          isAvailable: false,
-          error: `Signer test failed: ${errorMessage}`,
-        };
-      }
+      return {
+        isAvailable: true,
+        signer: window.nostr,
+      };
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       logger.error('Error detecting Nostr signer', error instanceof Error ? error : new Error(errorMessage), {
