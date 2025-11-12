@@ -173,6 +173,162 @@ export class NostrEventService {
    * Create a heritage contribution event (Kind 30023)
    * Uses GenericEventService.createNIP23Event with heritage-specific tags
    */
+  /**
+   * Create a nomad contribution event (Kind 30023)
+   * Dedicated method for nomad contributions without heritage format dependency
+   * 
+   * @param contributionData - Contribution data
+   * @param signer - Nostr signer
+   * @param dTag - Optional d tag for updates
+   * @returns Signed NIP-23 event
+   */
+  public async createContributionEvent(
+    contributionData: {
+      title: string;
+      description: string;
+      category: string;
+      contributionType: string;
+      language: string;
+      location: string;
+      region: string;
+      country: string;
+      tags: string[];
+      attachments: Array<{
+        url: string;
+        type: string;
+        hash?: string;
+        name: string;
+        size?: number;
+        mimeType?: string;
+      }>;
+    },
+    signer: NostrSigner,
+    dTag?: string
+  ): Promise<NIP23Event> {
+    try {
+      logger.info('Creating Kind 30023 nomad contribution event', {
+        service: 'NostrEventService',
+        method: 'createContributionEvent',
+        title: contributionData.title,
+        contributionType: contributionData.contributionType,
+        dTag,
+        attachmentCount: contributionData.attachments?.length || 0,
+      });
+
+      const now = Math.floor(Date.now() / 1000);
+      const pubkey = await signer.getPublicKey();
+
+      // Create markdown content
+      const markdownContent = contributionData.description;
+      
+      // Create NIP-23 content
+      const nip23Content: NIP23Content = {
+        title: contributionData.title,
+        content: markdownContent,
+        summary: contributionData.description.substring(0, 200),
+        published_at: now,
+        language: contributionData.language,
+        region: contributionData.region,
+        permissions: 'public',
+      };
+
+      // Build contribution-specific tags
+      const contributionTags: string[][] = [
+        ['title', contributionData.title],
+        ['category', contributionData.category],
+        ['contribution-type', contributionData.contributionType],
+        ['region', contributionData.region],
+        ['country', contributionData.country],
+        ['language', contributionData.language],
+      ];
+
+      // Add location if provided
+      if (contributionData.location) {
+        contributionTags.push(['location', contributionData.location]);
+      }
+
+      // Add user tags
+      contributionData.tags.forEach(tag => {
+        if (tag.trim()) {
+          contributionTags.push(['t', tag.trim()]);
+        }
+      });
+
+      // Add system tag for discovery
+      if (!contributionData.tags.includes('nostr-for-nomads-contribution')) {
+        contributionTags.push(['t', 'nostr-for-nomads-contribution']);
+      }
+
+      // Add media tags with NIP-94 imeta tags
+      contributionData.attachments.forEach(media => {
+        contributionTags.push([media.type, media.url]);
+        if (media.hash) {
+          const imetaParts = [`url ${media.url}`, `x ${media.hash}`];
+          
+          if (media.mimeType) {
+            imetaParts.push(`m ${media.mimeType}`);
+          }
+          
+          if (media.size) {
+            imetaParts.push(`size ${media.size}`);
+          }
+          
+          contributionTags.push(['imeta', ...imetaParts]);
+        }
+      });
+
+      // Create event using GenericEventService
+      const eventResult = createNIP23Event(nip23Content, pubkey, {
+        dTag,
+        dTagPrefix: 'contribution',
+        tags: contributionTags,
+      });
+
+      if (!eventResult.success || !eventResult.event) {
+        throw new AppError(
+          'Failed to create contribution event',
+          ErrorCode.NOSTR_ERROR,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          ErrorCategory.EXTERNAL_SERVICE,
+          ErrorSeverity.HIGH,
+          { error: eventResult.error }
+        );
+      }
+
+      // Sign the event
+      const signingResult = await genericSignEvent(eventResult.event, signer);
+
+      if (!signingResult.success || !signingResult.signedEvent) {
+        throw new AppError(
+          'Failed to sign contribution event',
+          ErrorCode.NOSTR_ERROR,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+          ErrorCategory.EXTERNAL_SERVICE,
+          ErrorSeverity.HIGH,
+          { error: signingResult.error }
+        );
+      }
+
+      logger.info('Contribution event created and signed', {
+        service: 'NostrEventService',
+        method: 'createContributionEvent',
+        eventId: signingResult.signedEvent.id,
+        title: contributionData.title,
+      });
+
+      return signingResult.signedEvent as NIP23Event;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to create contribution event', error instanceof Error ? error : new Error(errorMessage), {
+        service: 'NostrEventService',
+        method: 'createContributionEvent',
+        title: contributionData.title,
+        error: errorMessage,
+      });
+      throw error;
+    }
+  }
+
   public async createHeritageEvent(
     heritageData: {
       title: string;

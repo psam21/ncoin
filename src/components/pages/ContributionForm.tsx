@@ -14,6 +14,7 @@ import { UserConsentDialog } from '@/components/generic/UserConsentDialog';
 import { GenericAttachment } from '@/types/attachments';
 import { X, Loader2 } from 'lucide-react';
 import { useContributionPublishing } from '@/hooks/useContributionPublishing';
+import { validateContributionData } from '@/services/business/ContributionValidationService';
 import { filterVisibleTags } from '@/utils/tagFilter';
 import type { ContributionData } from '@/types/contributions';
 
@@ -168,6 +169,22 @@ export const ContributionForm = ({
       tags: formData.tags,
       attachments: [], // Attachments will be populated from files during upload
     };
+    
+    // Client-side validation for instant feedback
+    const validation = validateContributionData(contributionData);
+    if (!validation.valid) {
+      setErrors(validation.errors);
+      // Scroll to first error
+      const firstErrorField = Object.keys(validation.errors)[0];
+      document.getElementById(firstErrorField)?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+      return;
+    }
+    
+    // Clear any previous errors
+    setErrors({});
     
     // Extract File objects from attachments
     const attachmentFiles = attachments

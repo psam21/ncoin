@@ -270,40 +270,11 @@ export const isContributionEvent = (event: NostrEvent): event is ContributionNos
 };
 
 /**
- * Validate contribution data
+ * Validation moved to ContributionValidationService
+ * Re-export here for backward compatibility
+ * @deprecated Import from ContributionValidationService instead
  */
-export const validateContributionData = (data: Partial<ContributionData>): ContributionValidationResult => {
-  const errors: ContributionValidationResult['errors'] = {};
-
-  if (!data.title || data.title.trim().length < 3) {
-    errors.title = 'Title must be at least 3 characters';
-  }
-
-  if (!data.category) {
-    errors.category = 'Category is required';
-  }
-
-  if (!data.contributionType) {
-    errors.contributionType = 'Contribution type is required';
-  }
-
-  if (!data.description || data.description.trim().length < 10) {
-    errors.description = 'Description must be at least 10 characters';
-  }
-
-  if (!data.region) {
-    errors.region = 'Region is required';
-  }
-
-  if (!data.country) {
-    errors.country = 'Country is required';
-  }
-
-  return {
-    valid: Object.keys(errors).length === 0,
-    errors,
-  };
-};
+export { validateContributionData } from '@/services/business/ContributionValidationService';
 
 /**
  * Custom fields for content detail display

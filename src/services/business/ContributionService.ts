@@ -1,10 +1,11 @@
 import { logger } from '@/services/core/LoggingService';
 import type { ContributionData, ContributionPublishingProgress } from '@/types/contributions';
-import { validateContributionData } from '@/types/contributions';
+import { validateContributionData } from './ContributionValidationService';
 import { nostrEventService } from '../nostr/NostrEventService';
 import type { NostrSigner } from '@/types/nostr';
 import { uploadSequentialWithConsent } from '@/services/generic/GenericBlossomService';
 import { fetchPublicContributions as fetchPublicContributionsFromRelay, type ContributionEvent } from '@/services/generic/GenericContributionService';
+import { getRelativeTime } from '@/utils/dateUtils';
 
 export interface CreateContributionResult {
   success: boolean;
@@ -181,28 +182,11 @@ export async function createContribution(
         type: att.type,
         hash: att.hash,
         name: att.name,
+        size: att.size,
+        mimeType: att.mimeType,
       }));
 
-    // Step 4: Map nomad contribution data to heritage event format
-    // This allows us to reuse NostrEventService.createHeritageEvent()
-    const heritageData = {
-      title: contributionData.title,
-      category: contributionData.category,
-      heritageType: contributionData.contributionType, // Map contributionType → heritageType
-      timePeriod: 'contemporary', // Fixed value for nomad contributions
-      sourceType: 'first-hand', // Fixed value (all nomad contributions are first-hand)
-      region: contributionData.region,
-      country: contributionData.country,
-      contributorRole: 'contributor', // Fixed value
-      description: contributionData.description,
-      language: contributionData.language || 'en',
-      community: contributionData.location || '', // Map location → community
-      knowledgeKeeperContact: '', // Not used for nomad contributions
-      tags: contributionData.tags,
-      attachments: mappedAttachments,
-    };
-
-    // Step 5: Create Nostr event using event service
+    // Step 4: Create Nostr event using contribution-specific method
     onProgress?.({
       step: 'publishing',
       progress: 70,
@@ -217,13 +201,24 @@ export async function createContribution(
       dTag: existingDTag,
     });
 
-    const event = await nostrEventService.createHeritageEvent(
-      heritageData,
+    const event = await nostrEventService.createContributionEvent(
+      {
+        title: contributionData.title,
+        description: contributionData.description,
+        category: contributionData.category,
+        contributionType: contributionData.contributionType,
+        language: contributionData.language || 'en',
+        location: contributionData.location || '',
+        region: contributionData.region,
+        country: contributionData.country,
+        tags: contributionData.tags,
+        attachments: mappedAttachments,
+      },
       signer,
       existingDTag
     );
 
-    // Step 6: Publish to relays
+    // Step 5: Publish to relays
     onProgress?.({
       step: 'publishing',
       progress: 85,
@@ -323,29 +318,6 @@ export interface ContributionExploreItem {
   publishedAt: number;
   relativeTime: string;
   pubkey: string; // Author's pubkey for contact functionality
-}
-
-/**
- * Calculate relative time string from timestamp
- */
-function getRelativeTime(timestamp: number): string {
-  const now = Date.now() / 1000;
-  const diff = now - timestamp;
-  
-  const minute = 60;
-  const hour = minute * 60;
-  const day = hour * 24;
-  const week = day * 7;
-  const month = day * 30;
-  const year = day * 365;
-  
-  if (diff < minute) return 'just now';
-  if (diff < hour) return `${Math.floor(diff / minute)} minutes ago`;
-  if (diff < day) return `${Math.floor(diff / hour)} hours ago`;
-  if (diff < week) return `${Math.floor(diff / day)} days ago`;
-  if (diff < month) return `${Math.floor(diff / week)} weeks ago`;
-  if (diff < year) return `${Math.floor(diff / month)} months ago`;
-  return `${Math.floor(diff / year)} years ago`;
 }
 
 /**
