@@ -16,9 +16,9 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 | Travel | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
 | Gigs | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
 | Work | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
-| Explore | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
+| Explore | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | Production |
 | Meetups | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
-| Contribute | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
+| Contribute | ✅ Event creation | ❌ | ✅ Signing | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | Production |
 | User Event Log | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
 
 ## NIP Descriptions
@@ -39,11 +39,12 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 ### NIPs Available but Not Yet Integrated
 
 - **NIP-09**: Event deletion - Kind 5 deletion events (implemented in GenericEventService.createDeletionEvent())
-- **NIP-23**: Long-form content - articles, blog posts (implemented in GenericEventService.createNIP23Event())
-- **NIP-33**: Parameterized replaceable events - unique dTag, update-in-place (implemented in GenericEventService)
+- **NIP-23**: Long-form content - articles, blog posts (✅ IMPLEMENTED in Contribute/Explore features)
+- **NIP-33**: Parameterized replaceable events - unique dTag, update-in-place (✅ IMPLEMENTED in Contribute/Explore features)
 - **NostrEventService methods**:
   - `createProductEvent()` - Ready for Shop integration
-  - `createHeritageEvent()` - Ready for cultural content
+  - `createContributionEvent()` - ✅ IN USE for Contribute feature
+  - `createHeritageEvent()` - Available for heritage content
   - Multi-attachment support with imeta tags
 - **Kind 10063**: User server list - Blossom CDN discovery (implemented in GenericEventService.createUserServerListEvent())
 
@@ -61,7 +62,7 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 
 - **Kind 5**: Event deletion - NIP-09 deletion events (implemented in GenericEventService)
 - **Kind 10063**: User server list - Blossom CDN server discovery (implemented in GenericEventService)
-- **Kind 30023**: Long-form content - parameterized replaceable articles (implemented in GenericEventService)
+- **Kind 30023**: Long-form content - ✅ IN USE for contributions (Contribute/Explore features)
 
 ## Feature Implementation Details
 
@@ -130,7 +131,7 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 - No backend implementation
 - Placeholder inputs for invoice/address
 
-### Shop, Travel, Gigs, Work, Explore, Meetups, Contribute
+### Shop, Travel, Gigs, Work, Meetups
 
 - **Status**: Mock data - no Nostr integration
 - Static data arrays defined with `useState`
@@ -138,6 +139,27 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 - No relay queries or event publishing
 - UI mockups for future implementation
 - **Service layer ready**: NostrEventService has `createProductEvent()` and `createHeritageEvent()` methods available
+
+### Explore & Contribute
+
+- **Status**: Production - nomad contributions platform
+- Publishes Kind 30023 parameterized replaceable events (NIP-23 + NIP-33)
+- Full Nostr integration with relay publishing
+- **Service architecture**:
+  - `ContributionService` - Business logic orchestration
+  - `ContributionValidationService` - Field validation
+  - `ContributionContentService` - Content provider interface
+  - `GenericContributionService` - Relay queries and parsing
+  - `NostrEventService.createContributionEvent()` - Event creation
+- **Media support**: Blossom uploads with Kind 24242 authorization
+- **Tag system**: Uses `nostr-for-nomads-contribution` discovery tag
+- **dTag prefix**: `contribution-{timestamp}-{random}` for stable IDs
+- **Explore page**: Fetches and displays public contributions from relays
+- **Contribute page**: Create/edit contribution workflow with media attachments
+- Supports images, videos, and audio with NIP-94 imeta tags
+- Field-level validation (title, description, category, type, location, etc.)
+- Multi-attachment support with progress tracking
+- Auto-redirect to detail page after successful publish (1 second delay)
 
 ### User Event Log
 
@@ -310,12 +332,12 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 
 ### Planned Feature Integration
 
-- **Shop**: Integrate Kind 30023 for product listings (NIP-33 parameterized replaceable)
+- **Shop**: Integrate Kind 30023 for product listings (NIP-33 parameterized replaceable) - service layer ready with `createProductEvent()`
 - **Gigs/Work**: Integrate Kind 30023 for job postings
 - **Travel**: Integrate Kind 30023 for accommodation/experience listings
-- **Explore**: Query Kind 30023 events for discovery
+- **Explore**: ✅ IMPLEMENTED - Query Kind 30023 events for discovery
 - **Meetups**: Integrate Kind 31923 (calendar events) or Kind 30023
-- **Contribute**: Integrate Kind 30023 for community contributions
+- **Contribute**: ✅ IMPLEMENTED - Kind 30023 for community contributions with full Nostr integration
 
 ### Media Enhancements
 
@@ -341,17 +363,17 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 
 ---
 
-**Last Updated**: November 11, 2025  
+**Last Updated**: November 12, 2025  
 **Codebase Version**: Next.js 15.4.6, React 18  
-**Active NIPs**: 6 implemented (NIP-01, NIP-05, NIP-07, NIP-17, NIP-19, NIP-44 + Blossom)  
-**Active Event Kinds**: 5 kinds (Kind 0, Kind 1, Kind 14, Kind 1059, Kind 24242)
+**Active NIPs**: 7 implemented (NIP-01, NIP-05, NIP-07, NIP-17, NIP-19, NIP-23, NIP-33, NIP-44 + Blossom)  
+**Active Event Kinds**: 6 kinds (Kind 0, Kind 1, Kind 14, Kind 1059, Kind 24242, Kind 30023)
 
-**Production Features**: Sign Up, Sign In, Profile, Messages  
-**UI Mockup Features**: Meetings, Payments, Shop, Travel, Gigs, Work, Explore, Meetups, Contribute
+**Production Features**: Sign Up, Sign In, Profile, Messages, Contribute, Explore  
+**UI Mockup Features**: Meetings, Payments, Shop, Travel, Gigs, Work, Meetups
 
 **Architecture**: Service-Oriented Architecture (SOA) with strict layer separation
 
 - Presentation Layer: Pages, Components, Hooks
-- Business Logic Layer: AuthBusinessService, ProfileBusinessService, MessagingBusinessService
+- Business Logic Layer: AuthBusinessService, ProfileBusinessService, MessagingBusinessService, ContributionService
 - Core Services Layer: KVService, LoggingService, ProfileCacheService, MessageCacheService, EventLoggingService
-- Protocol/Data Layer: GenericEventService, GenericRelayService, GenericBlossomService, EncryptionService, NostrEventService
+- Protocol/Data Layer: GenericEventService, GenericRelayService, GenericBlossomService, GenericContributionService, EncryptionService, NostrEventService
