@@ -2,10 +2,12 @@ import { logger } from '@/services/core/LoggingService';
 import type { ContributionData, ContributionPublishingProgress } from '@/types/contributions';
 import { validateContributionData } from './ContributionValidationService';
 import { nostrEventService } from '../nostr/NostrEventService';
-import type { NostrSigner } from '@/types/nostr';
+import type { NostrSigner, NostrEvent } from '@/types/nostr';
 import { uploadSequentialWithConsent } from '@/services/generic/GenericBlossomService';
 import { fetchPublicContributions as fetchPublicContributionsFromRelay, type ContributionEvent } from '@/services/generic/GenericContributionService';
 import { getRelativeTime } from '@/utils/dateUtils';
+import { queryEvents } from '@/services/generic/GenericRelayService';
+import { createDeletionEvent, signEvent } from '@/services/generic/GenericEventService';
 
 export interface CreateContributionResult {
   success: boolean;
@@ -454,5 +456,309 @@ export async function fetchPublicContributions(
     
     // Return empty array on error (hook will handle error state)
     return [];
+  }
+}
+
+/**
+ * Fetch contributions by author pubkey
+ * Business layer method for querying user's own contributions
+ * 
+ * @param pubkey - Author's public key
+ * @returns Array of contribution events authored by this user
+ */
+export async function fetchContributionsByAuthor(pubkey: string): Promise<ContributionEvent[]> {
+  try {
+    logger.info('Fetching contributions by author', {
+      service: 'ContributionService',
+      method: 'fetchContributionsByAuthor',
+      pubkey: pubkey.substring(0, 8) + '...',
+    });
+
+    // Query relays for contributions by this author
+    // SOA Layer: Using GenericRelayService.queryEvents (not direct relay access)
+    const filters = [
+      {
+        kinds: [30023],
+        authors: [pubkey],
+        '#t': ['nostr-for-nomads-contribution'],
+      }
+    ];
+
+    const queryResult = await queryEvents(filters);
+
+    if (!queryResult.events || queryResult.events.length === 0) {
+      logger.info('No contributions found for author', {
+        service: 'ContributionService',
+        method: 'fetchContributionsByAuthor',
+        pubkey: pubkey.substring(0, 8) + '...',
+      });
+      return [];
+    }
+
+    logger.info('Found contributions for author', {
+      service: 'ContributionService',
+      method: 'fetchContributionsByAuthor',
+      pubkey: pubkey.substring(0, 8) + '...',
+      count: queryResult.events.length,
+    });
+
+    // NIP-33 parameterized replaceable events - relays return latest version automatically
+    // No client-side grouping needed
+    const contributions: ContributionEvent[] = [];
+    
+    for (const event of queryResult.events) {
+      const dTag = event.tags.find(t => t[0] === 'd')?.[1];
+      if (!dTag) continue; // Skip events without dTag
+      
+      const title = event.tags.find(t => t[0] === 'title')?.[1] || '';
+      const summary = event.tags.find(t => t[0] === 'summary')?.[1] || title;
+      const category = event.tags.find(t => t[0] === 'category')?.[1] || '';
+      const contributionType = event.tags.find(t => t[0] === 'contribution-type')?.[1] || '';
+      const location = event.tags.find(t => t[0] === 'location')?.[1] || '';
+      const region = event.tags.find(t => t[0] === 'region')?.[1] || '';
+      const country = event.tags.find(t => t[0] === 'country')?.[1];
+      const tags = event.tags
+        .filter(t => t[0] === 't' && !t[1].startsWith('nostr-for-nomads-'))
+        .map(t => t[1]);
+
+      // Parse media from tags (simple URLs)
+      const images = event.tags.filter(t => t[0] === 'image').map(t => t[1]);
+      const videos = event.tags.filter(t => t[0] === 'video').map(t => t[1]);
+      const audio = event.tags.filter(t => t[0] === 'audio').map(t => t[1]);
+
+      contributions.push({
+        id: event.id,
+        dTag,
+        pubkey: event.pubkey,
+        title,
+        summary,
+        category,
+        contributionType,
+        location,
+        region,
+        country,
+        tags,
+        media: {
+          images,
+          videos,
+          audio,
+        },
+        createdAt: event.created_at,
+        publishedAt: event.created_at,
+      });
+    }
+
+    // Sort by created_at descending (newest first)
+    contributions.sort((a, b) => b.createdAt - a.createdAt);
+
+    logger.info('Contributions by author fetched and parsed', {
+      service: 'ContributionService',
+      method: 'fetchContributionsByAuthor',
+      count: contributions.length,
+    });
+
+    return contributions;
+  } catch (error) {
+    logger.error('Error fetching contributions by author', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'ContributionService',
+      method: 'fetchContributionsByAuthor',
+      pubkey: pubkey.substring(0, 8) + '...',
+    });
+    return [];
+  }
+}
+
+/**
+ * Delete a contribution by publishing NIP-09 deletion event
+ * Business layer method for deleting user's own contribution
+ * 
+ * @param eventId - The event ID to delete
+ * @param signer - Nostr signer for signing the deletion event
+ * @param pubkey - Author's public key (for logging and validation)
+ * @param title - Contribution title (for deletion reason)
+ * @returns Result with success status and relay publishing info
+ */
+export async function deleteContribution(
+  eventId: string,
+  signer: NostrSigner,
+  pubkey: string,
+  title: string
+): Promise<{ success: boolean; publishedRelays?: string[]; failedRelays?: string[]; error?: string }> {
+  try {
+    logger.info('Deleting contribution', {
+      service: 'ContributionService',
+      method: 'deleteContribution',
+      eventId,
+      pubkey: pubkey.substring(0, 8) + '...',
+      title,
+    });
+
+    // SOA Layer: Use GenericEventService.createDeletionEvent (not manual event building)
+    const deletionResult = createDeletionEvent(
+      [eventId],
+      pubkey,
+      {
+        reason: `Deleted contribution: ${title}`,
+      }
+    );
+
+    if (!deletionResult.success || !deletionResult.event) {
+      throw new Error(deletionResult.error || 'Failed to create deletion event');
+    }
+
+    // Sign the deletion event
+    const signResult = await signEvent(deletionResult.event, signer);
+
+    if (!signResult.success || !signResult.signedEvent) {
+      throw new Error(signResult.error || 'Failed to sign deletion event');
+    }
+
+    logger.info('Deletion event created and signed', {
+      service: 'ContributionService',
+      method: 'deleteContribution',
+      deletionEventId: signResult.signedEvent.id,
+      targetEventId: eventId,
+    });
+
+    // Publish deletion event
+    // SOA Layer: Use NostrEventService.publishEvent (not direct relay access)
+    const publishResult = await nostrEventService.publishEvent(
+      signResult.signedEvent as NostrEvent,
+      signer
+    );
+
+    if (!publishResult.success) {
+      logger.error('Failed to publish deletion event', new Error(publishResult.error), {
+        service: 'ContributionService',
+        method: 'deleteContribution',
+        eventId,
+      });
+      return {
+        success: false,
+        error: publishResult.error,
+        publishedRelays: publishResult.publishedRelays,
+        failedRelays: publishResult.failedRelays,
+      };
+    }
+
+    logger.info('Contribution deleted successfully', {
+      service: 'ContributionService',
+      method: 'deleteContribution',
+      eventId,
+      deletionEventId: signResult.signedEvent.id,
+      publishedRelays: publishResult.publishedRelays.length,
+    });
+
+    return {
+      success: true,
+      publishedRelays: publishResult.publishedRelays,
+      failedRelays: publishResult.failedRelays,
+    };
+  } catch (error) {
+    logger.error('Error deleting contribution', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'ContributionService',
+      method: 'deleteContribution',
+      eventId,
+      pubkey: pubkey.substring(0, 8) + '...',
+    });
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error deleting contribution',
+    };
+  }
+}
+
+/**
+ * Fetch a single contribution by dTag
+ * Business layer method for retrieving specific contribution (for edit page)
+ * 
+ * @param dTag - The contribution's dTag identifier
+ * @returns Contribution event or null if not found
+ */
+export async function fetchContributionById(dTag: string): Promise<ContributionEvent | null> {
+  try {
+    logger.info('Fetching contribution by dTag', {
+      service: 'ContributionService',
+      method: 'fetchContributionById',
+      dTag,
+    });
+
+    // Query relays for the contribution event
+    // SOA Layer: Using GenericRelayService.queryEvents (not direct relay access)
+    const filters = [
+      {
+        kinds: [30023],
+        '#d': [dTag],
+        '#t': ['nostr-for-nomads-contribution'],
+      }
+    ];
+
+    const queryResult = await queryEvents(filters);
+
+    if (!queryResult.success || !queryResult.events || queryResult.events.length === 0) {
+      logger.warn('Contribution not found', {
+        service: 'ContributionService',
+        method: 'fetchContributionById',
+        dTag,
+      });
+      return null;
+    }
+
+    // Get the most recent event (highest created_at) for NIP-33 parameterized replaceable events
+    const latestEvent = queryResult.events.sort((a, b) => b.created_at - a.created_at)[0];
+
+    // Extract data from event tags
+    const title = latestEvent.tags.find(t => t[0] === 'title')?.[1] || '';
+    const summary = latestEvent.tags.find(t => t[0] === 'summary')?.[1] || title;
+    const category = latestEvent.tags.find(t => t[0] === 'category')?.[1] || '';
+    const contributionType = latestEvent.tags.find(t => t[0] === 'contribution-type')?.[1] || '';
+    const location = latestEvent.tags.find(t => t[0] === 'location')?.[1] || '';
+    const region = latestEvent.tags.find(t => t[0] === 'region')?.[1] || '';
+    const country = latestEvent.tags.find(t => t[0] === 'country')?.[1];
+    const tags = latestEvent.tags
+      .filter(t => t[0] === 't' && !t[1].startsWith('nostr-for-nomads-'))
+      .map(t => t[1]);
+
+    // Parse media from tags
+    const images = latestEvent.tags.filter(t => t[0] === 'image').map(t => t[1]);
+    const videos = latestEvent.tags.filter(t => t[0] === 'video').map(t => t[1]);
+    const audio = latestEvent.tags.filter(t => t[0] === 'audio').map(t => t[1]);
+
+    const contribution: ContributionEvent = {
+      id: latestEvent.id,
+      dTag,
+      pubkey: latestEvent.pubkey,
+      title,
+      summary,
+      category,
+      contributionType,
+      location,
+      region,
+      country,
+      tags,
+      media: {
+        images,
+        videos,
+        audio,
+      },
+      createdAt: latestEvent.created_at,
+      publishedAt: latestEvent.created_at,
+    };
+
+    logger.info('Contribution fetched successfully', {
+      service: 'ContributionService',
+      method: 'fetchContributionById',
+      dTag,
+      title: contribution.title,
+    });
+
+    return contribution;
+  } catch (error) {
+    logger.error('Error fetching contribution by dTag', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'ContributionService',
+      method: 'fetchContributionById',
+      dTag,
+    });
+    return null;
   }
 }
