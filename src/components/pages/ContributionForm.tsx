@@ -14,6 +14,7 @@ import { UserConsentDialog } from '@/components/generic/UserConsentDialog';
 import { GenericAttachment } from '@/types/attachments';
 import { X, Loader2 } from 'lucide-react';
 import { useContributionPublishing } from '@/hooks/useContributionPublishing';
+import { useContributionEditing } from '@/hooks/useContributionEditing';
 import { validateContributionData } from '@/services/business/ContributionValidationService';
 import { filterVisibleTags } from '@/utils/tagFilter';
 import type { ContributionData } from '@/types/contributions';
@@ -45,6 +46,7 @@ interface ContributionFormProps {
   defaultValues?: Partial<ContributionFormData & { 
     attachments: GenericAttachment[];
     dTag?: string;
+    contributionId?: string; // For editing with selective operations
   }>;
   isEditMode?: boolean;
 }
@@ -57,9 +59,11 @@ export const ContributionForm = ({
 }: ContributionFormProps) => {
   const router = useRouter();
   
-  // Use contribution publishing hook
+  // Initialize hooks - use editing hook for edit mode, publishing hook for create mode
   const publishingHook = useContributionPublishing();
+  const editingHook = useContributionEditing();
   
+  // Choose the appropriate hook based on mode
   const {
     isPublishing,
     uploadProgress,
@@ -68,7 +72,46 @@ export const ContributionForm = ({
     result,
     publishContribution,
     consentDialog,
-  } = publishingHook;
+  } = isEditMode && defaultValues?.contributionId ? {
+    isPublishing: editingHook.isUpdating,
+    uploadProgress: editingHook.updateProgress,
+    currentStep: editingHook.updateProgress?.step || 'idle',
+    error: editingHook.updateError,
+    result: null, // Editing doesn't use result the same way
+    publishContribution: async (data: ContributionData, attachmentFiles: File[]) => {
+      // For editing, track selective operations based on current form attachments
+      const existingAttachments = defaultValues?.attachments || [];
+      const currentAttachmentIds = attachments.map(a => a.id); // Use component state attachments
+      
+      // Track removed and kept attachments
+      const removedAttachments = existingAttachments
+        .filter(a => !currentAttachmentIds.includes(a.id))
+        .map(a => a.id);
+      const keptAttachments = existingAttachments
+        .filter(a => currentAttachmentIds.includes(a.id))
+        .map(a => a.id);
+      
+      const result = await editingHook.updateContributionData(
+        defaultValues.contributionId!,
+        {
+          title: data.title,
+          description: data.description,
+          category: data.category,
+          contributionType: data.contributionType,
+          language: data.language,
+          location: data.location,
+          region: data.region,
+          country: data.country,
+          tags: data.tags,
+        },
+        attachmentFiles, // Use the passed attachmentFiles parameter (new files to upload)
+        { removedAttachments, keptAttachments }
+      );
+      
+      return result;
+    },
+    consentDialog: publishingHook.consentDialog, // Use publishing hook's consent dialog
+  } : publishingHook;
 
   const [formData, setFormData] = useState<ContributionFormData>({
     title: defaultValues?.title || '',

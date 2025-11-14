@@ -165,22 +165,9 @@ export async function createContribution(
       });
     }
 
-    // Step 3: Merge uploaded attachments with existing attachments in contributionData
-    // Existing attachments (from edit mode) already have URLs
-    const existingAttachments = contributionData.attachments
-      .filter(att => att.url) // Only include attachments that have URLs (existing media)
-      .map(att => ({
-        id: att.id,
-        url: att.url!,
-        type: att.type as 'image' | 'video' | 'audio',
-        hash: att.hash,
-        name: att.name,
-        size: att.size || 0,
-        mimeType: att.mimeType,
-      }));
-
-    // Newly uploaded attachments
-    const newlyUploadedAttachments = uploadedAttachments.map(att => ({
+    // Step 3: Use uploaded attachments only (for create mode)
+    // Note: For edit mode, use updateContributionWithAttachments instead
+    const allAttachments = uploadedAttachments.map(att => ({
       id: att.id,
       url: att.url,
       type: att.type,
@@ -189,17 +176,6 @@ export async function createContribution(
       size: att.size,
       mimeType: att.mimeType,
     }));
-
-    // Combine existing and new attachments
-    const allAttachments = [...existingAttachments, ...newlyUploadedAttachments];
-
-    logger.info('Merged attachments for contribution', {
-      service: 'ContributionService',
-      method: 'createContribution',
-      existingCount: existingAttachments.length,
-      newCount: newlyUploadedAttachments.length,
-      totalCount: allAttachments.length,
-    });
 
     // Map GenericAttachment to simplified format for event service
     const mappedAttachments = allAttachments

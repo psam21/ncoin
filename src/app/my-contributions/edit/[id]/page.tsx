@@ -143,6 +143,7 @@ export default function ContributionEditPage() {
       tags: contribution.tags,
       attachments,
       dTag: contribution.dTag,
+      contributionId: contribution.dTag, // Add for selective operations in edit mode
     };
   }, [contribution]);
 
