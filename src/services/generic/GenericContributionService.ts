@@ -258,15 +258,34 @@ export async function fetchPublicContributions(
       relayCount: queryResult.relayCount,
     });
 
-    // Parse events
-    const contributionEvents: ContributionEvent[] = [];
-    const seenDTags = new Set<string>(); // Deduplication by dTag
-
+    // NIP-33 parameterized replaceable events - deduplicate by dTag, keeping newest
+    // Some relays may return multiple versions temporarily, so we dedupe client-side
+    const eventsByDTag = new Map<string, NostrEvent>();
+    
     for (const event of queryResult.events) {
-      const parsed = parseContributionEvent(event);
+      const dTag = event.tags.find(t => t[0] === 'd')?.[1];
+      if (!dTag) continue; // Skip events without dTag
       
-      if (parsed && !seenDTags.has(parsed.dTag)) {
-        seenDTags.add(parsed.dTag);
+      // Keep the event with the latest created_at timestamp for each dTag
+      const existing = eventsByDTag.get(dTag);
+      if (!existing || event.created_at > existing.created_at) {
+        eventsByDTag.set(dTag, event);
+      }
+    }
+
+    logger.info('Deduplicated contributions by dTag', {
+      service: 'GenericContributionService',
+      method: 'fetchPublicContributions',
+      originalCount: queryResult.events.length,
+      deduplicatedCount: eventsByDTag.size,
+    });
+
+    // Parse deduplicated events
+    const contributionEvents: ContributionEvent[] = [];
+
+    for (const event of eventsByDTag.values()) {
+      const parsed = parseContributionEvent(event);
+      if (parsed) {
         contributionEvents.push(parsed);
       }
     }

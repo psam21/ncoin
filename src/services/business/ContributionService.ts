@@ -503,13 +503,33 @@ export async function fetchContributionsByAuthor(pubkey: string): Promise<Contri
       count: queryResult.events.length,
     });
 
-    // NIP-33 parameterized replaceable events - relays return latest version automatically
-    // No client-side grouping needed
-    const contributions: ContributionEvent[] = [];
+    // NIP-33 parameterized replaceable events - deduplicate by dTag, keeping newest
+    // Some relays may return multiple versions temporarily, so we dedupe client-side
+    const eventsByDTag = new Map<string, NostrEvent>();
     
     for (const event of queryResult.events) {
       const dTag = event.tags.find(t => t[0] === 'd')?.[1];
       if (!dTag) continue; // Skip events without dTag
+      
+      // Keep the event with the latest created_at timestamp for each dTag
+      const existing = eventsByDTag.get(dTag);
+      if (!existing || event.created_at > existing.created_at) {
+        eventsByDTag.set(dTag, event);
+      }
+    }
+
+    logger.info('Deduplicated contributions by dTag', {
+      service: 'ContributionService',
+      method: 'fetchContributionsByAuthor',
+      originalCount: queryResult.events.length,
+      deduplicatedCount: eventsByDTag.size,
+    });
+
+    const contributions: ContributionEvent[] = [];
+    
+    for (const event of eventsByDTag.values()) {
+      const dTag = event.tags.find(t => t[0] === 'd')?.[1];
+      if (!dTag) continue; // Should never happen due to filter above
       
       const title = event.tags.find(t => t[0] === 'title')?.[1] || '';
       const summary = event.tags.find(t => t[0] === 'summary')?.[1] || title;
