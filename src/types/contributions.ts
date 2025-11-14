@@ -167,6 +167,26 @@ export interface Contribution {
 }
 
 /**
+ * Contribution card data for my-contributions dashboard display
+ * Lightweight interface for grid/list view
+ */
+export interface ContributionCardData {
+  id: string;
+  dTag: string;
+  title: string;
+  description: string;
+  contributionType: string;
+  category: string;
+  location: string;
+  region: string;
+  country?: string;
+  imageUrl?: string;
+  tags: string[];
+  pubkey: string;
+  createdAt: number;
+}
+
+/**
  * Tag mapping helpers
  */
 export const CONTRIBUTION_TAG_KEYS = {
