@@ -80,6 +80,20 @@ export function extractMedia(tags: string[][]): {
   
   console.log('[GenericContributionService] extractMedia - total tags:', tags.length);
   
+  // First pass: collect all URLs from imeta tags to avoid duplicates
+  const imetaUrls = new Set<string>();
+  tags.forEach(tag => {
+    if (tag[0] === 'imeta') {
+      const parsed = parseImetaTag(tag);
+      if (parsed?.url) {
+        imetaUrls.add(parsed.url);
+      }
+    }
+  });
+  
+  console.log('[GenericContributionService] Found imeta URLs:', imetaUrls.size);
+  
+  // Second pass: process tags, skipping simple tags that have imeta equivalents
   tags.forEach(tag => {
     // Check for imeta tags (full metadata)
     if (tag[0] === 'imeta') {
@@ -101,15 +115,15 @@ export function extractMedia(tags: string[][]): {
         console.log('[GenericContributionService] Failed to parse imeta tag');
       }
     }
-    // Fallback to simple tags
-    else if (tag[0] === 'image' && tag[1]) {
-      console.log('[GenericContributionService] Found simple image tag:', tag[1]);
+    // Fallback to simple tags ONLY if no imeta exists for this URL
+    else if (tag[0] === 'image' && tag[1] && !imetaUrls.has(tag[1])) {
+      console.log('[GenericContributionService] Found simple image tag (no imeta):', tag[1]);
       images.push({ url: tag[1] });
-    } else if (tag[0] === 'video' && tag[1]) {
-      console.log('[GenericContributionService] Found simple video tag:', tag[1]);
+    } else if (tag[0] === 'video' && tag[1] && !imetaUrls.has(tag[1])) {
+      console.log('[GenericContributionService] Found simple video tag (no imeta):', tag[1]);
       videos.push({ url: tag[1] });
-    } else if (tag[0] === 'audio' && tag[1]) {
-      console.log('[GenericContributionService] Found simple audio tag:', tag[1]);
+    } else if (tag[0] === 'audio' && tag[1] && !imetaUrls.has(tag[1])) {
+      console.log('[GenericContributionService] Found simple audio tag (no imeta):', tag[1]);
       audio.push({ url: tag[1] });
     }
   });
