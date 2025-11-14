@@ -41,7 +41,7 @@ export interface ContributionNostrEvent extends NostrEvent {
     ['t', 'nostr-for-nomads-contribution'], // System tag (hidden)
     ['title', string],
     ['category', string],
-    ['heritage-type', string], // Maps to contributionType
+    ['contribution-type', string], // Maps to contributionType
     ['region', string],
     ['country', string],
     ...Array<
@@ -194,7 +194,7 @@ export const CONTRIBUTION_TAG_KEYS = {
   SYSTEM_TAG: 't', // For 'nostr-for-nomads-contribution'
   TITLE: 'title',
   CATEGORY: 'category',
-  CONTRIBUTION_TYPE: 'heritage-type', // Reuses heritage-type tag for compatibility
+  CONTRIBUTION_TYPE: 'contribution-type',
   REGION: 'region',
   COUNTRY: 'country',
   LANGUAGE: 'language',
@@ -228,7 +228,7 @@ export const parseContributionEvent = (event: NostrEvent): Contribution | null =
     const dTag = getTag('d');
     const title = getTag('title');
     const category = getTag('category');
-    const contributionType = getTag('heritage-type'); // Maps from heritage-type
+    const contributionType = getTag('contribution-type');
     const region = getTag('region');
     const country = getTag('country');
 

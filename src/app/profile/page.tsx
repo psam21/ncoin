@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useNostrSigner } from '@/hooks/useNostrSigner';
@@ -600,6 +601,39 @@ export default function ProfilePage() {
                         )}
                       </div>
                     )}
+                  </div>
+
+                  {/* Nostr for Nomads Profile Stats */}
+                  <div className="mt-8 pt-6 border-t border-orange-200">
+                    <h3 className="text-lg font-serif font-bold text-orange-800 mb-4">Nostr for Nomads Profile</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Contributions */}
+                      <Link 
+                        href="/my-contributions"
+                        className="block p-4 bg-gradient-to-br from-orange-50 to-purple-50 rounded-lg border border-orange-200 hover:border-orange-300 hover:shadow-md transition-all group"
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-orange-700">Contributions</span>
+                          <svg className="w-5 h-5 text-orange-600 group-hover:text-orange-700 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                        </div>
+                        <p className="text-3xl font-bold text-orange-800">0</p>
+                        <p className="text-xs text-orange-600 mt-1">Nomad experiences shared</p>
+                      </Link>
+
+                      {/* Explore - Coming Soon */}
+                      <div className="block p-4 bg-gradient-to-br from-purple-50 to-orange-50 rounded-lg border border-purple-200 opacity-60">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium text-purple-700">Activity</span>
+                          <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                          </svg>
+                        </div>
+                        <p className="text-3xl font-bold text-purple-800">-</p>
+                        <p className="text-xs text-purple-600 mt-1">Coming soon</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
