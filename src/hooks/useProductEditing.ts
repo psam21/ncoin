@@ -1,104 +1,54 @@
 'use client';
 
-import { useCallback } from 'react';
-import { useNostrSigner } from './useNostrSigner';
-import { useMyShopStore } from '@/stores/useMyShopStore';
-import { createProduct } from '@/services/business/ShopService';
-import type { ProductData, ProductPublishingProgress } from '@/types/shop';
-import { logger } from '@/services/core/LoggingService';
+import { useContentEditing } from './useContentEditing';
+import type { SimpleUpdateFunction } from './useContentEditing';
+import { updateProductWithAttachments } from '@/services/business/ShopService';
+import type { ProductData, UpdateProductResult, ProductPublishingProgress } from '@/types/shop';
 
 /**
- * Hook for editing products
- * Integrates with useMyShopStore for state management
- * Handles product updates with progress tracking
+ * Hook for editing existing products
+ * Uses generic useContentEditing wrapper for consistent edit flows
+ * 
+ * This hook provides:
+ * - Decoupled state management (not tied to useMyShopStore)
+ * - Support for selective attachment operations (keep/remove)
+ * - Progress tracking during updates
+ * - Dedicated updateProductWithAttachments() function call
+ * 
+ * @returns Object with updateContent function and state
  */
 export function useProductEditing() {
-  const { getSigner } = useNostrSigner();
-  
-  const {
-    editingProduct,
-    isEditing,
-    isUpdating,
-    updateProgress,
-    updateError,
-    startEditing,
-    cancelEditing,
-    setUpdating,
-    setUpdateProgress,
-    setUpdateError,
-  } = useMyShopStore();
+  // Define update function that matches SimpleUpdateFunction signature
+  const updateFn: SimpleUpdateFunction<ProductData, UpdateProductResult, ProductPublishingProgress> = async (
+    contentId,
+    updatedData,
+    attachmentFiles,
+    signer,
+    onProgress,
+    selectiveOps
+  ) => {
+    // Transform selectiveOps from generic format to Shop-specific format
+    const shopSelectiveOps = selectiveOps ? {
+      keep: selectiveOps.keptAttachments,
+      remove: selectiveOps.removedAttachments,
+    } : undefined;
 
-  /**
-   * Update a product (reuses createProduct with existing dTag)
-   */
-  const updateProduct = useCallback(
-    async (data: ProductData, files: File[]) => {
-      if (!editingProduct) {
-        throw new Error('No product is being edited');
-      }
-
-      try {
-        logger.info('Updating product', {
-          service: 'useProductEditing',
-          method: 'updateProduct',
-          productId: editingProduct.id,
-          dTag: editingProduct.dTag,
-        });
-
-        setUpdating(true);
-        setUpdateError(null);
-        setUpdateProgress(null);
-
-        const signer = await getSigner();
-        if (!signer) {
-          throw new Error('No signer available');
-        }
-
-        const result = await createProduct(
-          data,
-          files,
-          signer,
-          editingProduct.dTag, // Use existing dTag for update
-          (progress: ProductPublishingProgress) => {
-            setUpdateProgress(progress);
-          }
-        );
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to update product');
-        }
-
-        logger.info('Product updated successfully', {
-          service: 'useProductEditing',
-          method: 'updateProduct',
-          eventId: result.eventId,
-        });
-
-        // Clear editing state on success
-        cancelEditing();
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to update product';
-        logger.error('Error updating product', error as Error, {
-          service: 'useProductEditing',
-          method: 'updateProduct',
-        });
-        setUpdateError(errorMessage);
-        throw error;
-      } finally {
-        setUpdating(false);
-      }
-    },
-    [editingProduct, getSigner, setUpdating, setUpdateError, setUpdateProgress, cancelEditing]
-  );
-
-  return {
-    editingProduct,
-    isEditing,
-    isUpdating,
-    updateProgress,
-    updateError,
-    startEditing,
-    cancelEditing,
-    updateProduct,
+    // Call the dedicated update function with selective operations support
+    return await updateProductWithAttachments(
+      contentId,
+      updatedData as ProductData,
+      attachmentFiles,
+      signer,
+      shopSelectiveOps,
+      onProgress
+    );
   };
+
+  // Use generic content editing hook (requiresPubkey = false for Shop)
+  return useContentEditing<ProductData, UpdateProductResult, ProductPublishingProgress>(
+    'useProductEditing',
+    updateFn,
+    false // Shop doesn't need pubkey parameter in update function
+  );
 }
+

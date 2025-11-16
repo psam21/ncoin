@@ -78,9 +78,9 @@ export const ProductForm = ({
     error: editingHook.updateError,
     result: null, // Editing doesn't use result the same way
     publishProduct: async (data: ProductData, attachmentFiles: File[]) => {
-      // For editing, just call updateProduct with data and files
-      // Note: useProductEditing.updateProduct reuses createProduct with existing dTag
-      await editingHook.updateProduct(
+      // For editing, call updateContent with contentId and data
+      const result = await editingHook.updateContent(
+        defaultValues.productId!, // contentId (dTag)
         {
           title: data.title,
           description: data.description,
@@ -94,11 +94,11 @@ export const ProductForm = ({
           attachments: [], // Attachments populated from files
         },
         attachmentFiles
+        // Note: selectiveOps not passed here - future enhancement for attachment manager
       );
       
-      // Return a success result for form handling
-      // Editing doesn't redirect, so no dTag needed
-      return { success: true, eventId: defaultValues.productId! };
+      // Return the result (success status and eventId)
+      return { success: result.success, eventId: result.eventId || defaultValues.productId! };
     },
     consentDialog: publishingHook.consentDialog, // Use publishing hook's consent dialog
   } : publishingHook;
