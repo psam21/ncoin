@@ -201,11 +201,13 @@ function parseProductEvent(event: NostrEvent): ProductEvent | null {
  * 
  * @param limit - Maximum number of products to fetch
  * @param until - Optional timestamp for pagination
+ * @param onProgress - Optional callback for relay query progress
  * @returns Array of parsed product events
  */
 export async function fetchPublicProducts(
   limit = 20,
-  until?: number
+  until?: number,
+  onProgress?: (progress: { step: string; progress: number; message: string }) => void
 ): Promise<ProductEvent[]> {
   try {
     logger.info('Fetching public products from relays', {
@@ -225,7 +227,7 @@ export async function fetchPublicProducts(
       filter.until = until;
     }
 
-    const queryResult = await queryEvents([filter]);
+    const queryResult = await queryEvents([filter], onProgress);
 
     if (!queryResult.success || !queryResult.events || queryResult.events.length === 0) {
       logger.info('No products found', {

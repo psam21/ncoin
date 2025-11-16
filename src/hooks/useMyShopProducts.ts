@@ -1,8 +1,8 @@
 'use client';
 
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { logger } from '@/services/core/LoggingService';
-import { fetchPublicProducts } from '@/services/business/ShopService';
+import { fetchPublicProducts, type RelayProgress } from '@/services/business/ShopService';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useMyShopStore } from '@/stores/useMyShopStore';
 
@@ -15,6 +15,7 @@ import { useMyShopStore } from '@/stores/useMyShopStore';
 export function useMyShopProducts() {
   const { user, isAuthenticated } = useAuthStore();
   const pubkey = user?.pubkey;
+  const [relayProgress, setRelayProgress] = useState<RelayProgress | null>(null);
 
   const {
     myProducts,
@@ -49,9 +50,17 @@ export function useMyShopProducts() {
 
       setLoadingMyProducts(true);
       setMyProductsError(null);
+      setRelayProgress(null);
 
-      // Fetch ALL products from relays
-      const allProducts = await fetchPublicProducts(100); // Higher limit for user's products
+      // Fetch ALL products from relays with progress tracking
+      const allProducts = await fetchPublicProducts(100, undefined, (progress: RelayProgress) => {
+        setRelayProgress(progress);
+        logger.debug('Relay query progress (my products)', {
+          service: 'useMyShopProducts',
+          method: 'loadMyProducts',
+          ...progress,
+        });
+      }); // Higher limit for user's products
       
       // Filter by current user's pubkey (client-side)
       const userProducts = allProducts.filter(p => p.pubkey === pubkey);
@@ -93,5 +102,6 @@ export function useMyShopProducts() {
     isLoading: isLoadingMyProducts,
     error: myProductsError,
     loadMyProducts, // Manual refresh
+    relayProgress, // Expose relay connection progress
   };
 }

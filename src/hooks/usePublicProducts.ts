@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/services/core/LoggingService';
-import { fetchPublicProducts } from '@/services/business/ShopService';
+import { fetchPublicProducts, type RelayProgress } from '@/services/business/ShopService';
 import { useShopStore } from '@/stores/useShopStore';
 import { AppError } from '@/errors/AppError';
 import { ErrorCode, HttpStatus, ErrorCategory, ErrorSeverity } from '@/errors/ErrorTypes';
@@ -24,6 +24,7 @@ export function usePublicProducts(limit = 20) {
 
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [relayProgress, setRelayProgress] = useState<RelayProgress | null>(null);
 
   /**
    * Load initial products
@@ -38,8 +39,16 @@ export function usePublicProducts(limit = 20) {
 
       setLoadingProducts(true);
       setProductsError(null);
+      setRelayProgress(null);
 
-      const items = await fetchPublicProducts(limit);
+      const items = await fetchPublicProducts(limit, undefined, (progress: RelayProgress) => {
+        setRelayProgress(progress);
+        logger.debug('Relay query progress', {
+          service: 'usePublicProducts',
+          method: 'loadInitial',
+          ...progress,
+        });
+      });
       
       setProducts(items);
       setHasMore(items.length === limit);
@@ -88,9 +97,17 @@ export function usePublicProducts(limit = 20) {
       });
 
       setIsLoadingMore(true);
+      setRelayProgress(null);
 
       const lastTimestamp = products[products.length - 1].createdAt;
-      const newItems = await fetchPublicProducts(limit, lastTimestamp);
+      const newItems = await fetchPublicProducts(limit, lastTimestamp, (progress: RelayProgress) => {
+        setRelayProgress(progress);
+        logger.debug('Relay query progress (load more)', {
+          service: 'usePublicProducts',
+          method: 'loadMore',
+          ...progress,
+        });
+      });
       
       setProducts([...products, ...newItems]);
       setHasMore(newItems.length === limit);
@@ -146,5 +163,6 @@ export function usePublicProducts(limit = 20) {
     isLoadingMore,
     loadMore,
     refresh,
+    relayProgress, // Expose relay connection progress
   };
 }

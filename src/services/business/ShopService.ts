@@ -8,6 +8,12 @@ import { fetchPublicProducts as fetchPublicProductsFromRelay, extractMedia } fro
 import { queryEvents } from '@/services/generic/GenericRelayService';
 import { createDeletionEvent, signEvent } from '@/services/generic/GenericEventService';
 
+export interface RelayProgress {
+  step: string;
+  progress: number;
+  message: string;
+}
+
 export interface ProductPublishingResult {
   success: boolean;
   eventId?: string;
@@ -808,11 +814,13 @@ export async function updateProductWithAttachments(
  * 
  * @param limit - Maximum number of products to fetch
  * @param until - Optional timestamp for pagination
+ * @param onProgress - Optional callback for relay query progress
  * @returns Array of product explore items ready for display
  */
 export async function fetchPublicProducts(
   limit: number = 20,
-  until?: number
+  until?: number,
+  onProgress?: (progress: RelayProgress) => void
 ): Promise<ProductExploreItem[]> {
   try {
     logger.info('Fetching public products', {
@@ -822,7 +830,7 @@ export async function fetchPublicProducts(
       until,
     });
 
-    const products = await fetchPublicProductsFromRelay(limit, until);
+    const products = await fetchPublicProductsFromRelay(limit, until, onProgress);
     
     logger.info('Public products fetched', {
       service: 'ShopService',
