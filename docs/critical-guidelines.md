@@ -22,6 +22,43 @@
 - Proof required: Event IDs, console logs, UI verification
 - **NO SHORTCUTS. NO ASSUMPTIONS.**
 
+### 1.5 INCOMPLETE VERIFICATION (NEW)
+
+**❌ Checking compliance but not completeness**
+
+**Problem:** Shop feature passed SOA/tag/service compliance checks BUT was missing:
+- ❌ `updateProductWithAttachments()` function (edit flow broken)
+- ❌ `parseImetaTag()`, `createMediaItemsFromImeta()` (no media metadata)
+- ❌ `parseEventContent()`, `cleanLegacyContent()` (no backward compatibility)
+- ❌ Type helper exports (no validation/parsing/constants)
+- ❌ Wrong hook pattern (tight coupling vs generic wrapper)
+
+**What Went Wrong:**
+- Verified patterns (SOA ✅, tags ✅) but didn't verify **functionality**
+- Checked "it follows guidelines" but didn't check "it works completely"
+- Built new feature but didn't compare line-by-line with battle-tested reference
+
+**✅ THE FIX - "VERIFY" MEANS:**
+
+1. **Pattern Compliance** → Check SOA, tags, service reuse ✅
+2. **Functional Completeness** → Compare ALL functions against reference (line count, missing helpers)
+3. **CRUD Completeness** → Create ✅, Read ✅, Update ❌, Delete ✅ (all must work!)
+4. **Reference Comparison** → Read BOTH implementations fully, document EVERY gap
+5. **Missing Code Analysis** → Identify specific functions/helpers missing with line numbers
+
+**MANDATORY: When asked to "verify against reference":**
+
+- [ ] List all reference files (types, services, hooks, components, pages)
+- [ ] List all implementation files
+- [ ] Compare file-by-file with line counts
+- [ ] Read BOTH files completely (not just grep)
+- [ ] Document missing functions with code examples
+- [ ] Test CRUD flows (Create, Read, Update, Delete)
+- [ ] Document gaps with priority (critical/high/medium/low)
+- [ ] Provide fix estimates (effort in hours)
+
+**Red Flag: "Everything is compliant" without testing Update/Edit flow = INCOMPLETE**
+
 ### 2. SOA VIOLATIONS
 
 **❌ Bypassing established service layers**
@@ -313,6 +350,9 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 - 🚩 Skipping service layers
 - 🚩 Not testing before marking complete
 - 🚩 Assuming code works without proof
+- 🚩 Saying "verified" without testing CRUD flows (Create/Read/Update/Delete)
+- 🚩 Comparing patterns but not comparing code line-by-line with reference
+- 🚩 Missing ~300+ lines of code compared to reference but saying "complete"
 
 ---
 
@@ -347,6 +387,15 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 - **Why:** Planned feature abandoned, code not removed
 - **Fix:** Deleting unused code + orphaned utilities
 - **Prevention:** Delete unused code immediately (see §4)
+
+**Failure 5: Shop "Verification" Incomplete (November 2025)**
+
+- **What:** Verified SOA/tags/service reuse BUT didn't verify functional completeness
+- **Why:** Focused on pattern compliance, didn't compare line-by-line with Heritage reference
+- **Missing:** `updateProductWithAttachments()`, imeta parsing, content helpers, type exports, wrong hook pattern
+- **Impact:** Edit flow broken, media metadata incomplete, no backward compatibility
+- **Fix:** Comprehensive file-by-file comparison (23+ files), 314 lines of missing code identified
+- **Prevention:** "Verify" = Pattern compliance + Functional completeness + CRUD testing + Reference comparison
 
 ### Architecture Theater Failure
 
@@ -391,8 +440,20 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 - Uncertain about tags? → Use established pattern
 - Uncertain about testing? → Ask user to verify
 - Uncertain about deletion? → Grep for usage first
+- Uncertain if "complete"? → Compare line-by-line with reference implementation
+- Uncertain if "verified"? → Test ALL CRUD operations (Create/Read/Update/Delete)
 
 **The cardinal rule: When in doubt, ask the user.**
+
+**NEW RULE: Before saying "verified" or "complete":**
+
+1. Have you tested Create? ✅
+2. Have you tested Read? ✅
+3. Have you tested Update/Edit? ⚠️ (THIS IS WHERE SHOP FAILED)
+4. Have you tested Delete? ✅
+5. Have you compared line counts with reference? (e.g., 865 lines vs 551 lines = 314 missing)
+6. Have you listed ALL missing functions with code examples?
+7. Have you tested on production (not localhost)?
 
 ---
 
@@ -560,7 +621,8 @@ NO generic service usage
 
 ---
 
-_Last Updated: October 12, 2025_  
+_Last Updated: November 16, 2025_  
 _Status: ACTIVE - Mandatory compliance for all contributors_  
 _Violations: Will be rejected and require immediate remediation_  
-_Code Quality Audit: Completed 2025-10-12 (17/17 tasks, 100%)_
+_Code Quality Audit: Completed 2025-10-12 (17/17 tasks, 100%)_  
+_Shop Verification Lessons: Added 2025-11-16 (§1.5, Failure 5, Red Flags, WHEN UNCERTAIN)_
