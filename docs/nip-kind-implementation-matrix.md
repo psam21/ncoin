@@ -12,7 +12,7 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 | Messages | ✅ Event queries | ❌ | ✅ Signing DMs | ❌ | ✅ Gift wraps | ❌ | ❌ | ✅ Encryption | ❌ | ❌ | ❌ | ❌ | ✅ Rumor events | ✅ Encrypted DMs | ❌ | ❌ | ❌ | Production |
 | Meetings | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | UI Only |
 | Payments | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | UI Only |
-| Shop | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
+| Shop | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Products | Production |
 | Travel | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
 | Gigs | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
 | Work | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Mock Data |
@@ -363,7 +363,12 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 
 ### Planned Feature Integration
 
-- **Shop**: Integrate Kind 30023 for product listings (NIP-33 parameterized replaceable) - service layer ready with `createProductEvent()`
+- **Shop**: ✅ IMPLEMENTED - Kind 30023 for product listings (NIP-33 parameterized replaceable) with full Nostr integration
+  - Create/edit/delete products via Kind 30023 events
+  - NIP-09 deletion events for removing products
+  - Multi-attachment support via Blossom (images/videos/audio)
+  - Tag pattern: `nostr-for-nomads-shop`
+  - Public browse + authenticated My Shop dashboard
 - **Gigs/Work**: Integrate Kind 30023 for job postings
 - **Travel**: Integrate Kind 30023 for accommodation/experience listings
 - **Explore**: ✅ IMPLEMENTED - Query Kind 30023 events for discovery
@@ -394,10 +399,11 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 
 ---
 
-**Last Updated**: November 15, 2025  
+**Last Updated**: November 16, 2025  
 **Codebase Version**: Next.js 15.4.6, React 18  
 **Active NIPs**: 9 implemented (NIP-01, NIP-05, NIP-07, NIP-09, NIP-17, NIP-19, NIP-23, NIP-33, NIP-44 + Blossom)  
-**Active Event Kinds**: 7 kinds (Kind 0, Kind 1, Kind 5, Kind 14, Kind 1059, Kind 24242, Kind 30023)
+**Active Event Kinds**: 7 kinds (Kind 0, Kind 1, Kind 5, Kind 14, Kind 1059, Kind 24242, Kind 30023)  
+**Production Features**: 7 features (Sign Up, Sign In, Profile, Messages, Explore, Contribute, My Contributions, Shop)
 
 **Production Features**: Sign Up, Sign In, Profile, Messages, Contribute, Explore, My Contributions (CRUD)  
 **UI Mockup Features**: Meetings, Payments, Shop, Travel, Gigs, Work, Meetups
