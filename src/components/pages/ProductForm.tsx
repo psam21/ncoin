@@ -80,7 +80,7 @@ export const ProductForm = ({
     publishProduct: async (data: ProductData, attachmentFiles: File[]) => {
       // For editing, call updateContent with contentId and data
       const result = await editingHook.updateContent(
-        defaultValues.productId!, // contentId (dTag)
+        defaultValues.dTag!, // contentId (dTag for fetching existing product)
         {
           title: data.title,
           description: data.description,
