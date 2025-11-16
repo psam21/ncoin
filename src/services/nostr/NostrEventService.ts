@@ -970,18 +970,35 @@ export class NostrEventService {
     });
     
     for (const attachment of attachments) {
-      // Create imeta tag for each media file with metadata
-      const imetaData = {
-        url: attachment.url,
-        m: attachment.mimeType,
-        x: attachment.hash,
-        size: attachment.size,
-        dim: attachment.metadata?.dimensions ? `${attachment.metadata.dimensions.width}x${attachment.metadata.dimensions.height}` : undefined,
-        alt: attachment.name || 'Media attachment'
-      };
+      // Create imeta tag with space-separated key-value pairs per NIP-94
+      const imetaParts: string[] = ['imeta'];
       
-      // Add imeta tag with JSON metadata
-      tags.push(['imeta', JSON.stringify(imetaData)]);
+      // URL is required
+      imetaParts.push(`url ${attachment.url}`);
+      
+      // Add optional fields
+      if (attachment.mimeType) {
+        imetaParts.push(`m ${attachment.mimeType}`);
+      }
+      
+      if (attachment.hash) {
+        imetaParts.push(`x ${attachment.hash}`);
+      }
+      
+      if (attachment.size) {
+        imetaParts.push(`size ${attachment.size}`);
+      }
+      
+      if (attachment.metadata?.dimensions) {
+        imetaParts.push(`dim ${attachment.metadata.dimensions.width}x${attachment.metadata.dimensions.height}`);
+      }
+      
+      // Add alt text
+      if (attachment.name) {
+        imetaParts.push(`alt ${attachment.name}`);
+      }
+      
+      tags.push(imetaParts);
     }
     
     logger.debug('Created attachment tags', {
