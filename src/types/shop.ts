@@ -145,6 +145,7 @@ export interface ProductPublishingProgress {
     total: number;
     currentFile: string;
   };
+  [key: string]: unknown;
 }
 
 /**
