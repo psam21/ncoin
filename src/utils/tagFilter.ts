@@ -1,7 +1,7 @@
 
 // Technical tags that should not be displayed to users
 const HIDDEN_TAGS = [
-  'culture-bridge-shop',
+  'nostr-for-nomads-shop',
   'nostr-for-nomads-contribution',
   'product-deletion',
 ];

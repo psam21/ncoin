@@ -16,7 +16,7 @@
 - ✅ `createProductEvent(productData, signer, dTag?)` - **EXISTS** at lines 47-170
 - ✅ Creates Kind 30023 parameterized replaceable events
 - ✅ Supports multiple attachments (ProductAttachment[])
-- ✅ Auto-adds `culture-bridge-shop` tag
+- ⚠️ Currently uses `culture-bridge-shop` tag (legacy - needs update to `nostr-for-nomads-shop`)
 - ✅ Product-specific tags: price, currency, category, condition, contact
 - ✅ Uses `GenericEventService.createNIP23Event()` (SOA compliant)
 - ✅ Returns signed NIP23Event
@@ -31,8 +31,8 @@
 - ✅ `publishEvent(event, signer)` - Multi-relay publishing
 
 **Tag System**:
-- ✅ Discovery tag: `culture-bridge-shop` (already in NostrEventService.ts line 121)
-- ✅ Filter ready: `/src/utils/tagFilter.ts` includes `culture-bridge-shop`
+- ⚠️ Discovery tag: `culture-bridge-shop` (legacy - **UPDATE REQUIRED** to `nostr-for-nomads-shop`)
+- ⚠️ Filter ready: `/src/utils/tagFilter.ts` includes `culture-bridge-shop` (**UPDATE REQUIRED**)
 
 ### ❌ Missing Implementation (UI Layer)
 
@@ -224,7 +224,7 @@ Page → Bypassing business logic
 **RED FLAGS - STOP IMMEDIATELY IF:**
 - 🚩 Writing event creation logic in hook (use NostrEventService)
 - 🚩 Querying relays directly from component (use service layer)
-- 🚩 Creating new tag patterns (use `culture-bridge-shop`)
+- 🚩 Creating new tag patterns (use `nostr-for-nomads-shop`)
 - 🚩 Duplicating NostrEventService logic (reuse it)
 - 🚩 Building without testing each phase
 - 🚩 Marking complete without user verification
@@ -296,7 +296,7 @@ export interface ProductNostrEvent extends NostrEvent {
   kind: 30023;
   tags: [
     ['d', string], // Unique identifier (dTag)
-    ['t', 'culture-bridge-shop'], // System tag (hidden)
+    ['t', 'nostr-for-nomads-shop'], // System tag (hidden)
     ['title', string],
     ['price', string],
     ['currency', string],
@@ -511,11 +511,11 @@ export async function fetchPublicProducts(
 ```
 
 **Key Implementation Details:**
-- Use `NostrEventService.createProductEvent()` (line 47-170)
+- Use `NostrEventService.createProductEvent()` (line 47-170) - **UPDATE TAG** to `nostr-for-nomads-shop`
 - Use `GenericEventService.createDeletionEvent()` for NIP-09
 - Use `GenericRelayService.queryEvents()` for queries
 - Use `uploadSequentialWithConsent()` for Blossom uploads
-- Query filter: `{ kinds: [30023], '#t': ['culture-bridge-shop'] }`
+- Query filter: `{ kinds: [30023], '#t': ['nostr-for-nomads-shop'] }`
 - Deduplicate by dTag (NIP-33 parameterized replaceable)
 - Extract media using `GenericContributionService.extractMedia()`
 
@@ -555,7 +555,7 @@ function parseProductEvent(event: NostrEvent): ProductEvent | null
 ```typescript
 const filter = {
   kinds: [30023],
-  '#t': ['culture-bridge-shop'],
+  '#t': ['nostr-for-nomads-shop'],
   limit,
   ...(until && { until })
 };
@@ -879,7 +879,7 @@ export function usePublicProducts(limit = 20) {
 ### 10.3 Nostr Event Verification
 - [ ] Query relays for products by author pubkey
 - [ ] Verify Kind 30023 events returned
-- [ ] Verify `#t` tag includes `culture-bridge-shop`
+- [ ] Verify `#t` tag includes `nostr-for-nomads-shop`
 - [ ] Verify product-specific tags (price, currency, category, condition)
 - [ ] Update creates new event with same dTag (NIP-33)
 - [ ] Delete publishes Kind 5 event with correct reference
@@ -967,7 +967,7 @@ export function usePublicProducts(limit = 20) {
 - `contribution` → `product`
 - `contributionType` → `category`
 - `Contribution` → `Product`
-- `nostr-for-nomads-contribution` → `culture-bridge-shop`
+- `nostr-for-nomads-contribution` → `nostr-for-nomads-shop`
 
 ### New Fields (Product-Specific)
 - `price: number`
@@ -976,7 +976,7 @@ export function usePublicProducts(limit = 20) {
 - `contact: string` (npub or contact method)
 
 ### Tag Changes
-- Discovery tag: `culture-bridge-shop` (already in NostrEventService)
+- Discovery tag: `nostr-for-nomads-shop` (**UPDATE from** `culture-bridge-shop`)
 - Product tags: `price`, `currency`, `category`, `condition`, `contact`
 
 ### Event Structure (Already Implemented)
@@ -985,7 +985,7 @@ export function usePublicProducts(limit = 20) {
 Kind 30023 {
   tags: [
     ['d', 'product-{timestamp}-{random}'],
-    ['t', 'culture-bridge-shop'],
+    ['t', 'nostr-for-nomads-shop'], // UPDATE from culture-bridge-shop
     ['title', title],
     ['price', price.toString()],
     ['currency', currency],
@@ -1027,11 +1027,11 @@ Kind 30023 {
 
 ## 🎯 Critical Success Factors
 
-1. **Reuse NostrEventService.createProductEvent()** - Don't rebuild event creation
+1. **Reuse NostrEventService.createProductEvent()** - Don't rebuild event creation (UPDATE tag to `nostr-for-nomads-shop`)
 2. **Copy My Contributions pattern** - Proven CRUD dashboard
 3. **Follow SOA strictly** - Page → Component → Hook → Service
 4. **Test incrementally** - Verify each phase before moving on
-5. **Use culture-bridge-shop tag** - Established discovery pattern
+5. **Use nostr-for-nomads-shop tag** - Platform naming consistency
 6. **Leverage existing Blossom uploads** - Media infrastructure ready
 7. **Maintain product-specific validation** - Price, currency, condition rules
 

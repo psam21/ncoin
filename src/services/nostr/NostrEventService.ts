@@ -117,8 +117,8 @@ export class NostrEventService {
           ['condition', productData.condition],
           ['contact', productData.contact],
           ...productData.tags.map(tag => ['t', tag]),
-          // Only add culture-bridge-shop tag if not already present
-          ...(productData.tags.includes('culture-bridge-shop') ? [] : [['t', 'culture-bridge-shop']]),
+          // Only add nostr-for-nomads-shop tag if not already present
+          ...(productData.tags.includes('nostr-for-nomads-shop') ? [] : [['t', 'nostr-for-nomads-shop']]),
           // NEW: Multiple attachment tags
           ...this.createAttachmentTags(productData.attachments || []),
         ],
