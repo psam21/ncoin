@@ -1518,9 +1518,560 @@ Kind 30023 {
 
 ---
 
-**Estimated Implementation Time**: 6-8 hours (with copy/adapt strategy)
-**Complexity**: Medium-Low (service layer complete, mostly UI adaptation)
-**Risk**: Very Low (proven patterns, existing infrastructure, service layer ready)
+**Estimated Implementation Time**: 24-26 hours (with Heritage reference alignment)
+**Complexity**: Medium (service layer needs updates, UI complete)
+**Risk**: Low (proven patterns from Heritage reference)
+
+---
+
+## 🔧 PHASE 13: MISSING CRITICAL FEATURES (Heritage Alignment)
+
+**Context**: Shop implementation passed SOA/tag compliance BUT comparison with Heritage reference (`temp-cb-reference/src/services/business/HeritageContentService.ts`) revealed critical missing features.
+
+**Status**: 🔴 **BLOCKING PRODUCTION** - Edit flow broken, media metadata incomplete
+
+**Reference**: See `/docs/shop-heritage-comparison-report.md` for full analysis
+
+---
+
+### 13.1 Add `updateProductWithAttachments()` Function 🔴 CRITICAL
+
+**Priority**: 🔴 **HIGHEST - BLOCKING**  
+**File**: `/src/services/business/ShopService.ts`  
+**Effort**: 4-6 hours  
+**Status**: ❌ NOT STARTED
+
+**Problem**: Edit page currently reuses `createProduct(data, files, signer, existingDTag)` which doesn't handle attachment merging correctly. Heritage has dedicated `updateHeritageWithAttachments()` function.
+
+**Reference Pattern**: `temp-cb-reference/src/services/business/HeritageContentService.ts` lines 780-950
+
+**Implementation Steps**:
+
+1. **Add function signature**:
+```typescript
+export async function updateProductWithAttachments(
+  productId: string,
+  updatedData: Partial<ProductData>,
+  attachmentFiles: File[],
+  signer: NostrSigner,
+  onProgress?: (progress: ProductPublishingProgress) => void,
+  selectiveOps?: { removedAttachments: string[]; keptAttachments: string[] }
+): Promise<UpdateProductResult>
+```
+
+2. **Add UpdateProductResult interface** to `/src/types/shop.ts`:
+```typescript
+export interface UpdateProductResult {
+  success: boolean;
+  eventId?: string;
+  product?: ProductEvent;
+  publishedRelays?: string[];
+  failedRelays?: string[];
+  error?: string;
+  [key: string]: unknown;
+}
+```
+
+3. **Implementation flow** (copy from Heritage lines 780-950):
+   - Step 1: Fetch original product via `fetchProductById(productId)`
+   - Step 2: Upload new attachment files via `uploadSequentialWithConsent()` (if any)
+   - Step 3: Merge attachments:
+     - If `selectiveOps` provided: Keep only `keptAttachments` + add new
+     - If no `selectiveOps`: Keep all existing + add new
+   - Step 4: Check for changes (avoid unnecessary updates if no content/attachment changes)
+   - Step 5: Create NIP-33 replacement event (same dTag) via `nostrEventService.createProductEvent()`
+   - Step 6: Publish to relays via `nostrEventService.publishEvent()`
+   - Step 7: Parse updated product via `createMediaItemsFromImeta(event)`
+   - Step 8: Return `UpdateProductResult`
+
+4. **Progress reporting** (onProgress callback):
+   - 5%: Validating
+   - 10-70%: Uploading (if files)
+   - 75%: Creating event
+   - 85%: Publishing
+   - 100%: Complete
+
+**Testing Checklist**:
+- [ ] Create product → Edit → Verify attachments preserved
+- [ ] Create product → Edit → Add new attachments → Verify merge works
+- [ ] Create product → Edit → Remove attachments (selectiveOps) → Verify removal
+- [ ] Create product → Edit text only → Verify no unnecessary update if no changes
+- [ ] Verify NIP-33 replacement (same dTag, new eventId)
+
+---
+
+### 13.2 Add Imeta Parsing Functions 🔴 CRITICAL
+
+**Priority**: 🔴 **CRITICAL**  
+**Files**: `/src/services/business/ShopService.ts`  
+**Effort**: 2 hours  
+**Status**: ❌ NOT STARTED
+
+**Problem**: Product detail page won't show full media metadata (file sizes, dimensions, hashes). Current implementation doesn't parse NIP-94 imeta tags comprehensively.
+
+**Reference Pattern**: `temp-cb-reference/src/services/business/HeritageContentService.ts` lines 32-150
+
+**Functions to Add**:
+
+1. **`parseImetaTag()` - Extract comprehensive metadata**:
+```typescript
+/**
+ * Parse imeta tag to extract comprehensive media metadata
+ * NIP-94 format: ["imeta", "url <url>", "m <mime>", "x <hash>", "size <bytes>", "dim <WxH>"]
+ */
+function parseImetaTag(imetaTag: string[]): Partial<ContentMediaSource> | null {
+  if (!imetaTag || imetaTag[0] !== 'imeta') return null;
+  
+  const metadata: Partial<ContentMediaSource> = {};
+  const imetaStr = imetaTag.slice(1).join(' ');
+  
+  // Extract URL
+  const urlMatch = imetaStr.match(/url\s+(\S+)/);
+  if (urlMatch) metadata.url = urlMatch[1];
+  
+  // Extract mime type
+  const mimeMatch = imetaStr.match(/m\s+(\S+)/);
+  if (mimeMatch) metadata.mimeType = mimeMatch[1];
+  
+  // Extract hash
+  const hashMatch = imetaStr.match(/x\s+(\S+)/);
+  if (hashMatch) metadata.hash = hashMatch[1];
+  
+  // Extract size (in bytes)
+  const sizeMatch = imetaStr.match(/size\s+(\d+)/);
+  if (sizeMatch) metadata.size = parseInt(sizeMatch[1], 10);
+  
+  // Extract dimensions
+  const dimMatch = imetaStr.match(/dim\s+(\d+)x(\d+)/);
+  if (dimMatch) {
+    metadata.dimensions = {
+      width: parseInt(dimMatch[1], 10),
+      height: parseInt(dimMatch[2], 10),
+    };
+  }
+  
+  return metadata;
+}
+```
+
+2. **`createMediaItemsFromImeta()` - Build media items with metadata**:
+```typescript
+/**
+ * Create media items with full metadata from imeta tags
+ */
+function createMediaItemsFromImeta(event: { tags: string[][] }): ContentMediaItem[] {
+  const mediaItems: ContentMediaItem[] = [];
+  
+  event.tags.forEach(tag => {
+    const tagType = tag[0];
+    const isMediaTag = (tagType === 'image' || tagType === 'video' || tagType === 'audio') && tag[1];
+    
+    if (isMediaTag) {
+      const url = tag[1];
+      
+      // Find corresponding imeta tag
+      const imetaTag = event.tags.find(
+        t => t[0] === 'imeta' && t.some(part => part.includes(url))
+      );
+      
+      let metadata: Partial<ContentMediaSource> = {
+        url,
+        name: `Media ${mediaItems.length + 1}`,
+      };
+      
+      // Parse imeta tag for full metadata
+      if (imetaTag) {
+        const parsedMeta = parseImetaTag(imetaTag);
+        if (parsedMeta) {
+          metadata = { ...metadata, ...parsedMeta };
+        }
+      }
+      
+      // Infer mime type if not provided
+      if (!metadata.mimeType) {
+        if (tagType === 'video' || url.match(/\.(mp4|webm|mov)$/i)) {
+          metadata.mimeType = 'video/mp4';
+        } else if (tagType === 'audio' || url.match(/\.(mp3|wav|ogg)$/i)) {
+          metadata.mimeType = 'audio/mpeg';
+        } else {
+          metadata.mimeType = 'image/jpeg';
+        }
+      }
+      
+      // Determine media type
+      let type: ContentMediaType = 'image';
+      if (tagType === 'video' || metadata.mimeType?.startsWith('video/')) {
+        type = 'video';
+      } else if (tagType === 'audio' || metadata.mimeType?.startsWith('audio/')) {
+        type = 'audio';
+      }
+      
+      mediaItems.push({
+        id: metadata.hash || `media-${mediaItems.length}`,
+        type,
+        source: metadata as ContentMediaSource,
+      });
+    }
+  });
+  
+  return mediaItems;
+}
+```
+
+**Integration Points**:
+- Use in `fetchProductById()` to parse media with full metadata
+- Use in `updateProductWithAttachments()` to preserve metadata
+- Update `parseProductEvent()` to use `createMediaItemsFromImeta()`
+
+**Testing Checklist**:
+- [ ] Upload product with image → Verify imeta tag created with all fields
+- [ ] Fetch product → Verify metadata displayed (size, dimensions, hash, mime)
+- [ ] Edit product → Verify metadata preserved after update
+
+---
+
+### 13.3 Refactor `useProductEditing` Hook 🔴 CRITICAL
+
+**Priority**: 🔴 **CRITICAL**  
+**File**: `/src/hooks/useProductEditing.ts`  
+**Effort**: 1 hour  
+**Status**: ❌ NOT STARTED
+
+**Problem**: Hook is tightly coupled to `useMyShopStore`, doesn't use generic `useContentEditing` wrapper, and doesn't support `selectiveOps` (selective attachment operations).
+
+**Reference Pattern**: `temp-cb-reference/src/hooks/useHeritageEditing.ts` (41 lines)
+
+**Current Implementation** (87 lines, wrong pattern):
+```typescript
+// Current: Direct store coupling
+const { setUpdating, setUpdateProgress } = useMyShopStore();
+// Calls createProduct() for updates (wrong)
+await createProduct(data, files, signer, existingDTag);
+```
+
+**Target Implementation** (41 lines, correct pattern):
+```typescript
+import { useContentEditing } from './useContentEditing';
+import { updateProductWithAttachments } from '@/services/business/ShopService';
+import type { SimpleUpdateFunction } from '@/types/content-publishing';
+import type { ProductData, UpdateProductResult, ProductPublishingProgress } from '@/types/shop';
+
+/**
+ * Hook for editing existing products
+ * Uses generic useContentEditing wrapper for consistent edit flows
+ */
+export function useProductEditing() {
+  const updateFn: SimpleUpdateFunction<ProductData, UpdateProductResult, ProductPublishingProgress> = async (
+    contentId,
+    updatedData,
+    attachmentFiles,
+    signer,
+    onProgress,
+    selectiveOps
+  ) => {
+    return await updateProductWithAttachments(
+      contentId,
+      updatedData,
+      attachmentFiles,
+      signer,
+      onProgress,
+      selectiveOps
+    );
+  };
+
+  return useContentEditing('useProductEditing', updateFn, false);
+}
+```
+
+**Benefits**:
+- Decouples from store (cleaner architecture)
+- Supports `selectiveOps` for selective attachment removal
+- Uses dedicated `updateProductWithAttachments()` function
+- Follows battle-tested Heritage pattern
+
+**Testing Checklist**:
+- [ ] Edit page loads product data correctly
+- [ ] Edit form pre-populates with existing data
+- [ ] Update preserves unchanged attachments
+- [ ] Selective removal works (remove specific attachments)
+- [ ] Progress callback updates UI correctly
+
+---
+
+### 13.4 Add Content Parsing Helpers 🟡 HIGH
+
+**Priority**: 🟡 **HIGH**  
+**File**: `/src/services/business/ShopService.ts`  
+**Effort**: 1 hour  
+**Status**: ❌ NOT STARTED
+
+**Problem**: Legacy events (if any) won't parse correctly. Missing backward compatibility helpers.
+
+**Reference Pattern**: `temp-cb-reference/src/services/business/HeritageContentService.ts` lines 123-160
+
+**Functions to Add**:
+
+1. **`parseEventContent()` - Parse JSON content safely**:
+```typescript
+function parseEventContent(event: NostrEvent): { content: string } | null {
+  try {
+    const content = JSON.parse(event.content);
+    return content;
+  } catch {
+    return { content: event.content };
+  }
+}
+```
+
+2. **`cleanLegacyContent()` - Remove embedded H1 titles and media sections**:
+```typescript
+/**
+ * Clean legacy content that may have title embedded as H1 heading
+ * This handles backward compatibility with events created before the fix
+ */
+function cleanLegacyContent(content: string, title: string): string {
+  // Remove title as H1 heading from the beginning if it exists
+  const titleH1Pattern = new RegExp(`^#\\s+${title.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n+`, 'i');
+  let cleaned = content.replace(titleH1Pattern, '');
+  
+  // Also remove if title appears at the very start without the H1 marker
+  if (cleaned.startsWith(`${title}\n`)) {
+    cleaned = cleaned.substring(title.length + 1).trimStart();
+  }
+  
+  // Remove embedded media section added by old implementation
+  const mediaHeaderPattern = /\n\n##\s+Media\s*\n\n(.*\n)*?(?=\n\n##|\n\n[^!\[]|$)/;
+  cleaned = cleaned.replace(mediaHeaderPattern, '');
+  
+  // Also handle case where ## Media section is at the end of content
+  const mediaHeaderAtEndPattern = /\n\n##\s+Media\s*\n\n[\s\S]*$/;
+  cleaned = cleaned.replace(mediaHeaderAtEndPattern, '');
+  
+  return cleaned.trim();
+}
+```
+
+**Integration Points**:
+- Use in `fetchProductById()` to clean description
+- Use in `parseProductEvent()` to handle legacy events
+
+**Testing Checklist**:
+- [ ] Create legacy event with title in content → Verify cleanLegacyContent works
+- [ ] Fetch old event with embedded media → Verify parsing works
+
+---
+
+### 13.5 Expand `/src/types/shop.ts` with Helper Exports 🟡 HIGH
+
+**Priority**: 🟡 **HIGH**  
+**File**: `/src/types/shop.ts`  
+**Effort**: 2 hours  
+**Status**: ❌ NOT STARTED
+
+**Problem**: Type file missing 320 lines of helpers compared to Heritage reference. No exports for validation, parsing, constants.
+
+**Reference Pattern**: `temp-cb-reference/src/types/heritage.ts` (495 lines vs Shop's 175 lines)
+
+**Exports to Add**:
+
+1. **Constants**:
+```typescript
+export const PRODUCT_TAG_KEYS = {
+  D_TAG: 'd',
+  SYSTEM_TAG: 't',
+  TITLE: 'title',
+  PRICE: 'price',
+  CURRENCY: 'currency',
+  CATEGORY: 'category',
+  CONDITION: 'condition',
+  LOCATION: 'location',
+  CONTACT: 'contact',
+  USER_TAG: 't',
+  IMAGE: 'image',
+  VIDEO: 'video',
+  AUDIO: 'audio',
+  IMETA: 'imeta',
+} as const;
+
+export const PRODUCT_SYSTEM_TAG = 'nostr-for-nomads-shop';
+```
+
+2. **Validation Export** (move from ProductValidationService):
+```typescript
+export const validateProductData = (data: Partial<ProductData>): ProductValidationResult => {
+  const errors: ProductValidationResult['errors'] = {};
+  
+  if (!data.title || data.title.trim().length < 5) {
+    errors.title = 'Title must be at least 5 characters';
+  }
+  
+  if (!data.description || data.description.trim().length < 20) {
+    errors.description = 'Description must be at least 20 characters';
+  }
+  
+  if (!data.price || data.price <= 0) {
+    errors.price = 'Price must be greater than 0';
+  }
+  
+  // ... rest of validation
+  
+  return {
+    valid: Object.keys(errors).length === 0,
+    errors,
+  };
+};
+```
+
+3. **Event Parser**:
+```typescript
+export const parseProductEvent = (event: NostrEvent): ProductEvent | null => {
+  try {
+    const dTag = event.tags.find(t => t[0] === 'd')?.[1];
+    const title = event.tags.find(t => t[0] === 'title')?.[1];
+    const price = parseFloat(event.tags.find(t => t[0] === 'price')?.[1] || '0');
+    const currency = event.tags.find(t => t[0] === 'currency')?.[1];
+    // ... extract all tags
+    
+    if (!dTag || !title || !price || !currency) return null;
+    
+    // Parse media via createMediaItemsFromImeta()
+    const media = createMediaItemsFromImeta(event);
+    
+    // Parse content via parseEventContent()
+    const parsedContent = parseEventContent(event);
+    const rawDescription = parsedContent?.content || event.content;
+    
+    // Clean legacy content
+    const description = cleanLegacyContent(rawDescription, title);
+    
+    return {
+      id: dTag,
+      dTag,
+      pubkey: event.pubkey,
+      title,
+      description,
+      // ... all fields
+    };
+  } catch (error) {
+    console.error('Failed to parse product event:', error);
+    return null;
+  }
+};
+```
+
+4. **Type Guard**:
+```typescript
+export const isProductEvent = (event: NostrEvent): event is ProductNostrEvent => {
+  return (
+    event.kind === 30023 &&
+    event.tags.some(t => t[0] === 't' && t[1] === PRODUCT_SYSTEM_TAG)
+  );
+};
+```
+
+**Testing Checklist**:
+- [ ] Import constants in components → Verify no errors
+- [ ] Call validateProductData() → Verify validation works
+- [ ] Call parseProductEvent() → Verify event parsing works
+- [ ] Use isProductEvent() type guard → Verify TypeScript happy
+
+---
+
+### 13.6 Add Search/Filter to `usePublicProducts` Hook 🟡 MEDIUM
+
+**Priority**: 🟡 **MEDIUM**  
+**File**: `/src/hooks/usePublicProducts.ts`  
+**Effort**: 3 hours  
+**Status**: ❌ NOT STARTED
+
+**Problem**: Heritage has comprehensive filtering (search, category, condition, price, sort). Shop only has pagination.
+
+**Features to Add**:
+- Search by title/description (client-side filtering)
+- Category filter dropdown
+- Condition filter (new/used/refurbished)
+- Price range slider (min/max)
+- Sort options (newest, oldest, price-low-high, price-high-low)
+
+**Integration**: Use `useShopStore` for filter state management
+
+**Testing Checklist**:
+- [ ] Search filters products correctly
+- [ ] Category filter works
+- [ ] Condition filter works
+- [ ] Price range filter works
+- [ ] Sort options work
+- [ ] Clear filters resets to all products
+
+---
+
+### 13.7 Add Relay Progress Tracking to `useMyShopProducts` 🟢 LOW
+
+**Priority**: 🟢 **LOW**  
+**File**: `/src/hooks/useMyShopProducts.ts`  
+**Effort**: 1 hour  
+**Status**: ❌ NOT STARTED
+
+**Feature**: Show relay connection status during product fetch (like Heritage does)
+
+**Testing Checklist**:
+- [ ] Progress callback shows relay status
+- [ ] UI displays relay connection state
+
+---
+
+### 13.8 Verify Components Use Full Media Metadata 🟡 MEDIUM
+
+**Priority**: 🟡 **MEDIUM**  
+**Files**: 
+- `/src/components/pages/ProductDetail.tsx`
+- `/src/components/pages/ProductCard.tsx`
+- `/src/components/generic/MyProductCard.tsx`  
+**Effort**: 2 hours  
+**Status**: ❌ NOT STARTED
+
+**Check**: After imeta parsing added, verify components render media metadata
+
+**Add to ProductDetail.tsx**:
+- Display file size (e.g., "2.3 MB")
+- Display dimensions (e.g., "1920x1080")
+- Display hash (truncated with copy button)
+- Display mime type
+
+**Testing Checklist**:
+- [ ] Product detail shows media metadata
+- [ ] File sizes display correctly
+- [ ] Dimensions display correctly
+- [ ] Hash copy button works
+
+---
+
+## 📋 Implementation Checklist (Phase 13)
+
+### **Critical Path (Required for Production)**
+- [ ] 13.1: Add `updateProductWithAttachments()` function (4-6 hours)
+- [ ] 13.2: Add imeta parsing functions (2 hours)
+- [ ] 13.3: Refactor `useProductEditing` hook (1 hour)
+- [ ] 13.4: Add content parsing helpers (1 hour)
+- [ ] 13.5: Expand type exports (2 hours)
+
+**Critical Path Total**: 10-12 hours
+
+### **Enhancements (Recommended)**
+- [ ] 13.6: Add search/filter (3 hours)
+- [ ] 13.7: Add relay progress (1 hour)
+- [ ] 13.8: Verify component metadata (2 hours)
+
+**Enhancement Total**: 6 hours
+
+### **Testing & Validation**
+- [ ] Test update/edit flow comprehensively
+- [ ] Test media metadata display
+- [ ] Test backward compatibility
+- [ ] Deploy to production
+- [ ] User verification on https://nostrcoin.vercel.app
+
+**Grand Total**: 16-18 hours (Critical + Enhancements)
 
 ---
 
