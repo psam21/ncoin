@@ -15,6 +15,13 @@ A decentralized platform built on the Nostr protocol, enabling digital nomads to
 - **Contribute** - Create and share nomad contributions using Kind 30023 parameterized replaceable events
 - **Explore** - Discover community contributions with real-time relay queries and media galleries
 - **My Contributions** - Full CRUD management dashboard for user's contributions with NIP-09 deletion support
+- **Shop** - Decentralized marketplace for product listings using Kind 30023 events with multi-attachment support
+  - Create, edit, delete products with NIP-09 deletion events
+  - Multi-category support (Electronics, Fashion, Home, Sports, etc.)
+  - Media uploads via Blossom (images, videos, audio)
+  - Public browse page with filters (category, condition, price range)
+  - My Shop dashboard for managing user products
+  - Tag pattern: `nostr-for-nomads-shop` for discovery
 
 ### UI-Only Features (Coming Soon)
 
@@ -22,7 +29,6 @@ A decentralized platform built on the Nostr protocol, enabling digital nomads to
 - **Work** - Browse and post job opportunities with Bitcoin payments
 - **Meetings** - Video conferencing and virtual collaboration
 - **Payments** - Bitcoin and Lightning Network transactions
-- **Shop** - Decentralized marketplace for products and services (service layer ready)
 - **Travel** - Book accommodations, experiences, and transport
 - **Meetups** - Find and organize local meetups with the Nostr community
 
