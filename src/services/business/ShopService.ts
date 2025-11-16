@@ -832,13 +832,30 @@ export async function fetchPublicProducts(
 
     const products = await fetchPublicProductsFromRelay(limit, until, onProgress);
     
+    // Convert ProductEvent[] to ProductExploreItem[] with imageUrl
+    const exploreItems: ProductExploreItem[] = products.map((product: ProductEvent) => ({
+      id: product.id,
+      dTag: product.dTag,
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      currency: product.currency,
+      category: product.category,
+      condition: product.condition,
+      location: product.location,
+      imageUrl: product.media.images[0]?.url, // Extract first image URL
+      tags: product.tags,
+      pubkey: product.pubkey,
+      createdAt: product.createdAt,
+    }));
+    
     logger.info('Public products fetched', {
       service: 'ShopService',
       method: 'fetchPublicProducts',
-      count: products.length,
+      count: exploreItems.length,
     });
 
-    return products;
+    return exploreItems;
   } catch (error) {
     logger.error('Failed to fetch public products', error as Error, {
       service: 'ShopService',
