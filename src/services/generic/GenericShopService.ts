@@ -1,6 +1,7 @@
 import { logger } from '../core/LoggingService';
 import { queryEvents } from './GenericRelayService';
-import type { NostrEvent } from '@/types/nostr';
+import { nostrEventService } from '../nostr/NostrEventService';
+import type { NostrEvent, NIP23Event } from '@/types/nostr';
 import type { ProductEvent } from '@/types/shop';
 
 // Export media attachment interface for use in other services
@@ -185,8 +186,19 @@ function parseProductEvent(event: NostrEvent): ProductEvent | null {
     // Extract media
     const media = extractMedia(tags);
     
-    // Parse description from event.content
-    const description = event.content || title;
+    // Parse description from event.content (handles NIP-23 JSON format)
+    let description = event.content || title;
+    try {
+      // Try parsing as NIP-23 event (JSON content)
+      const parsedContent = nostrEventService.parseEventContent(event as NIP23Event);
+      if (parsedContent?.content) {
+        description = parsedContent.content;
+      }
+    } catch {
+      // If parsing fails, use raw content
+      description = event.content || title;
+    }
+    
     const summary = description.substring(0, 200);
     
     return {
