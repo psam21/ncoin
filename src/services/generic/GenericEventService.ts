@@ -462,7 +462,7 @@ export class GenericEventService {
           // This keeps GenericEventService truly generic and protocol-agnostic
           break;
         case 't': // Custom tags
-          if (tag[1] && !tag[1].startsWith('culture-bridge')) {
+          if (tag[1] && !tag[1].startsWith('nostr-for-nomads')) {
             data.tags.push(tag[1]);
           }
           break;

@@ -508,7 +508,7 @@ export class NostrEventService {
    * Create a cart storage event (Kind 30078 - Application-Specific Data)
    * 
    * Creates NIP-78 parameterized replaceable event for cart storage.
-   * Uses culture-bridge-cart tag for discovery.
+   * Uses nostr-for-nomads-cart tag for discovery.
    * 
    * @param cartItems - Array of cart items to store
    * @param userPubkey - User's public key
@@ -518,9 +518,9 @@ export class NostrEventService {
    * @layer Nostr (event structure definition)
    */
   /**
-   * Create unified Culture Bridge settings event (Kind 30078)
+   * Create unified Nostr for Nomads settings event (Kind 30078)
    * 
-   * Uses single event with d='culture-bridge-settings' and multiple feature tags.
+   * Uses single event with d='nostr-for-nomads-settings' and multiple feature tags.
    * This architecture allows all app data to be stored in one event with organized
    * sections accessible via tags.
    * 
@@ -554,10 +554,10 @@ export class NostrEventService {
 
       // Base tags: d tag (NIP-33), name, pubkey reference, and discovery tag
       const baseTags: string[][] = [
-        ['d', 'culture-bridge-settings'], // Single d tag for all app settings
-        ['name', 'Culture Bridge Settings'], // Human-readable name (required by some relays)
+        ['d', 'nostr-for-nomads-settings'], // Single d tag for all app settings
+        ['name', 'Nostr for Nomads Settings'], // Human-readable name (required by some relays)
         ['p', userPubkey], // User's pubkey (required by some relays)
-        ['t', 'culture-bridge'], // Discovery tag
+        ['t', 'nostr-for-nomads'], // Discovery tag
       ];
 
       // Add feature-specific tags (e.g., cart version, last-seen timestamps)
@@ -566,7 +566,7 @@ export class NostrEventService {
       // Add metadata and wrap in 'data' field for Shugur relay compatibility
       // Shugur requires: { name, version, data: { cart: [...] } }
       const contentWithMetadata = {
-        name: 'Culture Bridge Settings', // For relay validation compatibility
+        name: 'Nostr for Nomads Settings', // For relay validation compatibility
         version: '1.0',
         data: settingsData, // Wrapped in 'data' field per Shugur's NIP-78 interpretation
       };
@@ -584,7 +584,7 @@ export class NostrEventService {
         service: 'NostrEventService',
         method: 'createSettingsEvent',
         kind: 30078,
-        dTag: 'culture-bridge-settings',
+        dTag: 'nostr-for-nomads-settings',
         features: Object.keys(settingsData),
         tagCount: allTags.length,
       });
@@ -620,7 +620,7 @@ export class NostrEventService {
 
       // Add cart-specific tags
       const cartTags: string[][] = [
-        ['culture-bridge-cart-details', 'v1'], // Cart data version
+        ['nostr-for-nomads-cart-details', 'v1'], // Cart data version
       ];
 
       // Use unified settings event with cart data

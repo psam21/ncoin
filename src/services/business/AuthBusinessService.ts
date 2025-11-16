@@ -167,9 +167,9 @@ export class AuthBusinessService {
       const pubkey = await signer.getPublicKey();
 
       // Welcome message content
-      const content = `🌍✨ Kicking off something truly beautiful — preserving our Culture and Heritage on Nostr for generations to come! 👶🌱 🚀📚 With Culture Bridge, I'm setting out to protect and share our community's timeless stories 📜🏛️ 🌈📖 Can't wait to celebrate the wisdom, traditions, and heritage that unite us all 🤝💫
+      const content = `🌍✨ Kicking off something truly beautiful — preserving our Culture and Heritage on Nostr for generations to come! 👶🌱 🚀📚 With Nostr for Nomads, I'm setting out to protect and share our community's timeless stories 📜🏛️ 🌈📖 Can't wait to celebrate the wisdom, traditions, and heritage that unite us all 🤝💫
 
-#community #storytelling #traditions #culture #heritage #humanity #inclusivity #art #music #history #Culture-Bridge #CultureBridge #nostr`;
+#community #storytelling #traditions #culture #heritage #humanity #inclusivity #art #music #history #NostrForNomads #nostr`;
 
       // Create Kind 1 event (text note)
       const event = {
@@ -186,8 +186,7 @@ export class AuthBusinessService {
           ['t', 'art'],
           ['t', 'music'],
           ['t', 'history'],
-          ['t', 'Culture-Bridge'],
-          ['t', 'CultureBridge'],
+          ['t', 'NostrForNomads'],
           ['t', 'nostr'],
         ],
         content,

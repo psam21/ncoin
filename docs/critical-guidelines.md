@@ -53,10 +53,10 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 
 ```typescript
 // Event creation
-['t', 'culture-bridge-{content-type}']
+['t', 'nostr-for-nomads-{content-type}']
 
 // Query filter
-{ kinds: [30023], '#t': ['culture-bridge-{content-type}'] }
+{ kinds: [30023], '#t': ['nostr-for-nomads-{content-type}'] }
 ```
 
 **❌ NEVER:**

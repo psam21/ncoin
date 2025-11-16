@@ -16,7 +16,7 @@
 - ✅ `createProductEvent(productData, signer, dTag?)` - **EXISTS** at lines 47-170
 - ✅ Creates Kind 30023 parameterized replaceable events
 - ✅ Supports multiple attachments (ProductAttachment[])
-- ⚠️ Currently uses `culture-bridge-shop` tag (legacy - needs update to `nostr-for-nomads-shop`)
+- ✅ Uses `nostr-for-nomads-shop` tag (updated from legacy `culture-bridge-shop`)
 - ✅ Product-specific tags: price, currency, category, condition, contact
 - ✅ Uses `GenericEventService.createNIP23Event()` (SOA compliant)
 - ✅ Returns signed NIP23Event
@@ -31,8 +31,8 @@
 - ✅ `publishEvent(event, signer)` - Multi-relay publishing
 
 **Tag System**:
-- ⚠️ Discovery tag: `culture-bridge-shop` (legacy - **UPDATE REQUIRED** to `nostr-for-nomads-shop`)
-- ⚠️ Filter ready: `/src/utils/tagFilter.ts` includes `culture-bridge-shop` (**UPDATE REQUIRED**)
+- ✅ Discovery tag: `nostr-for-nomads-shop` (updated from legacy `culture-bridge-shop`)
+- ✅ Filter ready: `/src/utils/tagFilter.ts` includes `nostr-for-nomads-shop`
 
 ### ❌ Missing Implementation (UI Layer)
 
@@ -976,7 +976,7 @@ export function usePublicProducts(limit = 20) {
 - `contact: string` (npub or contact method)
 
 ### Tag Changes
-- Discovery tag: `nostr-for-nomads-shop` (**UPDATE from** `culture-bridge-shop`)
+- Discovery tag: `nostr-for-nomads-shop` (updated from legacy `culture-bridge-shop`)
 - Product tags: `price`, `currency`, `category`, `condition`, `contact`
 
 ### Event Structure (Already Implemented)
@@ -985,7 +985,7 @@ export function usePublicProducts(limit = 20) {
 Kind 30023 {
   tags: [
     ['d', 'product-{timestamp}-{random}'],
-    ['t', 'nostr-for-nomads-shop'], // UPDATE from culture-bridge-shop
+    ['t', 'nostr-for-nomads-shop'], // System tag (hidden)
     ['title', title],
     ['price', price.toString()],
     ['currency', currency],

@@ -993,7 +993,7 @@ export class MessagingBusinessService {
       // 2. We sent it (sender = us, recipient = other person)
       // 
       // Note: Self-copies where recipientPubkey = userPubkey are excluded
-      // These are from buggy Culture Bridge dev phase - not worth recovering
+      // These are from buggy early dev phase - not worth recovering
       const conversationMessages = allMessages
         .filter(msg => {
           // Received messages: sender is other person, recipient is us
@@ -1004,7 +1004,7 @@ export class MessagingBusinessService {
           // Sent messages: sender is us, recipient is other person
           // This includes:
           // - Messages from other clients (0xchat, etc.) - properly formed
-          // - Messages from Culture Bridge (current fixed version) - properly formed
+          // - Messages from current version - properly formed
           if (msg.senderPubkey === userPubkey && msg.recipientPubkey === otherPubkey) {
             return true;
           }

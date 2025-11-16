@@ -119,7 +119,7 @@ export const useAuthStore = create<AuthState>()(
           _hasLoggedOut: true, // Prevent auto sign-in after logout
         });
         
-        // Clear ONLY Culture Bridge's browser storage (not other sites)
+        // Clear ONLY Nostr for Nomads browser storage (not other sites)
         if (typeof window !== 'undefined') {
           // Clear localStorage - only our keys
           // (localStorage is already origin-isolated, but we'll be explicit)
@@ -131,7 +131,7 @@ export const useAuthStore = create<AuthState>()(
             key.startsWith('cart-store') ||
             key === 'lastPublishedEvent' ||
             key.startsWith('nostr') ||
-            key.startsWith('culture-bridge')
+            key.startsWith('nostr-for-nomads')
           );
           keysToRemove.forEach(key => localStorage.removeItem(key));
           
@@ -143,7 +143,7 @@ export const useAuthStore = create<AuthState>()(
             key.startsWith('shop-store') ||
             key.startsWith('cart-store') ||
             key.startsWith('nostr') ||
-            key.startsWith('culture-bridge')
+            key.startsWith('nostr-for-nomads')
           );
           sessionKeysToRemove.forEach(key => sessionStorage.removeItem(key));
           
@@ -168,7 +168,7 @@ export const useAuthStore = create<AuthState>()(
             });
           }
           
-          // Clear Cache API - only Culture Bridge caches
+          // Clear Cache API - only Nostr for Nomads caches
           // (Caches are already origin-isolated, so this only affects our domain)
           if ('caches' in window) {
             caches.keys().then((names) => {

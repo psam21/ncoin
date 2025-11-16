@@ -558,7 +558,7 @@ Page → Bypassing business logic
 - New: `/my-contributions/edit/{dTag}`
 
 ### Tag Changes
-- `culture-bridge-heritage-contribution` → `nostr-for-nomads-contribution`
+- `nostr-for-nomads-contribution` (updated from legacy `culture-bridge-heritage-contribution`)
 
 ### Config Changes
 - `HERITAGE_TYPES` → `CONTRIBUTION_TYPES`

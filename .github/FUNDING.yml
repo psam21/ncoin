@@ -1,5 +1,5 @@
 # GitHub Sponsors funding configuration
 # See https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
 
-# Lightning Network donation via Culture Bridge donate page
+# Lightning Network donation via Nostr for Nomads donate page
 custom: ['https://culturebridge.vercel.app/donate']
