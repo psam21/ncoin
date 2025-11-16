@@ -144,6 +144,18 @@ export default function AuthButton() {
             </Link>
             
             <Link
+              href="/my-shop"
+              className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
+              role="menuitem"
+              onClick={() => setShowDropdown(false)}
+            >
+              <svg className="w-4 h-4 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              My Shop
+            </Link>
+            
+            <Link
               href="/messages"
               className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
               role="menuitem"
@@ -165,6 +177,20 @@ export default function AuthButton() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
               My Profile
+            </Link>
+            
+            <div className="border-t border-purple-100 my-1"></div>
+            
+            <Link
+              href="/my-shop/create"
+              className="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors font-medium"
+              role="menuitem"
+              onClick={() => setShowDropdown(false)}
+            >
+              <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              List New Product
             </Link>
             
             <div className="border-t border-purple-100 my-1"></div>
