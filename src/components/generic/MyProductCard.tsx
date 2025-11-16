@@ -98,7 +98,7 @@ export const MyProductCard: React.FC<MyProductCardProps> = ({
   return (
     <div className="card overflow-hidden hover:shadow-xl transition-all duration-300 group">
       {/* Product Image */}
-      <div className="relative aspect-[4/3] bg-gray-50">
+      <div className="relative aspect-[4/3] bg-purple-50">
         {product.imageUrl ? (
           <Image
             src={product.imageUrl}
@@ -118,9 +118,9 @@ export const MyProductCard: React.FC<MyProductCardProps> = ({
               const parent = target.parentElement;
               if (parent) {
                 parent.innerHTML = `
-                  <div class="w-full h-full flex items-center justify-center bg-gray-100">
-                    <svg class="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  <div class="w-full h-full flex items-center justify-center bg-purple-100">
+                    <svg class="w-12 h-12 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
                     </svg>
                   </div>
                 `;
@@ -128,72 +128,79 @@ export const MyProductCard: React.FC<MyProductCardProps> = ({
             }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <svg className="w-24 h-24 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          <div className="w-full h-full flex items-center justify-center bg-purple-100">
+            <svg className="w-12 h-12 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
           </div>
         )}
+        
+        {/* Price Badge - Top Left */}
+        <div className="absolute top-3 left-3">
+          <span className="px-3 py-1.5 rounded-full text-sm font-bold bg-white/95 backdrop-blur-sm text-purple-900 shadow-lg">
+            {formatPrice(product.price, product.currency)}
+          </span>
+        </div>
 
-        {/* Price Badge Overlay */}
-        <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
-          <DollarSign className="w-4 h-4 text-purple-600" />
-          <span className="font-bold text-purple-900">{formatPrice(product.price, product.currency)}</span>
+        {/* Created Time Badge - Top Right */}
+        <div className="absolute top-3 right-3">
+          <span className="px-2 py-1 rounded-full text-xs font-medium bg-white/90 text-gray-700 flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {getRelativeTime(product.createdAt)}
+          </span>
         </div>
       </div>
-
-      {/* Product Content */}
-      <div className="p-4 space-y-3">
-        {/* Title */}
-        <h3 className="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-purple-600 transition-colors">
+      
+      {/* Product Info */}
+      <div className="p-6">
+        <h3 className="text-xl font-serif font-bold text-purple-800 mb-2 line-clamp-2">
           {product.title}
         </h3>
-
-        {/* Description */}
-        <p className="text-sm text-gray-600 line-clamp-2">
+        
+        <p className="text-base mb-4 line-clamp-3 leading-relaxed text-purple-600">
           {product.description}
         </p>
+        
+        {/* Location */}
+        <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+          <MapPin className="w-4 h-4" />
+          <span>{product.location}</span>
+        </div>
 
-        {/* Badges */}
-        <div className="flex flex-wrap gap-2">
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(product.category)}`}>
+        {/* Condition and Category */}
+        <div className="mb-4 flex gap-2">
+          <span className={`px-3 py-1 rounded-full font-medium text-sm ${getCategoryColor(product.category)}`}>
             {product.category}
           </span>
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${getConditionColor(product.condition)}`}>
+          <span className={`px-3 py-1 rounded-full font-medium text-sm ${getConditionColor(product.condition)}`}>
             {product.condition}
           </span>
         </div>
-
-        {/* Metadata */}
-        <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
-          <div className="flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5" />
-            <span className="truncate">{product.location}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Clock className="w-3.5 h-3.5" />
-            <span>{getRelativeTime(product.createdAt)}</span>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="flex gap-2 pt-2">
+        
+        {/* Action Buttons */}
+        <div className="flex gap-2">
           <a
             href={`/shop/${product.dTag}`}
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={handleView}
-            className="btn btn-outline flex-1 text-sm"
+            className="btn-outline-sm flex items-center justify-center px-3"
+            title="View product"
           >
-            View
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
           </a>
-          <button
-            onClick={handleEdit}
-            className="btn btn-outline flex-1 text-sm"
+          <button 
+            onClick={handleEdit} 
+            className="btn-primary-sm flex-1"
           >
             Edit
           </button>
-          <button
-            onClick={handleDelete}
-            className="btn btn-danger flex-1 text-sm"
+          <button 
+            onClick={handleDelete} 
+            className="btn-danger-sm"
           >
             Delete
           </button>
