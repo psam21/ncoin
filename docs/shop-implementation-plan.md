@@ -553,6 +553,18 @@ export interface ProductCardData {
 }
 
 /**
+ * Type alias: ShopProduct is same as ProductCardData
+ * Used in stores for consistency with temp-cb-reference pattern
+ */
+export type ShopProduct = ProductCardData;
+
+/**
+ * Type alias: ProductExploreItem is same as ProductCardData
+ * Used in public browse/explore views
+ */
+export type ProductExploreItem = ProductCardData;
+
+/**
  * Product publishing result
  */
 export interface ProductPublishingResult {
@@ -836,9 +848,14 @@ export function getCurrencies() {
 
 **Store State:**
 ```typescript
+import type { ProductCardData } from '@/types/shop';
+
+// ShopProduct = ProductCardData (type alias for consistency)
+export type ShopProduct = ProductCardData;
+
 export interface ShopState {
   // Products
-  products: ShopProduct[];
+  products: ShopProduct[]; // Array of ProductCardData
   isLoadingProducts: boolean;
   productsError: string | null;
   
@@ -954,7 +971,14 @@ export interface MyShopState {
 
 ## Phase 7: Hooks
 
-### 6.1 Create useShopPublishing Hook
+**Hook-Store Integration Pattern:**
+Hooks orchestrate business logic and update Zustand stores. Pattern from temp-cb-reference:
+- Hooks call service methods (ShopService, GenericShopService)
+- Hooks update store state (useShopStore, useMyShopStore) 
+- Components consume store state (no direct service calls)
+- Clean separation: Services = data, Stores = state, Hooks = orchestration
+
+### 7.1 Create useShopPublishing Hook
 - **File**: `/src/hooks/useShopPublishing.ts` (NEW)
 - **Action**: CREATE new file
 - **Copy from**: `/src/hooks/useContributionPublishing.ts`
@@ -975,37 +999,129 @@ export function useShopPublishing() {
 }
 ```
 
-### 6.2 Create usePublicProducts Hook
+### 7.2 Create usePublicProducts Hook
 - **File**: `/src/hooks/usePublicProducts.ts` (NEW)
 - **Action**: CREATE new file
 - **Copy from**: `/src/hooks/useExploreContributions.ts`
 - **Adapt**: Replace contribution → product
+- **Store Integration**: Updates `useShopStore` with fetched products
 
 **Hook Interface:**
 ```typescript
 export function usePublicProducts(limit = 20) {
   return {
-    products: ProductExploreItem[];
-    isLoading: boolean;
-    error: string | null;
+    products: ProductExploreItem[]; // From useShopStore.products
+    isLoading: boolean; // From useShopStore.isLoadingProducts
+    error: string | null; // From useShopStore.productsError
     hasMore: boolean;
-    loadMore: () => Promise<void>;
-    refresh: () => Promise<void>;
+    loadMore: () => Promise<void>; // Calls ShopService.fetchPublicProducts(), updates store
+    refresh: () => Promise<void>; // Re-fetches from relays, resets pagination
   };
 }
 ```
 
-### 6.3 Create useProductEditing Hook
+**Behavior:**
+- **Auto-load on mount**: Fetches products when hook first used
+- **PAGE REFRESH**: Re-fetches on every `/shop` page visit
+- Updates `useShopStore.setProducts()` with results
+- Handles pagination state internally (`until` timestamp)
+
+### 7.3 Create useProductEditing Hook
 - **File**: `/src/hooks/useProductEditing.ts` (NEW)
 - **Action**: CREATE new file
 - **Copy from**: `/src/hooks/useContributionEditing.ts`
 - **Adapt**: Replace contribution → product
+- **Store Integration**: Updates `useMyShopStore` editing state
+
+**Hook Interface:**
+```typescript
+export function useProductEditing() {
+  return {
+    editingProduct: ProductCardData | null; // From useMyShopStore.editingProduct
+    isEditing: boolean; // From useMyShopStore.isEditing
+    isUpdating: boolean; // From useMyShopStore.isUpdating
+    updateProgress: ProductPublishingProgress | null;
+    updateError: string | null;
+    startEditing: (product: ProductCardData) => void; // Calls useMyShopStore.startEditing()
+    cancelEditing: () => void; // Calls useMyShopStore.cancelEditing()
+    updateProduct: (data: ProductData, files: File[]) => Promise<void>; // Updates via ShopService
+  };
+}
+```
+
+### 7.4 Create useMyShopProducts Hook
+- **File**: `/src/hooks/useMyShopProducts.ts` (NEW)
+- **Action**: CREATE new file
+- **Reference**: `temp-cb-reference/src/hooks/useMyShopProducts.ts`
+- **Store Integration**: Updates `useMyShopStore` with user's products
+
+**Purpose:**
+Orchestrates fetching user's products and updating My Shop store.
+
+**Hook Interface:**
+```typescript
+export function useMyShopProducts() {
+  return {
+    products: ProductCardData[]; // From useMyShopStore.myProducts
+    isLoading: boolean; // From useMyShopStore.isLoadingMyProducts
+    error: string | null; // From useMyShopStore.myProductsError
+    loadMyProducts: () => Promise<void>; // Manual refresh
+  };
+}
+```
+
+**Implementation Pattern (from temp-cb-reference):**
+```typescript
+const loadMyProducts = useCallback(async () => {
+  if (!pubkey || !isAuthenticated) return;
+  
+  setLoadingMyProducts(true);
+  setMyProductsError(null);
+  
+  try {
+    // Fetch ALL products from relays
+    const result = await ShopService.fetchPublicProducts();
+    
+    // Filter by current user's pubkey (client-side)
+    const userProducts = result.filter(p => p.pubkey === pubkey);
+    
+    // Sort by newest first
+    const sorted = userProducts.sort((a, b) => b.createdAt - a.createdAt);
+    
+    // Update store
+    setMyProducts(sorted);
+  } catch (error) {
+    setMyProductsError(error.message);
+  } finally {
+    setLoadingMyProducts(false);
+  }
+}, [pubkey, isAuthenticated]);
+
+// Auto-load on mount when authenticated
+useEffect(() => {
+  if (pubkey && isAuthenticated) {
+    loadMyProducts();
+  }
+}, [pubkey, isAuthenticated, loadMyProducts]);
+```
+
+**Behavior:**
+- **Auto-load on mount**: Fetches when user authenticated
+- **PAGE REFRESH**: Re-fetches on every `/my-shop` page visit
+- **Client-side filtering**: Fetches all, filters by pubkey (SoA pattern)
+- Updates `useMyShopStore.setMyProducts()` with filtered results
+
+**Why fetch-all-then-filter?**
+- Consistent with temp-cb-reference pattern
+- Simpler relay queries (no author filter needed)
+- Works with all relay types
+- Can add caching later
 
 ---
 
 ## Phase 8: Components
 
-### 7.1 Create MyProductCard Component
+### 8.1 Create MyProductCard Component
 - **File**: `/src/components/generic/MyProductCard.tsx` (NEW)
 - **Action**: CREATE new file
 - **Copy from**: `/src/components/generic/MyContributionCard.tsx`
@@ -1028,7 +1144,7 @@ export function usePublicProducts(limit = 20) {
 - Image thumbnail
 - Actions: View, Edit, Delete
 
-### 7.2 Create ProductForm Component
+### 8.2 Create ProductForm Component
 - **File**: `/src/components/pages/ProductForm.tsx` (NEW)
 - **Action**: CREATE new file
 - **Copy from**: `/src/components/pages/ContributionForm.tsx` (if exists) or adapt
@@ -1078,7 +1194,7 @@ export function usePublicProducts(limit = 20) {
 }
 ```
 
-### 7.3 Create ShopContent Component
+### 8.3 Create ShopContent Component
 - **File**: `/src/components/pages/ShopContent.tsx` (NEW)
 - **Action**: CREATE new file
 - **Adapt from**: Current `/src/app/shop/page.tsx` (move logic to component)
@@ -1092,7 +1208,7 @@ export function usePublicProducts(limit = 20) {
   - Pagination (load more)
   - Product cards with click to detail
 
-### 7.4 Reuse DeleteConfirmationModal
+### 8.4 Reuse DeleteConfirmationModal
 - **File**: `/src/components/generic/DeleteConfirmationModal.tsx`
 - **Action**: REUSE existing component (no changes needed)
 
@@ -1100,7 +1216,14 @@ export function usePublicProducts(limit = 20) {
 
 ## Phase 9: Pages
 
-### 8.1 Update Shop Browse Page
+**Page Refresh Behavior:**
+All pages re-fetch data on every visit (no caching between navigations).
+- `/shop` → Calls `usePublicProducts()` → Fetches from relays
+- `/my-shop` → Calls `useMyShopProducts()` → Fetches from relays
+- `/shop/[id]` → Fetches specific product by dTag
+- `/my-shop/edit/[id]` → Fetches specific product by dTag
+
+### 9.1 Update Shop Browse Page
 - **File**: `/src/app/shop/page.tsx`
 - **Action**: MODIFY existing file
 - **Changes**:
@@ -1109,7 +1232,8 @@ export function usePublicProducts(limit = 20) {
   - Add Nostr integration
   - Keep auth check (public page, no auth required)
 
-### 8.2 Create My Shop Dashboard Page
+### 9.2 Create My Shop Dashboard Page
+- **Hook Used**: `useMyShopProducts()` - Auto-loads on page visit
 - **File**: `/src/app/my-shop/page.tsx` (NEW)
 - **Action**: CREATE new file
 - **Copy from**: `/src/app/my-contributions/page.tsx`
@@ -1126,7 +1250,7 @@ export function usePublicProducts(limit = 20) {
 - Loading/error states
 - Empty states
 
-### 8.3 Create Product Detail Page
+### 9.3 Create Product Detail Page
 - **File**: `/src/app/shop/[id]/page.tsx` (NEW)
 - **Action**: CREATE new file
 - **Copy from**: `/src/app/explore/[id]/page.tsx` (if exists)
@@ -1142,7 +1266,7 @@ export function usePublicProducts(limit = 20) {
 - Share button
 - Loading/error/not found states
 
-### 8.4 Create Product Create Page
+### 9.4 Create Product Create Page
 - **File**: `/src/app/my-shop/create/page.tsx` (NEW)
 - **Action**: CREATE new file
 - **Features**:
@@ -1151,7 +1275,7 @@ export function usePublicProducts(limit = 20) {
   - Handle form submission via `useShopPublishing`
   - Auto-redirect to My Shop after success
 
-### 8.5 Create Product Edit Page
+### 9.5 Create Product Edit Page
 - **File**: `/src/app/my-shop/edit/[id]/page.tsx` (NEW)
 - **Action**: CREATE new file
 - **Copy from**: `/src/app/my-contributions/edit/[id]/page.tsx`
@@ -1166,7 +1290,7 @@ export function usePublicProducts(limit = 20) {
 - Handle update via `createProduct(data, files, signer, existingDTag)`
 - Auto-redirect to My Shop after success
 
-### 8.6 Create My Shop Layout (Optional)
+### 9.6 Create My Shop Layout (Optional)
 - **File**: `/src/app/my-shop/layout.tsx` (OPTIONAL)
 - **Action**: CREATE new file (if shared layout needed)
 
@@ -1174,7 +1298,7 @@ export function usePublicProducts(limit = 20) {
 
 ## Phase 10: Navigation
 
-### 9.1 Add My Shop Link to Header
+### 10.1 Add My Shop Link to Header
 - **File**: `/src/components/Header.tsx`
 - **Action**: MODIFY existing file
 - **Changes**:
@@ -1200,12 +1324,12 @@ export function usePublicProducts(limit = 20) {
 
 ## Phase 11: Testing & Verification
 
-### 10.1 Build Test
+### 11.1 Build Test
 - **Command**: `npm run build`
 - **Verify**: No TypeScript errors
 - **Fix**: Any type mismatches or import errors
 
-### 10.2 Manual Testing Checklist
+### 11.2 Manual Testing Checklist
 - [ ] Navigate to `/shop` (public)
 - [ ] See public products from relays
 - [ ] Search products by keyword
@@ -1235,7 +1359,7 @@ export function usePublicProducts(limit = 20) {
 - [ ] Contact seller button works (opens messages)
 - [ ] Auth-gated pages redirect if not authenticated
 
-### 10.3 Nostr Event Verification
+### 11.3 Nostr Event Verification
 - [ ] Query relays for products by author pubkey
 - [ ] Verify Kind 30023 events returned
 - [ ] Verify `#t` tag includes `nostr-for-nomads-shop`
@@ -1248,7 +1372,7 @@ export function usePublicProducts(limit = 20) {
 
 ## Phase 12: Documentation
 
-### 11.1 Update NIP Implementation Matrix
+### 12.1 Update NIP Implementation Matrix
 - **File**: `/docs/nip-kind-implementation-matrix.md`
 - **Action**: UPDATE
 - **Changes**:
@@ -1257,7 +1381,7 @@ export function usePublicProducts(limit = 20) {
   - Update Kind 30023 usage
   - Add notes about product features
 
-### 11.2 Update README
+### 12.2 Update README
 - **File**: `/README.md`
 - **Action**: UPDATE
 - **Changes**:
@@ -1286,26 +1410,27 @@ export function usePublicProducts(limit = 20) {
 
 ## Files Summary
 
-### New Files (25 total, was 23)
-1. `/src/types/shop.ts`
-2. `/src/config/shop.ts`
-3. `/src/services/business/ShopService.ts`
-4. `/src/services/business/ProductValidationService.ts`
-5. `/src/services/generic/GenericShopService.ts`
-6. `/src/stores/useShopStore.ts` ← NEW from temp-cb-reference pattern
-7. `/src/stores/useMyShopStore.ts` ← NEW from temp-cb-reference pattern
-8. `/src/hooks/useShopPublishing.ts`
-9. `/src/hooks/usePublicProducts.ts`
-10. `/src/hooks/useProductEditing.ts`
-11. `/src/components/generic/MyProductCard.tsx`
-12. `/src/components/pages/ProductForm.tsx`
-11. `/src/components/pages/ShopContent.tsx`
-12. `/src/app/my-shop/page.tsx`
-13. `/src/app/my-shop/create/page.tsx`
-14. `/src/app/my-shop/edit/[id]/page.tsx`
-15. `/src/app/my-shop/layout.tsx` (optional)
-16. `/src/app/shop/[id]/page.tsx`
-17. `/docs/shop-implementation-plan.md` (this file)
+### New Files (26 total)
+1. `/src/types/shop.ts` - Type definitions (ProductData, ProductCardData, ShopProduct alias, etc.)
+2. `/src/config/shop.ts` - Categories, conditions, currencies
+3. `/src/services/business/ShopService.ts` - Business logic orchestration
+4. `/src/services/business/ProductValidationService.ts` - Validation rules
+5. `/src/services/generic/GenericShopService.ts` - Protocol layer queries
+6. `/src/stores/useShopStore.ts` - Public browse state (Zustand) ← from temp-cb-reference
+7. `/src/stores/useMyShopStore.ts` - User products state (Zustand) ← from temp-cb-reference
+8. `/src/hooks/useShopPublishing.ts` - Product publishing orchestration
+9. `/src/hooks/usePublicProducts.ts` - Public browse hook + store integration
+10. `/src/hooks/useProductEditing.ts` - Edit product orchestration
+11. `/src/hooks/useMyShopProducts.ts` - My Shop data fetching ← from temp-cb-reference
+12. `/src/components/generic/MyProductCard.tsx` - Product card for dashboard
+13. `/src/components/pages/ProductForm.tsx` - Create/edit form
+14. `/src/components/pages/ShopContent.tsx` - Browse products component
+15. `/src/app/my-shop/page.tsx` - My Shop dashboard page
+16. `/src/app/my-shop/create/page.tsx` - Create product page
+17. `/src/app/my-shop/edit/[id]/page.tsx` - Edit product page
+18. `/src/app/my-shop/layout.tsx` - My Shop layout (optional)
+19. `/src/app/shop/[id]/page.tsx` - Product detail page
+20. `/docs/shop-implementation-plan.md` - This file
 
 ### Modified Files (3)
 1. `/src/app/shop/page.tsx` - Replace mock data with Nostr integration
