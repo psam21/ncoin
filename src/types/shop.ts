@@ -185,4 +185,8 @@ interface MediaAttachment {
   mimeType?: string;
   hash?: string;
   size?: number;
+  dimensions?: {
+    width: number;
+    height: number;
+  };
 }

@@ -9,6 +9,10 @@ export interface MediaAttachment {
   mimeType?: string;
   hash?: string;
   size?: number;
+  dimensions?: {
+    width: number;
+    height: number;
+  };
 }
 
 interface ParsedMedia {
@@ -16,19 +20,24 @@ interface ParsedMedia {
   mimeType?: string;
   hash?: string;
   size?: number;
+  dimensions?: {
+    width: number;
+    height: number;
+  };
 }
 
 /**
  * Parse imeta tag (NIP-94) to extract media metadata
+ * Supports: url, mime type (m), hash (x), size, dimensions (dim)
  * @param imetaTag - Imeta tag array from Nostr event
- * @returns Parsed media object or null
+ * @returns Parsed media object with comprehensive metadata or null
  */
 export function parseImetaTag(imetaTag: string[]): ParsedMedia | null {
   if (!imetaTag || imetaTag[0] !== 'imeta') return null;
   
   const imetaStr = imetaTag.slice(1).join(' ');
   
-  // Extract URL
+  // Extract URL (required)
   const urlMatch = imetaStr.match(/url\s+(\S+)/);
   if (!urlMatch) return null;
   
@@ -42,11 +51,18 @@ export function parseImetaTag(imetaTag: string[]): ParsedMedia | null {
   const hashMatch = imetaStr.match(/x\s+(\S+)/);
   const hash = hashMatch ? hashMatch[1] : undefined;
   
-  // Extract size
+  // Extract size (in bytes)
   const sizeMatch = imetaStr.match(/size\s+(\d+)/);
   const size = sizeMatch ? parseInt(sizeMatch[1], 10) : undefined;
   
-  return { url, mimeType, hash, size };
+  // Extract dimensions (dim field: WxH format)
+  const dimMatch = imetaStr.match(/dim\s+(\d+)x(\d+)/);
+  const dimensions = dimMatch ? {
+    width: parseInt(dimMatch[1], 10),
+    height: parseInt(dimMatch[2], 10),
+  } : undefined;
+  
+  return { url, mimeType, hash, size, dimensions };
 }
 
 /**
@@ -81,15 +97,15 @@ export function extractMedia(tags: string[][]): {
     if (tag[0] === 'imeta') {
       const parsed = parseImetaTag(tag);
       if (parsed) {
-        const { url, mimeType, hash, size } = parsed;
+        const { url, mimeType, hash, size, dimensions } = parsed;
         
         // Categorize by mime type
         if (mimeType?.startsWith('video/')) {
-          videos.push({ url, mimeType, hash, size });
+          videos.push({ url, mimeType, hash, size, dimensions });
         } else if (mimeType?.startsWith('audio/')) {
           audio.push({ url, mimeType, hash, size });
         } else {
-          images.push({ url, mimeType, hash, size });
+          images.push({ url, mimeType, hash, size, dimensions });
         }
       }
     }
