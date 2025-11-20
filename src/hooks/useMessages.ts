@@ -36,14 +36,8 @@ export const useMessages = ({ otherPubkey, limit = 100 }: UseMessagesProps) => {
         service: 'useMessages',
         method: 'loadMessages',
       });
-      const error = new AppError(
-        'No signer detected. Please sign in.',
-        ErrorCode.SIGNER_NOT_DETECTED,
-        HttpStatus.UNAUTHORIZED,
-        ErrorCategory.AUTHENTICATION,
-        ErrorSeverity.MEDIUM
-      );
-      setError(error.message);
+      // Don't set error - signer may still be loading
+      // The page component handles the loading state
       setIsLoading(false);
       return;
     }

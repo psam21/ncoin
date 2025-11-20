@@ -173,7 +173,7 @@ export const SignUpFlow: React.FC = () => {
               )}
               
               <p className="text-sm text-gray-500">
-                Start exploring indigenous heritage, connecting with communities, and preserving cultural knowledge for future generations.
+                Start exploring contributions, connecting with nomads, shopping the marketplace, and building your decentralized presence.
               </p>
             </div>
             
