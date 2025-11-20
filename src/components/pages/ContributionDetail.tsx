@@ -50,7 +50,7 @@ export function ContributionDetail({ detail, backHref = '/explore' }: Contributi
     // Navigate to messages with context
     const params = new URLSearchParams({
       recipient: contributorPubkey,
-      context: `contribution:${contributionId}`,
+      context: `heritage:${contributionId}`,
       contextTitle: contributionTitle || 'Contribution',
       ...(contributionImageUrl && { contextImage: contributionImageUrl }),
     });

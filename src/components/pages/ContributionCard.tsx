@@ -31,7 +31,7 @@ export const ContributionCard: React.FC<ContributionCardProps> = ({
     // Navigate to messages with context
     const params = new URLSearchParams({
       recipient: contribution.pubkey,
-      context: `contribution:${contribution.id}`,
+      context: `heritage:${contribution.id}`,
       contextTitle: contribution.name || 'Nomad Contribution',
       ...(contribution.image && { contextImage: contribution.image }),
     });
