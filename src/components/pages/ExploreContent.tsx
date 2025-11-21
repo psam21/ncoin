@@ -17,7 +17,30 @@ import {
 } from 'lucide-react';
 
 import { useExploreContributions, type ContributionFilters } from '@/hooks/useExploreContributions';
-import { ContributionCard } from './ContributionCard';
+import { UnifiedContributionCard, UnifiedContributionData } from '@/components/generic/UnifiedContributionCard';
+import type { ContributionExploreItem } from '@/services/business/ContributionService';
+
+// Adapter: Convert ContributionExploreItem to UnifiedContributionData
+function toUnifiedData(item: ContributionExploreItem): UnifiedContributionData {
+  return {
+    id: item.id,
+    dTag: item.dTag,
+    title: item.name, // ContributionExploreItem uses 'name' instead of 'title'
+    description: item.description,
+    contributionType: '', // Not present in ContributionExploreItem
+    category: item.category,
+    location: item.location,
+    region: item.region,
+    country: undefined,
+    imageUrl: item.image, // ContributionExploreItem uses 'image' instead of 'imageUrl'
+    tags: item.tags,
+    pubkey: item.pubkey,
+    createdAt: item.publishedAt, // ContributionExploreItem uses 'publishedAt' instead of 'createdAt'
+    contributors: item.contributors,
+    mediaCount: item.mediaCount,
+    relativeTime: item.relativeTime,
+  };
+}
 
 export default function ExploreContent() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -250,7 +273,12 @@ export default function ExploreContent() {
                   </h3>
                   <div className="grid md:grid-cols-2 gap-8">
                     {featured.map((item) => (
-                      <ContributionCard key={item.id} contribution={item} featured />
+                      <UnifiedContributionCard 
+                        key={item.id} 
+                        contribution={toUnifiedData(item)} 
+                        variant="explore"
+                        featured 
+                      />
                     ))}
                   </div>
                 </div>
@@ -263,7 +291,11 @@ export default function ExploreContent() {
                   </h3>
                   <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {grid.slice(0, 5).map((item) => (
-                      <ContributionCard key={item.id} contribution={item} />
+                      <UnifiedContributionCard 
+                        key={item.id} 
+                        contribution={toUnifiedData(item)} 
+                        variant="explore"
+                      />
                     ))}
                     {/* See More Card */}
                     <div className="culture-card group cursor-pointer bg-gradient-to-br from-purple-50 to-orange-50 transition-all duration-300 flex flex-col items-center justify-center p-8 min-h-[400px]">

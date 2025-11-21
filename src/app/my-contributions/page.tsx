@@ -5,11 +5,34 @@ import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useNostrSigner } from '@/hooks/useNostrSigner';
 import { fetchContributionsByAuthor, deleteContribution, fetchContributionById } from '@/services/business/ContributionService';
-import { MyContributionCard } from '@/components/generic/MyContributionCard';
+import { UnifiedContributionCard, UnifiedContributionData } from '@/components/generic/UnifiedContributionCard';
 import { DeleteConfirmationModal } from '@/components/generic/DeleteConfirmationModal';
 import { ContributionCardData } from '@/types/contributions';
 import { CONTRIBUTION_TYPES, getNomadCategories } from '@/config/contributions';
 import { logger } from '@/services/core/LoggingService';
+
+// Adapter: Convert ContributionCardData to UnifiedContributionData
+function toUnifiedData(data: ContributionCardData): UnifiedContributionData {
+  return {
+    id: data.id,
+    dTag: data.dTag,
+    title: data.title,
+    description: data.description,
+    contributionType: data.contributionType,
+    category: data.category,
+    location: data.location,
+    region: data.region,
+    country: data.country,
+    imageUrl: data.imageUrl,
+    tags: data.tags,
+    pubkey: data.pubkey,
+    createdAt: data.createdAt,
+    // These fields are not present in ContributionCardData
+    contributors: undefined,
+    mediaCount: undefined,
+    relativeTime: undefined,
+  };
+}
 
 export default function MyContributionsPage() {
   const router = useRouter();
@@ -388,11 +411,12 @@ export default function MyContributionsPage() {
         {!isLoading && !error && filteredContributions.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
             {filteredContributions.map(contribution => (
-              <MyContributionCard 
+              <UnifiedContributionCard 
                 key={contribution.id} 
-                contribution={contribution}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
+                contribution={toUnifiedData(contribution)}
+                variant="my-contributions"
+                onEdit={() => handleEdit(contribution)}
+                onDelete={() => handleDelete(contribution)}
               />
             ))}
           </div>
