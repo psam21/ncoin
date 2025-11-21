@@ -103,40 +103,6 @@ export default function ContributeContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Hero Section */}
-      <section className="section-padding bg-gradient-to-br from-orange-400 to-orange-600 text-white">
-        <div className="container-width">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="container-width text-center"
-          >
-            <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6">
-              Share Your <span className="text-white">Nomad Experience</span>
-            </h1>
-            <p className="text-xl md:text-2xl text-orange-100 leading-relaxed mb-8">
-              Help fellow nomads by sharing your experiences, tips, and knowledge. Build the global
-              community of location-independent professionals.
-            </p>
-            <div className="flex items-center justify-center space-x-6 text-orange-200">
-              <div className="flex items-center">
-                <Users className="w-5 h-5 mr-2" />
-                <span>Build Community</span>
-              </div>
-              <div className="flex items-center">
-                <Globe className="w-5 h-5 mr-2" />
-                <span>Share Knowledge</span>
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="w-5 h-5 mr-2" />
-                <span>Help Others</span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Contribution Types */}
       <section className="section-padding bg-white">
         <div className="container-width">

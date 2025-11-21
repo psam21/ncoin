@@ -64,21 +64,6 @@ export default function WorkCreatePage() {
 
   return (
     <div className="min-h-screen bg-primary-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container-width py-8">
-          <div className="flex items-center gap-3">
-            <Briefcase className="w-8 h-8 text-primary-600" />
-            <div>
-              <h1 className="text-3xl font-serif font-bold text-primary-900">Post a Work Opportunity</h1>
-              <p className="text-gray-600 text-lg mt-1">
-                Share job openings with the digital nomad community
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="container-width py-8">
         <WorkForm
