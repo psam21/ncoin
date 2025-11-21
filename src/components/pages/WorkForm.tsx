@@ -225,11 +225,10 @@ export const WorkForm = ({
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto">
       <form onSubmit={handleSubmit} className="space-y-8">
         <fieldset disabled={isPublishing} className="space-y-8">
-          {/* Section 1: Basic Information */}
-          <div className="space-y-6">
+        {/* Section 1: Basic Information */}
+        <div className="space-y-6">
             <div className="border-b border-gray-200 pb-2">
               <h3 className="text-xl font-serif font-bold text-purple-800">Basic Information</h3>
             </div>
@@ -569,7 +568,6 @@ export const WorkForm = ({
           </div>
         )}
       </form>
-    </div>
 
     {/* Consent Dialog */}
     <UserConsentDialog
