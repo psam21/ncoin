@@ -52,71 +52,37 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Work */}
+          {/* Explore & Contribute */}
           <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
             <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-6">
-              <Briefcase className="w-8 h-8 text-purple-600" />
+              <Globe className="w-8 h-8 text-purple-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Work</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Explore & Contribute</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Find freelance work or hire talent. Post jobs, browse opportunities, and get paid in Bitcoin.
+              Discover and share nomadic experiences, guides, reviews, and tips from the global community.
             </p>
             <Link
-              href="/work"
+              href="/explore"
               className="text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-2"
             >
-              Explore Work <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* Messages */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-6">
-              <MessageCircle className="w-8 h-8 text-orange-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Messages</h3>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              Encrypted, decentralized messaging. Chat securely with anyone on the Nostr network.
-            </p>
-            <Link
-              href="/messages"
-              className="text-orange-600 font-semibold hover:text-orange-700 flex items-center gap-2"
-            >
-              Start Messaging <ArrowRight className="w-4 h-4" />
+              Start Exploring <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
           {/* Meetups */}
           <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-            <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-6">
-              <Users className="w-8 h-8 text-purple-600" />
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-6">
+              <Users className="w-8 h-8 text-orange-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Meetups</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Attend & Host Meetups</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
               Connect with nomads in person. Join or organize meetups, workshops, and events worldwide.
             </p>
             <Link
-              href="/meetups"
-              className="text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-2"
-            >
-              Find Meetups <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* Payments */}
-          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
-            <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-6">
-              <Wallet className="w-8 h-8 text-orange-600" />
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Payments</h3>
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              Send and receive Bitcoin payments. Lightning-fast, low-fee transactions globally.
-            </p>
-            <Link
-              href="/payments"
+              href="/meet"
               className="text-orange-600 font-semibold hover:text-orange-700 flex items-center gap-2"
             >
-              Manage Payments <ArrowRight className="w-4 h-4" />
+              Find Meetups <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
@@ -125,9 +91,9 @@ export default function HomePage() {
             <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-6">
               <ShoppingBag className="w-8 h-8 text-purple-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Shop</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">List & Shop Products</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Decentralized marketplace. Buy and sell products, services, and digital goods.
+              Buy and sell products and services in a decentralized marketplace built for nomads.
             </p>
             <Link
               href="/shop"
@@ -137,20 +103,54 @@ export default function HomePage() {
             </Link>
           </div>
 
-          {/* Travel */}
+          {/* Work */}
           <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
             <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-6">
-              <Plane className="w-8 h-8 text-orange-600" />
+              <Briefcase className="w-8 h-8 text-orange-600" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-3">Travel</h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">List & Find Gigs</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Book accommodations, experiences, and transport. Travel the world with the Nostr community.
+              Post freelance opportunities or find remote work. Connect talent with projects globally.
             </p>
             <Link
-              href="/travel"
+              href="/work"
               className="text-orange-600 font-semibold hover:text-orange-700 flex items-center gap-2"
             >
-              Plan Travel <ArrowRight className="w-4 h-4" />
+              Explore Work <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Messages */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
+            <div className="w-16 h-16 bg-gradient-to-br from-purple-100 to-purple-200 rounded-2xl flex items-center justify-center mb-6">
+              <MessageCircle className="w-8 h-8 text-purple-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Encrypted Messaging</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Private, end-to-end encrypted conversations. Chat securely with anyone on the network.
+            </p>
+            <Link
+              href="/messages"
+              className="text-purple-600 font-semibold hover:text-purple-700 flex items-center gap-2"
+            >
+              Start Messaging <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Payments */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-shadow border border-gray-100">
+            <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-orange-200 rounded-2xl flex items-center justify-center mb-6">
+              <Wallet className="w-8 h-8 text-orange-600" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Secure & Fast Payments</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Send and receive Bitcoin instantly. Lightning-fast, low-fee transactions worldwide.
+            </p>
+            <Link
+              href="/payments"
+              className="text-orange-600 font-semibold hover:text-orange-700 flex items-center gap-2"
+            >
+              Manage Payments <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
