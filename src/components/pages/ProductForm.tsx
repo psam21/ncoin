@@ -317,7 +317,7 @@ export const ProductForm = ({
               id="title"
               value={formData.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                 errors.title ? 'border-red-500' : 'border-gray-300'
               }`}
               placeholder="e.g., Vintage Fuji X100T Camera, Web Design Services"
@@ -336,7 +336,7 @@ export const ProductForm = ({
                 id="category"
                 value={formData.category}
                 onChange={(e) => handleInputChange('category', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                   errors.category ? 'border-red-500' : 'border-gray-300'
                 }`}
               >
@@ -358,7 +358,7 @@ export const ProductForm = ({
                 id="condition"
                 value={formData.condition}
                 onChange={(e) => handleInputChange('condition', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+                className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 ${
                   errors.condition ? 'border-red-500' : 'border-gray-300'
                 }`}
               >

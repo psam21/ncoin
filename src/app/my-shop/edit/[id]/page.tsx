@@ -107,19 +107,21 @@ export default function EditProductPage() {
   if (error || !product) {
     return (
       <div className="min-h-screen bg-primary-50">
-        <div className="container-width py-16">
-          <div className="flex flex-col items-center justify-center">
+        <div className="bg-white shadow-sm border-b">
+          <div className="container-width py-8">
+            <div className="flex flex-col items-center justify-center">
             <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
             <h2 className="text-2xl font-serif font-bold text-gray-900 mb-2">Error</h2>
             <p className="text-gray-600 mb-6 text-center max-w-md">
               {error || 'Product not found'}
             </p>
-            <button
-              onClick={() => router.push('/my-shop')}
-              className="btn-primary-sm"
-            >
-              Back to My Shop
-            </button>
+              <button
+                onClick={() => router.push('/my-shop')}
+                className="btn-primary-sm"
+              >
+                Back to My Shop
+              </button>
+            </div>
           </div>
         </div>
       </div>

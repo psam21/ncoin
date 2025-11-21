@@ -225,7 +225,7 @@ export const WorkForm = ({
             id="title"
             value={formData.title}
             onChange={(e) => handleInputChange('title', e.target.value)}
-            className={`w-full px-4 py-2 border ${errors.title ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
+            className={`w-full px-4 py-3 border ${errors.title ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
             placeholder="e.g., Full Stack Developer, Content Writer..."
           />
           {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
@@ -241,7 +241,7 @@ export const WorkForm = ({
               id="category"
               value={formData.category}
               onChange={(e) => handleInputChange('category', e.target.value)}
-              className={`w-full px-3 py-2 border ${errors.category ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
+              className={`w-full px-4 py-3 border ${errors.category ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
             >
               <option value="">Select a category</option>
               {WORK_CATEGORIES.map(cat => (
@@ -259,7 +259,7 @@ export const WorkForm = ({
               id="jobType"
               value={formData.jobType}
               onChange={(e) => handleInputChange('jobType', e.target.value)}
-              className={`w-full px-3 py-2 border ${errors.jobType ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
+              className={`w-full px-4 py-3 border ${errors.jobType ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
             >
               <option value="">Select job type</option>
               {WORK_JOB_TYPES.map(type => (
@@ -280,7 +280,7 @@ export const WorkForm = ({
               id="duration"
               value={formData.duration}
               onChange={(e) => handleInputChange('duration', e.target.value)}
-              className={`w-full px-3 py-2 border ${errors.duration ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
+              className={`w-full px-4 py-3 border ${errors.duration ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
             >
               <option value="">Select duration</option>
               {WORK_DURATIONS.map(dur => (
@@ -299,7 +299,7 @@ export const WorkForm = ({
               id="payRate"
               value={formData.payRate}
               onChange={(e) => handleInputChange('payRate', e.target.value)}
-              className={`w-full px-4 py-2 border ${errors.payRate ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
+              className={`w-full px-4 py-3 border ${errors.payRate ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
               placeholder="e.g., 50, 1000"
               min="0"
               step="0.01"
@@ -315,7 +315,7 @@ export const WorkForm = ({
               id="currency"
               value={formData.currency}
               onChange={(e) => handleInputChange('currency', e.target.value)}
-              className={`w-full px-3 py-2 border ${errors.currency ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
+              className={`w-full px-4 py-3 border ${errors.currency ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
             >
               <option value="">Select currency</option>
               {WORK_CURRENCIES.map(curr => (
@@ -352,7 +352,7 @@ export const WorkForm = ({
             id="contact"
             value={formData.contact}
             onChange={(e) => handleInputChange('contact', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="Email, Telegram, website, etc."
           />
           <p className="mt-1 text-sm text-gray-500">How should interested candidates reach you?</p>
@@ -371,7 +371,7 @@ export const WorkForm = ({
                 handleInputChange('region', e.target.value);
                 handleInputChange('country', ''); // Reset country when region changes
               }}
-              className={`w-full px-3 py-2 border ${errors.region ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
+              className={`w-full px-4 py-3 border ${errors.region ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
             >
               <option value="">Select a region</option>
               {REGIONS.map(region => (
@@ -389,7 +389,7 @@ export const WorkForm = ({
               id="country"
               value={formData.country}
               onChange={(e) => handleInputChange('country', e.target.value)}
-              className={`w-full px-3 py-2 border ${errors.country ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
+              className={`w-full px-4 py-3 border ${errors.country ? 'border-red-500' : 'border-gray-300'} rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500`}
               disabled={!formData.region}
             >
               <option value="">Select a country</option>
@@ -413,7 +413,7 @@ export const WorkForm = ({
             id="location"
             value={formData.location}
             onChange={(e) => handleInputChange('location', e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
             placeholder="City, state, or specific area..."
           />
         </div>
@@ -430,13 +430,13 @@ export const WorkForm = ({
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               placeholder="Add tags like 'bitcoin', 'remote', 'urgent'..."
             />
             <button
               type="button"
               onClick={handleAddTag}
-              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+              className="px-4 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
             >
               Add
             </button>
