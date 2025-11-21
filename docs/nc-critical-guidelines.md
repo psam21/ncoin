@@ -102,7 +102,7 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 - Use different discovery mechanisms per content type
 - Create tags that aren't queryable
 
-### 4. DEAD CODE ACCUMULATION
+### 4. Dead Code Accumulation
 
 **❌ Leaving unused code "just in case"**
 
@@ -151,10 +151,31 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 **WHY:** Piping/filtering hides compile errors, wastes build cycles, increases infrastructure costs.
 **PENALTY:** Missed errors cost time, money, and credibility. NO EXCEPTIONS.
 
-**COMMIT MESSAGE FORMAT:**
-- Keep it SHORT and focused (e.g., "feat: Add desktop nav tabs")
-- Detailed multi-section messages require manual approval (slower)
-- Concise messages = auto-approved = faster workflow
+**COMMIT MESSAGE FORMAT (SPEED vs. DETAIL):**
+
+- **For Speed (Auto-Approved): Use CONCISE, single-line messages.**
+  - Follows Conventional Commits format: `<type>: <subject>`
+  - **GOOD:** `feat: Add user profile avatar upload`
+  - **GOOD:** `fix: Correct price calculation in shop cart`
+  - **GOOD:** `refactor: Unify ContributionCard components`
+  - **WHY:** These are atomic, clear, and auto-approved for a rapid workflow. Use these for most changes.
+
+- **For Detail (Manual Approval): Use multi-line messages ONLY for major changes.**
+  - Use when a single line cannot capture the scope of a major refactor, new feature, or architectural change.
+  - The body should explain the "why" and "what", not just list files.
+  - **EXAMPLE (Requires Manual Approval):**
+
+    ```typescript
+    refactor: Unify all Card components across the app
+
+    - Created `UnifiedDisplayCard` with variants for `contribution`, `product`, `event`.
+    - Deduplicated ~600 lines of code from three different card components.
+    - All pages now import the single unified card, improving maintainability.
+    ```
+
+  - **WHY:** This provides critical context for future developers but slows down the current workflow due to manual review. **Use sparingly.**
+
+**Default to CONCISE messages for 99% of commits.**
 
 **❌ NO SKIPPING STEPS**
 **❌ NO ASSUMING IT WORKS**
