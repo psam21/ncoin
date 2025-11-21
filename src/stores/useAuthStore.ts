@@ -85,13 +85,15 @@ export const useAuthStore = create<AuthState>()(
         user,
         isAuthenticated: !!user,
         _hasLoggedOut: false, // Clear logout flag on successful sign-in
-      }),
+      }, false, 'setUser'),
       
       setAuthenticated: (authenticated) => set({ isAuthenticated: authenticated }),
       
       setNsec: (nsec) => set({ nsec }),
       
       logout: () => {
+        console.log('[AUTH STORE] Logout called from:', new Error().stack);
+        
         // Cart service removed for messages-only app
         
         // Clear message cache (async, non-blocking)
@@ -219,7 +221,17 @@ export const useAuthStore = create<AuthState>()(
         }),
         onRehydrateStorage: () => (state) => {
           // Called when rehydration is complete
-          state?.setHasHydrated(true);
+          if (state) {
+            console.log('[AUTH STORE] Rehydration complete:', {
+              hasUser: !!state.user,
+              isAuthenticated: state.isAuthenticated,
+              userPubkey: state.user?.pubkey?.substring(0, 8) + '...' || 'none',
+              _hasLoggedOut: state._hasLoggedOut,
+            });
+            state.setHasHydrated(true);
+          } else {
+            console.warn('[AUTH STORE] Rehydration returned null state');
+          }
         },
       }
     ),

@@ -63,6 +63,17 @@ export default function MyWorkPage() {
   const isHydrated = useAuthHydration();
   const { getSigner } = useNostrSigner();
 
+  // Debug logging to track auth state
+  useEffect(() => {
+    logger.info('MyWorkPage render state', {
+      service: 'MyWorkPage',
+      method: 'render',
+      isHydrated,
+      hasUser: !!user,
+      userPubkey: user?.pubkey?.substring(0, 8) + '...' || 'none',
+    });
+  }, [isHydrated, user]);
+
   // State
   const [workItems, setWorkItems] = useState<WorkCardData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -238,6 +249,11 @@ export default function MyWorkPage() {
 
   // Wait for hydration before checking auth to prevent false negatives
   if (!isHydrated) {
+    logger.info('MyWorkPage: Waiting for auth hydration', {
+      service: 'MyWorkPage',
+      method: 'render',
+      isHydrated,
+    });
     return (
       <div className="min-h-screen bg-primary-50 flex items-center justify-center">
         <div className="text-center">
@@ -249,6 +265,12 @@ export default function MyWorkPage() {
   }
 
   if (!user) {
+    logger.warn('MyWorkPage: No user after hydration, showing sign-in required', {
+      service: 'MyWorkPage',
+      method: 'render',
+      isHydrated,
+      hasUser: !!user,
+    });
     return (
       <div className="min-h-screen bg-primary-50">
         <div className="container-width py-16">

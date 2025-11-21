@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useAuthHydration } from '@/hooks/useAuthHydration';
@@ -20,6 +20,17 @@ export default function MyShopPage() {
   const { user } = useAuthStore();
   const isHydrated = useAuthHydration();
   const { getSigner } = useNostrSigner();
+  
+  // Debug logging to track auth state
+  useEffect(() => {
+    logger.info('MyShopPage render state', {
+      service: 'MyShopPage',
+      method: 'render',
+      isHydrated,
+      hasUser: !!user,
+      userPubkey: user?.pubkey?.substring(0, 8) + '...' || 'none',
+    });
+  }, [isHydrated, user]);
   
   // Hooks
   const { isLoading: isLoadingProducts, error: loadError } = useMyShopProducts();
@@ -147,6 +158,11 @@ export default function MyShopPage() {
 
   // Wait for hydration before checking auth to prevent false negatives
   if (!isHydrated) {
+    logger.info('MyShopPage: Waiting for auth hydration', {
+      service: 'MyShopPage',
+      method: 'render',
+      isHydrated,
+    });
     return (
       <div className="min-h-screen bg-primary-50 flex items-center justify-center">
         <div className="text-center">
@@ -158,6 +174,12 @@ export default function MyShopPage() {
   }
 
   if (!user) {
+    logger.warn('MyShopPage: No user after hydration, showing sign-in required', {
+      service: 'MyShopPage',
+      method: 'render',
+      isHydrated,
+      hasUser: !!user,
+    });
     return (
       <div className="min-h-screen bg-primary-50">
         <div className="container-width py-16">
