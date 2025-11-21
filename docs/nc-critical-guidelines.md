@@ -134,13 +134,22 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 
 **EVERY. SINGLE. TIME.**
 
-1. **Build:** `npm run build` (always run, it's auto-approved)
+1. **Build:** `npm run build` (ALWAYS full build, NEVER pipe to tail/head/grep - catches ALL compile errors)
 2. **Fix:** ALL errors first but iteratively, and then get to iteratively fixing warnings
 3. **Commit:** use `git add .` with CONCISE commit message (auto-approves for faster push)
 4. **Push:** `git push origin main`
 5. **Verify:** User tests on https://nostrcoin.vercel.app and not localhost
 6. **Confirm:** Get explicit confirmation before marking complete
 7. **Avoid:** Creating new documentation without permission
+
+**🚨 CRITICAL BUILD RULE:**
+
+**✅ CORRECT:** `npm run build`
+**❌ WRONG:** `npm run build 2>&1 | tail -30` or ANY piping variant
+**❌ WRONG:** `npm run build | grep` or ANY filtering
+
+**WHY:** Piping/filtering hides compile errors, wastes build cycles, increases infrastructure costs.
+**PENALTY:** Missed errors cost time, money, and credibility. NO EXCEPTIONS.
 
 **COMMIT MESSAGE FORMAT:**
 - Keep it SHORT and focused (e.g., "feat: Add desktop nav tabs")
