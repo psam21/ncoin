@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Heart, Bookmark, Share2, MapPin, Package, Bitcoin, DollarSign } from 'lucide-react';
+import { Heart, Bookmark, Share2, Package, Bitcoin, DollarSign } from 'lucide-react';
 import { ContentDetailHeader } from '@/components/generic/ContentDetailHeader';
 import { ContentDetailLayout } from '@/components/generic/ContentDetailLayout';
 import { ContentMediaGallery } from '@/components/generic/ContentMediaGallery';

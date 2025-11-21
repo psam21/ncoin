@@ -77,7 +77,7 @@ export const ProductForm = ({
     currentStep: editingHook.updateProgress?.step || 'idle',
     error: editingHook.updateError,
     result: null, // Editing doesn't use result the same way
-    publishProduct: async (data: ProductData, attachmentFiles: File[], _existingDTag?: string) => {
+    publishProduct: async (data: ProductData, attachmentFiles: File[]) => {
       // For editing, track selective operations based on current form attachments
       const existingAttachments = defaultValues?.attachments || [];
       const currentAttachmentUrls = attachments.map(a => a.url).filter((url): url is string => !!url);

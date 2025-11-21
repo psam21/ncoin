@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
-import { Clock, MapPin, DollarSign } from 'lucide-react';
+import { Clock, MapPin } from 'lucide-react';
 import { logger } from '@/services/core/LoggingService';
 import type { ProductCardData } from '@/types/shop';
 import { getRelativeTime } from '@/utils/dateUtils';
