@@ -34,6 +34,29 @@ const productTypes = [
   },
 ];
 
+const listingSteps = [
+  {
+    number: 1,
+    title: 'Choose Your Type',
+    description: 'Select the type of product or service you want to list.',
+  },
+  {
+    number: 2,
+    title: 'Add Details',
+    description: 'Provide descriptions, pricing, and specifications.',
+  },
+  {
+    number: 3,
+    title: 'Add Media',
+    description: 'Upload photos or videos to showcase your listing.',
+  },
+  {
+    number: 4,
+    title: 'List & Sell',
+    description: 'Your listing goes live for the nomad community to discover.',
+  },
+];
+
 export default function CreateProductPage() {
   const router = useRouter();
   const user = useAuthStore((state) => state.user);
@@ -160,6 +183,43 @@ export default function CreateProductPage() {
           </div>
         </section>
       )}
+
+      {/* Process Steps */}
+      <section className="section-padding bg-white">
+        <div className="container-width">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-purple-800 mb-4">
+              How It Works
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Our simple process makes it easy to list your products and services with the nomad community.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {listingSteps.map((step, index) => (
+              <motion.div
+                key={step.number}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                className="text-center"
+              >
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-white">{step.number}</span>
+                </div>
+                <h3 className="text-lg font-serif font-bold text-purple-800 mb-2">{step.title}</h3>
+                <p className="text-gray-600">{step.description}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
