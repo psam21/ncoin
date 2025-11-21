@@ -394,6 +394,29 @@ export default function ShopContent() {
           )}
         </div>
       </section>
+
+      {/* CTA Section */}
+      <section className="section-padding bg-gradient-to-r from-purple-600 to-orange-600 text-white">
+        <div className="container-width">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">
+              Have Something to List?
+            </h2>
+            <p className="text-lg mb-8 text-purple-50">
+              Join the nomad marketplace and connect with buyers around the world. 
+              List your products and services to reach the digital nomad community.
+            </p>
+            <Link
+              href="/my-shop/create"
+              className="btn-primary inline-flex items-center gap-2 bg-white text-purple-600 hover:bg-purple-50"
+            >
+              <ShoppingBag className="w-5 h-5" />
+              List Your Product or Service
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -342,6 +342,29 @@ export default function ExploreContent() {
           )}
         </div>
       </section>
+
+      {/* CTA Section */}
+      <section className="section-padding bg-gradient-to-r from-purple-600 to-orange-600 text-white">
+        <div className="container-width">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">
+              Have an Experience to Share?
+            </h2>
+            <p className="text-lg mb-8 text-purple-50">
+              Connect with the global nomad community by sharing your unique experiences, 
+              traditions, and stories. Inspire others on their journey.
+            </p>
+            <Link
+              href="/contribute"
+              className="btn-primary inline-flex items-center gap-2 bg-white text-purple-600 hover:bg-purple-50"
+            >
+              <Globe className="w-5 h-5" />
+              Share Your Contribution
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
