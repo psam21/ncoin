@@ -2,7 +2,6 @@
 
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { useAuthStore } from '@/stores/useAuthStore';
 import { contentDetailService, ContentDetailProvider } from '@/services/business/ContentDetailService';
 import { workContentService } from '@/services/business/WorkContentService';
 import type { ContentDetail } from '@/types/content-detail';
@@ -20,7 +19,6 @@ export default function WorkDetailPage() {
   const params = useParams();
   const workId = params.id as string;
   
-  const { user } = useAuthStore();
   const [contentDetail, setContentDetail] = useState<ContentDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);

@@ -15,7 +15,6 @@ import { UserConsentDialog } from '@/components/generic/UserConsentDialog';
 import { GenericAttachment } from '@/types/attachments';
 import { X, Loader2 } from 'lucide-react';
 import { useWorkPublishing } from '@/hooks/useWorkPublishing';
-import { useWorkEditing } from '@/hooks/useWorkEditing';
 import { validateWorkData } from '@/services/business/WorkValidationService';
 import { filterVisibleTags } from '@/utils/tagFilter';
 import type { WorkData } from '@/types/work';
@@ -64,16 +63,12 @@ export const WorkForm = ({
 }: WorkFormProps) => {
   const router = useRouter();
   
-  const publishingHook = useWorkPublishing();
-  const editingHook = useWorkEditing();
-  
-  // Choose the appropriate hook based on mode (editing not fully implemented yet)
+  // useWorkPublishing handles both create and edit modes
   const {
     publishWork,
     state,
     consentDialog,
-    resetPublishing,
-  } = publishingHook;
+  } = useWorkPublishing();
   
   const { isPublishing, uploadProgress, currentStep, error: publishError, result } = state;
 
