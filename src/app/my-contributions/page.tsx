@@ -12,6 +12,7 @@ import { DeleteConfirmationModal } from '@/components/generic/DeleteConfirmation
 import { ContributionCardData } from '@/types/contributions';
 import { CONTRIBUTION_TYPES, getNomadCategories } from '@/config/contributions';
 import { logger } from '@/services/core/LoggingService';
+import { Search, Plus, FileText } from 'lucide-react';
 
 // Adapter: Convert ContributionCardData to UnifiedContributionData
 function toUnifiedData(data: ContributionCardData): UnifiedContributionData {
@@ -441,19 +442,7 @@ export default function MyContributionsPage() {
         {!isLoading && !error && contributions.length > 0 && filteredContributions.length === 0 && (
           <div className="text-center py-12">
             <div className="text-primary-300 mb-4">
-              <svg
-                className="w-16 h-16 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              <Search className="w-16 h-16 mx-auto" />
             </div>
             <h3 className="text-2xl font-serif font-bold text-primary-800 mb-2">No matches found</h3>
             <p className="text-gray-600 mb-6 text-lg">
@@ -472,27 +461,15 @@ export default function MyContributionsPage() {
         {!isLoading && !error && contributions.length === 0 && (
           <div className="text-center py-16">
             <div className="text-primary-300 mb-4">
-              <svg
-                className="w-20 h-20 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
+              <FileText className="w-20 h-20 mx-auto" />
             </div>
             <h3 className="text-2xl font-serif font-bold text-primary-800 mb-2">No contributions yet</h3>
             <p className="text-gray-600 mb-6 text-lg">
               Start sharing your nomad experiences with the community
             </p>
-            <a href="/contribute" className="btn-primary-sm">
+            <Link href="/contribute" className="btn-primary-sm">
               Create Your First Contribution
-            </a>
+            </Link>
           </div>
         )}
       </div>

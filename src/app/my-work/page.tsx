@@ -11,6 +11,7 @@ import { UnifiedWorkCard, UnifiedWorkData } from '@/components/generic/UnifiedWo
 import { DeleteConfirmationModal } from '@/components/generic/DeleteConfirmationModal';
 import { WORK_CATEGORIES, WORK_JOB_TYPES } from '@/config/work';
 import { logger } from '@/services/core/LoggingService';
+import { Search, Briefcase } from 'lucide-react';
 
 // Work card data interface (similar to ContributionCardData)
 interface WorkCardData {
@@ -396,7 +397,7 @@ export default function MyWorkPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by title, description, or tags..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               />
             </div>
 
@@ -411,7 +412,7 @@ export default function MyWorkPage() {
                   id="jobType"
                   value={jobTypeFilter}
                   onChange={(e) => setJobTypeFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="all">All Types</option>
                   {WORK_JOB_TYPES.map(type => (
@@ -429,7 +430,7 @@ export default function MyWorkPage() {
                   id="category"
                   value={categoryFilter}
                   onChange={(e) => setCategoryFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="all">All Categories</option>
                   {WORK_CATEGORIES.map(cat => (
@@ -492,19 +493,7 @@ export default function MyWorkPage() {
         {!isLoading && !error && workItems.length > 0 && filteredWorkItems.length === 0 && (
           <div className="text-center py-12">
             <div className="text-primary-300 mb-4">
-              <svg
-                className="w-16 h-16 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
+              <Search className="w-16 h-16 mx-auto" />
             </div>
             <h3 className="text-2xl font-serif font-bold text-primary-800 mb-2">No matches found</h3>
             <p className="text-gray-600 mb-6 text-lg">
@@ -523,19 +512,7 @@ export default function MyWorkPage() {
         {!isLoading && !error && workItems.length === 0 && (
           <div className="text-center py-16">
             <div className="text-primary-300 mb-4">
-              <svg
-                className="w-20 h-20 mx-auto"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
+              <Briefcase className="w-20 h-20 mx-auto" />
             </div>
             <h3 className="text-2xl font-serif font-bold text-primary-800 mb-2">No work opportunities yet</h3>
             <p className="text-gray-600 mb-6 text-lg">

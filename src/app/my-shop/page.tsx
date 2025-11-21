@@ -446,13 +446,13 @@ export default function MyShopPage() {
             <p className="text-gray-600 mb-6 text-lg">
               Start listing products in your shop
             </p>
-            <button 
-              onClick={() => router.push('/my-shop/create')}
+            <Link
+              href="/my-shop/create"
               className="btn-primary-sm flex items-center gap-2 mx-auto"
             >
               <Plus className="w-4 h-4" />
               List Your First Product
-            </button>
+            </Link>
           </div>
         )}
       </div>
