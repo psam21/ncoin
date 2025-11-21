@@ -3,10 +3,17 @@
 import { useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAuthStore } from '@/stores/useAuthStore';
+import { contentDetailService, ContentDetailProvider } from '@/services/business/ContentDetailService';
 import { workContentService } from '@/services/business/WorkContentService';
 import type { ContentDetail } from '@/types/content-detail';
 import { WorkContent } from '@/components/pages/WorkContent';
 import { logger } from '@/services/core/LoggingService';
+
+// Register work provider (cast needed due to generic type constraints)
+contentDetailService.registerProvider(
+  'work',
+  workContentService as ContentDetailProvider
+);
 
 export default function WorkDetailPage() {
   const router = useRouter();
