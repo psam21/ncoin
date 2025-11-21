@@ -104,7 +104,7 @@ export default function ContributeContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Contribution Types */}
-      <section className="pt-0 pb-16 md:pb-20 bg-white">
+      <section className="pt-16 lg:pt-20 pb-16 md:pb-20 bg-white">
         <div className="container-width">
           <motion.div
             initial={{ opacity: 0, y: 30 }}

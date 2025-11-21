@@ -9,7 +9,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-orange-600/10"></div>
-        <div className="container-width pt-0 pb-16 md:pb-20 relative">
+        <div className="container-width pt-16 lg:pt-20 pb-16 md:pb-20 relative">
           <div className="max-w-4xl mx-auto text-center py-20">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-600 mb-6 leading-tight">
               Your Global Hub for the Nomadic Lifestyle
