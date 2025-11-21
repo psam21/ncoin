@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useNostrSigner } from '@/hooks/useNostrSigner';
 import { fetchWorkByAuthor, deleteWork, fetchWorkById } from '@/services/business/WorkService';
@@ -264,12 +265,12 @@ export default function MyWorkPage() {
               </p>
             </div>
             <div className="mt-4 lg:mt-0">
-              <a
+              <Link
                 href="/work/create"
                 className="btn-primary-sm"
               >
                 Post New Opportunity
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -504,9 +505,9 @@ export default function MyWorkPage() {
             <p className="text-gray-600 mb-6 text-lg">
               Start posting opportunities to connect with talented professionals
             </p>
-            <a href="/work/create" className="btn-primary-sm">
+            <Link href="/work/create" className="btn-primary-sm">
               Post Your First Opportunity
-            </a>
+            </Link>
           </div>
         )}
       </div>
