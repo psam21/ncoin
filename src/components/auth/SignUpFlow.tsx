@@ -45,8 +45,24 @@ export const SignUpFlow: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <section className="section-padding bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-orange-600/10"></div>
+        <div className="container-width pt-16 lg:pt-20 pb-8 relative">
+          <div className="max-w-3xl mx-auto text-center">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-orange-600 mb-4 leading-tight">
+              Join Nostr for Nomads
+            </h1>
+            <p className="text-lg md:text-xl text-gray-700 mb-8">
+              Create your sovereign identity. No email. No KYC. Just keys.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Sign Up Form Section */}
+      <section className="section-padding">
         <div className="container-width max-w-4xl mx-auto">
         <div className="mb-12">
           <div className="flex items-center justify-between max-w-3xl mx-auto">
