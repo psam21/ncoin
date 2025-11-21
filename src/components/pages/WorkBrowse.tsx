@@ -86,7 +86,7 @@ export default function WorkContent() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50">
-      <section className="section-padding bg-gradient-to-r from-purple-600 to-orange-600 text-white">
+      <section className="pt-0 pb-16 md:pb-20 bg-gradient-to-r from-purple-600 to-orange-600 text-white">
         <div className="container-width">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
