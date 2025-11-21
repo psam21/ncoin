@@ -51,8 +51,8 @@ export default function Header() {
             </span>
           </Link>
 
-          <div className="hidden lg:flex items-center justify-between flex-1">
-            <div className="flex items-center gap-6 ml-8">
+          <div className="hidden lg:flex items-center justify-center flex-1">
+            <div className="flex items-center gap-6">
               <Link
                 href="/explore"
                 className="text-white hover:text-orange-200 transition-colors font-medium flex items-center gap-2"
