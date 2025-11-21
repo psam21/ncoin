@@ -198,11 +198,11 @@ export function WorkContent({ detail, backHref = '/work' }: WorkContentProps) {
               type="button"
               onClick={() => setIsBookmarked(!isBookmarked)}
               className={`btn-outline-sm inline-flex items-center justify-center ${
-                isBookmarked ? '!border-primary-300 !bg-primary-50 !text-primary-700 hover:!bg-primary-100' : ''
+                isBookmarked ? '!border-purple-300 !bg-purple-50 !text-purple-700 hover:!bg-purple-100' : ''
               }`}
               aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark work opportunity'}
             >
-              <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-blue-500 text-blue-500' : ''}`} />
+              <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-purple-500 text-purple-500' : ''}`} />
             </button>
             
             {shareAction && (
@@ -224,7 +224,7 @@ export function WorkContent({ detail, backHref = '/work' }: WorkContentProps) {
         main={
           <section
             aria-labelledby="work-details"
-            className="space-y-5 rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-blue-100"
+            className="space-y-5 rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-primary-100"
           >
             <h2
               id="work-details"
@@ -235,12 +235,12 @@ export function WorkContent({ detail, backHref = '/work' }: WorkContentProps) {
             </h2>
 
             {allMetadata.length > 0 && (
-              <dl className="grid grid-cols-1 gap-4 rounded-2xl bg-white/70 p-4 shadow-inner ring-1 ring-blue-100 md:grid-cols-2">
+              <dl className="grid grid-cols-1 gap-4 rounded-2xl bg-white/70 p-4 shadow-inner ring-1 ring-primary-100 md:grid-cols-2">
                 {allMetadata.map(item => (
                   <div key={item.label}>
                     <dt className="text-xs uppercase tracking-wide text-gray-500">{item.label}</dt>
                     <dd
-                      className={`mt-1 text-base font-medium ${item.emphasis ? 'text-blue-900' : 'text-gray-700'}`}
+                      className={`mt-1 text-base font-medium ${item.emphasis ? 'text-primary-900' : 'text-gray-700'}`}
                     >
                       {item.value}
                     </dd>
@@ -254,9 +254,9 @@ export function WorkContent({ detail, backHref = '/work' }: WorkContentProps) {
               {!!detail.customFields.jobType && (
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
-                    <Briefcase className="h-5 w-5 text-blue-600" />
+                    <Briefcase className="h-5 w-5 text-primary-600" />
                   </div>
-                  <p className="text-sm font-medium text-blue-900">{String(detail.customFields.jobType)}</p>
+                  <p className="text-sm font-medium text-primary-900">{String(detail.customFields.jobType)}</p>
                   <p className="text-xs text-gray-600">Job Type</p>
                 </div>
               )}
@@ -264,9 +264,9 @@ export function WorkContent({ detail, backHref = '/work' }: WorkContentProps) {
               {!!detail.customFields.duration && (
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
-                    <Calendar className="h-5 w-5 text-blue-600" />
+                    <Calendar className="h-5 w-5 text-primary-600" />
                   </div>
-                  <p className="text-sm font-medium text-blue-900">{String(detail.customFields.duration)}</p>
+                  <p className="text-sm font-medium text-primary-900">{String(detail.customFields.duration)}</p>
                   <p className="text-xs text-gray-600">Duration</p>
                 </div>
               )}

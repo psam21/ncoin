@@ -79,8 +79,8 @@ export default function WorkDetailPage() {
     return (
       <div className="min-h-screen bg-primary-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-blue-600">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+          <p className="text-primary-600">Loading...</p>
         </div>
       </div>
     );
@@ -92,8 +92,8 @@ export default function WorkDetailPage() {
       <div className="min-h-screen bg-primary-50">
         <div className="container-width section-padding">
           <div className="text-center py-16">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-blue-600 text-lg">Loading work opportunity...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
+            <p className="text-primary-600 text-lg">Loading work opportunity...</p>
           </div>
         </div>
       </div>
@@ -106,7 +106,7 @@ export default function WorkDetailPage() {
       <div className="min-h-screen bg-primary-50">
         <div className="container-width section-padding">
           <div className="text-center py-16">
-            <h2 className="text-2xl font-serif font-bold text-blue-800 mb-4">
+            <h2 className="text-2xl font-serif font-bold text-primary-800 mb-4">
               Work Opportunity Not Found
             </h2>
             <p className="text-gray-600 mb-6">
