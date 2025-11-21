@@ -10,12 +10,11 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 | Sign In | ✅ Basic events | ❌ | ✅ Signer auth | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Profile fetch | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
 | Profile | ✅ Event structure | ✅ DNS verification | ✅ Read/write | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Image upload | ✅ Profile metadata | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ❌ | Production |
 | Messages | ✅ Event queries | ❌ | ✅ Signing DMs | ❌ | ✅ Gift wraps | ❌ | ❌ | ✅ Encryption | ❌ | ❌ | ❌ | ❌ | ✅ Rumor events | ✅ Encrypted DMs | ❌ | ❌ | ❌ | Production |
-| Meetings | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | UI Only |
 | Payments | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | UI Only |
 | My Shop | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Products | Production |
 | Shop | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Products | Production |
-| Travel | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Not Started |
-| Work | ✅ Query events | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Work Opportunities | Production |
+| My Work | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Work Opportunities | Production |
+| Work | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Work Opportunities | Production |
 | Explore | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Contributions | Production |
 | Meetups | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Not Started |
 | Contribute | ✅ Event creation | ❌ | ✅ Signing | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | Production |
@@ -121,9 +120,9 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 
 ### Meetings
 
-- **Status**: UI only - no Nostr integration
-- URL creator interface for Jitsi/meet.jit.si rooms
-- Empty meetings array, no event publishing or queries
+- **Status**: Removed - feature deprecated
+- URL creator interface for Jitsi/meet.jit.si rooms removed from navigation
+- No Nostr integration, UI removed from application
 
 ### Payments
 
@@ -181,8 +180,9 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 
 ### Travel, Meetups
 
-- **Status**: Not Started - no implementation
-- Planned features for future releases
+- **Status**: Removed/Not Started - features deprecated or not implemented
+- Travel route removed from application
+- Meetups planned for future releases
 - No code, no UI, no services
 
 ### Explore & Contribute
@@ -454,9 +454,10 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 **Codebase Version**: Next.js 15.4.6, React 18  
 **Active NIPs**: 9 implemented (NIP-01, NIP-05, NIP-07, NIP-09, NIP-17, NIP-19, NIP-23, NIP-33, NIP-44 + Blossom)  
 **Active Event Kinds**: 7 kinds (Kind 0, Kind 1, Kind 5, Kind 14, Kind 1059, Kind 24242, Kind 30023)  
-**Production Features**: 11 features (Sign Up, Sign In, Profile, Messages, Explore, Contribute, My Contributions, My Shop, Shop, Work, My Work, User Event Log)  
-**UI Only Features**: 2 features (Meetings, Payments)  
-**Not Started**: 2 features (Travel, Meetups)
+**Production Features**: 11 features (Sign Up, Sign In, Profile, Messages, Explore, Contribute, My Contributions, My Shop, Shop, My Work, Work, User Event Log)  
+**UI Only Features**: 1 feature (Payments)  
+**Removed Features**: 2 features (Meetings, Travel)  
+**Not Started**: 1 feature (Meetups)
 
 **Architecture**: Service-Oriented Architecture (SOA) with strict layer separation
 
