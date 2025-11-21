@@ -217,6 +217,23 @@ export default function WorkEditPage() {
   // Edit form
   return (
     <div className="min-h-screen bg-primary-50">
+      {/* Hero Section */}
+      <section className="pt-16 lg:pt-20 pb-12 bg-gradient-to-r from-purple-600 to-orange-600 text-white">
+        <div className="container-width">
+          <div className="max-w-5xl mx-auto text-center">
+            <div className="flex items-center justify-center mb-4">
+              <Briefcase className="w-10 h-10 mr-3" />
+              <h1 className="text-3xl md:text-4xl font-serif font-bold">
+                Edit Work Opportunity
+              </h1>
+            </div>
+            <p className="text-lg text-purple-50 max-w-2xl mx-auto">
+              Update your work opportunity and connect with talented nomads
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="container-width py-8">

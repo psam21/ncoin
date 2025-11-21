@@ -97,8 +97,8 @@ export default async function ContributionPage({ params }: ContributionPageProps
     return (
       <>
         <ContributionJsonLd contribution={jsonLdData} />
-        <div className="min-h-screen bg-primary-50 py-10">
-          <div className="container-width space-y-10">
+        <div className="min-h-screen bg-primary-50">
+          <div className="container-width py-10 space-y-10">
             <ContributionDetail detail={content} />
           </div>
         </div>

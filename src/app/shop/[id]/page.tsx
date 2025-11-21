@@ -55,8 +55,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
     }
 
     return (
-      <div className="min-h-screen bg-primary-50 py-10">
-        <div className="container-width">
+      <div className="min-h-screen bg-primary-50">
+        <div className="container-width py-10">
           <ProductDetail product={product} />
         </div>
       </div>

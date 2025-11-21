@@ -90,7 +90,7 @@ export default function WorkDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-primary-50">
-        <div className="container-width section-padding">
+        <div className="container-width py-10">
           <div className="text-center py-16">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
             <p className="text-primary-600 text-lg">Loading work opportunity...</p>
