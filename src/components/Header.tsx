@@ -188,14 +188,14 @@ export default function Header() {
                   </div>
                   
                   <Link
-                    href="/messages"
+                    href="/my-contributions"
                     className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     <svg className="w-4 h-4 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                     </svg>
-                    Messages
+                    My Contributions
                   </Link>
                   
                   <Link
@@ -221,14 +221,25 @@ export default function Header() {
                   </Link>
                   
                   <Link
-                    href="/my-contributions"
+                    href="/messages"
                     className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
                     <svg className="w-4 h-4 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                     </svg>
-                    My Contributions
+                    My Messages
+                  </Link>
+                  
+                  <Link
+                    href="/payments"
+                    className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg className="w-4 h-4 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    My Payments
                   </Link>
                   
                   <Link
@@ -239,7 +250,46 @@ export default function Header() {
                     <svg className="w-4 h-4 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    Profile
+                    My Profile
+                  </Link>
+                  
+                  <div className="border-t border-purple-100 my-1"></div>
+                  
+                  <div className="px-4 py-2 text-xs text-purple-500 font-medium uppercase tracking-wider">
+                    Create
+                  </div>
+                  
+                  <Link
+                    href="/contribute"
+                    className="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Contribution
+                  </Link>
+                  
+                  <Link
+                    href="/my-shop/create"
+                    className="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Shop Item
+                  </Link>
+                  
+                  <Link
+                    href="/my-work/create"
+                    className="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Work Item
                   </Link>
                   
                   <div className="border-t border-purple-100 my-1"></div>
