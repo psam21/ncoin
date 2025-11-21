@@ -117,7 +117,7 @@ export default function CreateProductPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Product Types Section */}
-      <section className="section-padding bg-white">
+      <section className="pt-0 pb-16 md:pb-20 bg-white">
         <div className="container-width">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
