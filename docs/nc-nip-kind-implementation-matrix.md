@@ -15,7 +15,7 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 | My Shop | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Products | Production |
 | Shop | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Products | Production |
 | Travel | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Not Started |
-| Work | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Not Started |
+| Work | ✅ Query events | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Work Opportunities | Production |
 | Explore | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Contributions | Production |
 | Meetups | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Not Started |
 | Contribute | ✅ Event creation | ❌ | ✅ Signing | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | Production |
@@ -154,13 +154,36 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 - **dTag prefix**: `product-{timestamp}-{random}` for stable IDs
 - Full integration with relays, Blossom uploads, NIP-33 replaceable events
 
-### Travel, Work, Meetups
+### Work (Job/Freelance Marketplace)
+
+- **Status**: Production - job board for freelance and remote opportunities
+- **My Work**: Full CRUD operations for user's own Kind 30023 work postings
+  - Create/edit/delete work opportunities via Kind 30023 events
+  - NIP-09 deletion events for removing work posts
+  - Multi-attachment support via Blossom (images, videos, audio)
+  - Tag pattern: `nostr-for-nomads-work`
+  - Statistics dashboard: Total opportunities, by category, by job type
+  - Filters: Search, category, job type, region
+- **Public Work**: Browse all opportunities from network
+  - Fetches Kind 30023 events with work tag
+  - Work cards with job type, pay rate, duration, location
+  - Click to view opportunity details with contact functionality
+- **Service architecture**:
+  - `WorkService` (WorkBusinessService) - Business logic orchestration
+  - `GenericWorkService` - Relay queries and parsing
+  - `WorkContentService` - Content detail provider
+  - `WorkValidationService` - Field validation
+  - `NostrEventService.createWorkEvent()` - Event creation
+  - `useWorkPublishing` - Generic wrapper pattern
+- **dTag prefix**: `work-{timestamp}-{random}` for stable IDs
+- Full integration with relays, Blossom uploads, NIP-33 replaceable events
+- Implements ContentDetailService pattern for work opportunity details
+
+### Travel, Meetups
 
 - **Status**: Not Started - no implementation
 - Planned features for future releases
 - No code, no UI, no services
-- **Note**: Work is the job/freelance marketplace feature
-- **Service layer ready**: NostrEventService has methods available for future use
 
 ### Explore & Contribute
 
@@ -391,10 +414,15 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
   - Tag pattern: `nostr-for-nomads-shop`
   - Public browse + authenticated My Shop dashboard
   - **Service architecture**: ShopBusinessService, ShopService, NostrEventService
-- **Travel/Work/Meetups**: Not started - awaiting implementation
-  - Work is the job/freelance marketplace feature
-  - Service methods available in NostrEventService
-  - Can follow Shop pattern for rapid development
+- **Work**: ✅ IMPLEMENTED - Kind 30023 for job/freelance opportunities (NIP-33 parameterized replaceable) with full Nostr integration
+  - Create/edit/delete work opportunities via Kind 30023 events
+  - NIP-09 deletion events for removing work posts
+  - Multi-attachment support via Blossom (images, videos, audio)
+  - Tag pattern: `nostr-for-nomads-work`
+  - Public browse + authenticated My Work dashboard
+  - **Service architecture**: WorkService, GenericWorkService, WorkContentService, WorkValidationService, NostrEventService
+- **Travel/Meetups**: Not started - awaiting implementation
+  - Can follow Shop/Work pattern for rapid development
 - **Explore**: ✅ IMPLEMENTED - Query Kind 30023 events for discovery
 - **Contribute**: ✅ IMPLEMENTED - Kind 30023 for community contributions with full Nostr integration
 
@@ -422,17 +450,17 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 
 ---
 
-**Last Updated**: November 20, 2025  
+**Last Updated**: November 21, 2025  
 **Codebase Version**: Next.js 15.4.6, React 18  
 **Active NIPs**: 9 implemented (NIP-01, NIP-05, NIP-07, NIP-09, NIP-17, NIP-19, NIP-23, NIP-33, NIP-44 + Blossom)  
 **Active Event Kinds**: 7 kinds (Kind 0, Kind 1, Kind 5, Kind 14, Kind 1059, Kind 24242, Kind 30023)  
-**Production Features**: 9 features (Sign Up, Sign In, Profile, Messages, Explore, Contribute, My Contributions, My Shop, Shop, User Event Log)  
+**Production Features**: 11 features (Sign Up, Sign In, Profile, Messages, Explore, Contribute, My Contributions, My Shop, Shop, Work, My Work, User Event Log)  
 **UI Only Features**: 2 features (Meetings, Payments)  
-**Not Started**: 3 features (Travel, Work, Meetups)
+**Not Started**: 2 features (Travel, Meetups)
 
 **Architecture**: Service-Oriented Architecture (SOA) with strict layer separation
 
 - Presentation Layer: Pages, Components, Hooks
-- Business Logic Layer: AuthBusinessService, ProfileBusinessService, MessagingBusinessService, ContributionService, ShopBusinessService
+- Business Logic Layer: AuthBusinessService, ProfileBusinessService, MessagingBusinessService, ContributionService, ShopBusinessService, WorkService
 - Core Services Layer: KVService, LoggingService, ProfileCacheService, MessageCacheService, EventLoggingService
-- Protocol/Data Layer: GenericEventService, GenericRelayService, GenericBlossomService, GenericContributionService, ShopService, EncryptionService, NostrEventService
+- Protocol/Data Layer: GenericEventService, GenericRelayService, GenericBlossomService, GenericContributionService, GenericWorkService, ShopService, EncryptionService, NostrEventService, WorkValidationService, WorkContentService
