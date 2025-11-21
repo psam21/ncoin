@@ -2,10 +2,16 @@ import { logger } from '@/services/core/LoggingService';
 import type { WorkData, WorkPublishingProgress } from '@/types/work';
 import { validateWorkData } from './WorkValidationService';
 import { nostrEventService } from '../nostr/NostrEventService';
-import type { NostrSigner } from '@/types/nostr';
+import type { NostrSigner, NostrEvent } from '@/types/nostr';
 import { uploadSequentialWithConsent } from '@/services/generic/GenericBlossomService';
-import { fetchPublicWorkOpportunities as fetchPublicWorkFromRelay, type WorkEvent } from '@/services/generic/GenericWorkService';
+import { 
+  fetchPublicWorkOpportunities as fetchPublicWorkFromRelay, 
+  type WorkEvent 
+} from '@/services/generic/GenericWorkService';
 import { getRelativeTime } from '@/utils/dateUtils';
+import { queryEvents } from '@/services/generic/GenericRelayService';
+import { createDeletionEvent, signEvent } from '@/services/generic/GenericEventService';
+import { extractMedia } from '@/services/generic/GenericContributionService';
 
 export interface CreateWorkResult {
   success: boolean;
@@ -457,7 +463,359 @@ export async function fetchPublicWorkOpportunities(
   }
 }
 
+/**
+ * Fetch work opportunities by author
+ * Business layer method for querying user's own work postings
+ * 
+ * @param pubkey - Author's public key
+ * @returns Array of work events authored by this user
+ */
+export async function fetchWorkByAuthor(pubkey: string): Promise<WorkEvent[]> {
+  try {
+    logger.info('Fetching work opportunities by author', {
+      service: 'WorkService',
+      method: 'fetchWorkByAuthor',
+      pubkey: pubkey.substring(0, 8) + '...',
+    });
+
+    // Query relays for work opportunities by this author
+    const filters = [
+      {
+        kinds: [30023],
+        authors: [pubkey],
+        '#t': ['nostr-for-nomads-work'],
+      }
+    ];
+
+    const queryResult = await queryEvents(filters);
+
+    if (!queryResult.events || queryResult.events.length === 0) {
+      logger.info('No work opportunities found for author', {
+        service: 'WorkService',
+        method: 'fetchWorkByAuthor',
+        pubkey: pubkey.substring(0, 8) + '...',
+      });
+      return [];
+    }
+
+    logger.info('Found work opportunities for author', {
+      service: 'WorkService',
+      method: 'fetchWorkByAuthor',
+      pubkey: pubkey.substring(0, 8) + '...',
+      count: queryResult.events.length,
+    });
+
+    // NIP-33 parameterized replaceable events - deduplicate by dTag, keeping newest
+    const eventsByDTag = new Map<string, NostrEvent>();
+    
+    for (const event of queryResult.events) {
+      const dTag = event.tags.find(t => t[0] === 'd')?.[1];
+      if (!dTag) continue;
+      
+      const existing = eventsByDTag.get(dTag);
+      if (!existing || event.created_at > existing.created_at) {
+        eventsByDTag.set(dTag, event);
+      }
+    }
+
+    logger.info('Deduplicated work opportunities by dTag', {
+      service: 'WorkService',
+      method: 'fetchWorkByAuthor',
+      originalCount: queryResult.events.length,
+      deduplicatedCount: eventsByDTag.size,
+    });
+
+    const workOpportunities: WorkEvent[] = [];
+    
+    for (const event of eventsByDTag.values()) {
+      const dTag = event.tags.find(t => t[0] === 'd')?.[1];
+      if (!dTag) continue;
+      
+      const title = event.tags.find(t => t[0] === 'title')?.[1] || '';
+      const summary = event.tags.find(t => t[0] === 'summary')?.[1] || title;
+      
+      // Parse description from event.content
+      let description = '';
+      try {
+        const nip23Content = JSON.parse(event.content);
+        description = nip23Content.content || event.content || summary;
+      } catch {
+        description = event.content || summary;
+      }
+      
+      const category = event.tags.find(t => t[0] === 'category')?.[1] || '';
+      const jobType = event.tags.find(t => t[0] === 'job-type')?.[1] || '';
+      const duration = event.tags.find(t => t[0] === 'duration')?.[1] || '';
+      const payRateStr = event.tags.find(t => t[0] === 'pay-rate')?.[1] || '0';
+      const payRate = parseFloat(payRateStr);
+      const currency = event.tags.find(t => t[0] === 'currency')?.[1] || '';
+      const contact = event.tags.find(t => t[0] === 'contact')?.[1];
+      const language = event.tags.find(t => t[0] === 'language')?.[1] || 'en';
+      const location = event.tags.find(t => t[0] === 'location')?.[1] || '';
+      const region = event.tags.find(t => t[0] === 'region')?.[1] || '';
+      const country = event.tags.find(t => t[0] === 'country')?.[1];
+      const tags = event.tags
+        .filter(t => t[0] === 't' && !t[1].startsWith('nostr-for-nomads-'))
+        .map(t => t[1]);
+
+      const media = extractMedia(event.tags);
+
+      workOpportunities.push({
+        id: event.id,
+        dTag,
+        pubkey: event.pubkey,
+        title,
+        summary,
+        description,
+        category,
+        jobType,
+        duration,
+        payRate,
+        currency,
+        contact,
+        language,
+        location,
+        region,
+        country,
+        tags,
+        media,
+        createdAt: event.created_at,
+        publishedAt: event.created_at,
+      });
+    }
+
+    // Sort by created_at DESC (newest first)
+    workOpportunities.sort((a, b) => b.createdAt - a.createdAt);
+
+    logger.info('Work opportunities by author parsed successfully', {
+      service: 'WorkService',
+      method: 'fetchWorkByAuthor',
+      parsedCount: workOpportunities.length,
+    });
+
+    return workOpportunities;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Failed to fetch work by author', error instanceof Error ? error : new Error(errorMessage), {
+      service: 'WorkService',
+      method: 'fetchWorkByAuthor',
+      pubkey: pubkey.substring(0, 8) + '...',
+      error: errorMessage,
+    });
+    return [];
+  }
+}
+
+/**
+ * Fetch single work opportunity by dTag
+ * 
+ * @param dTag - The d tag (unique identifier) of the work opportunity
+ * @returns Work event or null if not found
+ */
+export async function fetchWorkById(dTag: string): Promise<WorkEvent | null> {
+  try {
+    logger.info('Fetching work opportunity by dTag', {
+      service: 'WorkService',
+      method: 'fetchWorkById',
+      dTag,
+    });
+
+    const filters = [
+      {
+        kinds: [30023],
+        '#d': [dTag],
+        '#t': ['nostr-for-nomads-work'],
+      }
+    ];
+
+    const queryResult = await queryEvents(filters);
+
+    if (!queryResult.success || !queryResult.events || queryResult.events.length === 0) {
+      logger.warn('Work opportunity not found', {
+        service: 'WorkService',
+        method: 'fetchWorkById',
+        dTag,
+      });
+      return null;
+    }
+
+    // Get the most recent event (highest created_at)
+    const latestEvent = queryResult.events.sort((a, b) => b.created_at - a.created_at)[0];
+
+    const title = latestEvent.tags.find(t => t[0] === 'title')?.[1] || '';
+    const summary = latestEvent.tags.find(t => t[0] === 'summary')?.[1] || title;
+    
+    // Parse description from event.content
+    let description = '';
+    try {
+      const nip23Content = JSON.parse(latestEvent.content);
+      description = nip23Content.content || latestEvent.content || summary;
+    } catch {
+      description = latestEvent.content || summary;
+    }
+    
+    const category = latestEvent.tags.find(t => t[0] === 'category')?.[1] || '';
+    const jobType = latestEvent.tags.find(t => t[0] === 'job-type')?.[1] || '';
+    const duration = latestEvent.tags.find(t => t[0] === 'duration')?.[1] || '';
+    const payRateStr = latestEvent.tags.find(t => t[0] === 'pay-rate')?.[1] || '0';
+    const payRate = parseFloat(payRateStr);
+    const currency = latestEvent.tags.find(t => t[0] === 'currency')?.[1] || '';
+    const contact = latestEvent.tags.find(t => t[0] === 'contact')?.[1];
+    const language = latestEvent.tags.find(t => t[0] === 'language')?.[1] || 'en';
+    const location = latestEvent.tags.find(t => t[0] === 'location')?.[1] || '';
+    const region = latestEvent.tags.find(t => t[0] === 'region')?.[1] || '';
+    const country = latestEvent.tags.find(t => t[0] === 'country')?.[1];
+    const tags = latestEvent.tags
+      .filter(t => t[0] === 't' && !t[1].startsWith('nostr-for-nomads-'))
+      .map(t => t[1]);
+
+    const media = extractMedia(latestEvent.tags);
+
+    const workOpportunity: WorkEvent = {
+      id: latestEvent.id,
+      dTag,
+      pubkey: latestEvent.pubkey,
+      title,
+      summary,
+      description,
+      category,
+      jobType,
+      duration,
+      payRate,
+      currency,
+      contact,
+      language,
+      location,
+      region,
+      country,
+      tags,
+      media,
+      createdAt: latestEvent.created_at,
+      publishedAt: latestEvent.created_at,
+    };
+
+    logger.info('Work opportunity fetched successfully', {
+      service: 'WorkService',
+      method: 'fetchWorkById',
+      dTag,
+      title,
+    });
+
+    return workOpportunity;
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Failed to fetch work by ID', error instanceof Error ? error : new Error(errorMessage), {
+      service: 'WorkService',
+      method: 'fetchWorkById',
+      dTag,
+      error: errorMessage,
+    });
+    return null;
+  }
+}
+
+/**
+ * Delete a work opportunity
+ * 
+ * @param eventId - Event ID to delete
+ * @param signer - Nostr signer for signing the deletion event
+ * @param pubkey - Author's public key (for logging and validation)
+ * @param title - Work title (for deletion reason)
+ * @returns Result with success status and relay publishing info
+ */
+export async function deleteWork(
+  eventId: string,
+  signer: NostrSigner,
+  pubkey: string,
+  title: string
+): Promise<{ success: boolean; publishedRelays?: string[]; failedRelays?: string[]; error?: string }> {
+  try {
+    logger.info('Deleting work opportunity', {
+      service: 'WorkService',
+      method: 'deleteWork',
+      eventId,
+      pubkey: pubkey.substring(0, 8) + '...',
+      title,
+    });
+
+    const deletionResult = createDeletionEvent(
+      [eventId],
+      pubkey,
+      {
+        reason: `Deleted work opportunity: ${title}`,
+      }
+    );
+
+    if (!deletionResult.success || !deletionResult.event) {
+      throw new Error(deletionResult.error || 'Failed to create deletion event');
+    }
+
+    // Sign the deletion event
+    const signResult = await signEvent(deletionResult.event, signer);
+
+    if (!signResult.success || !signResult.signedEvent) {
+      throw new Error(signResult.error || 'Failed to sign deletion event');
+    }
+
+    logger.info('Deletion event created and signed', {
+      service: 'WorkService',
+      method: 'deleteWork',
+      deletionEventId: signResult.signedEvent.id,
+      targetEventId: eventId,
+    });
+
+    // Publish deletion event
+    const publishResult = await nostrEventService.publishEvent(
+      signResult.signedEvent as NostrEvent,
+      signer
+    );
+
+    if (!publishResult.success) {
+      logger.error('Failed to publish deletion event', new Error(publishResult.error), {
+        service: 'WorkService',
+        method: 'deleteWork',
+        eventId,
+      });
+      return {
+        success: false,
+        error: publishResult.error,
+        publishedRelays: publishResult.publishedRelays,
+        failedRelays: publishResult.failedRelays,
+      };
+    }
+
+    logger.info('Work opportunity deleted successfully', {
+      service: 'WorkService',
+      method: 'deleteWork',
+      eventId,
+      publishedRelays: publishResult.publishedRelays.length,
+    });
+
+    return {
+      success: true,
+      publishedRelays: publishResult.publishedRelays,
+      failedRelays: publishResult.failedRelays,
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Failed to delete work opportunity', error instanceof Error ? error : new Error(errorMessage), {
+      service: 'WorkService',
+      method: 'deleteWork',
+      eventId,
+      error: errorMessage,
+    });
+    return {
+      success: false,
+      error: errorMessage,
+    };
+  }
+}
+
 export const WorkService = {
   createWork,
   fetchPublicWorkOpportunities,
+  fetchWorkByAuthor,
+  fetchWorkById,
+  deleteWork,
 };
+
