@@ -4,22 +4,22 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 
 ## Matrix
 
-| Feature | NIP-01 | NIP-05 | NIP-07 | NIP-09 | NIP-17 | NIP-23 | NIP-33 | NIP-44 | NIP-96 | Kind 0 | Kind 1 | Kind 5 | Kind 14 | Kind 1059 | Kind 10063 | Kind 24242 | Kind 30023 | Status |
-|---------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|---------|-----------|------------|------------|------------|--------|
-| Sign Up | ✅ Basic events | ❌ | ✅ Signer auth | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Avatar upload | ✅ Profile create | ✅ Welcome note | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ❌ | Production |
-| Sign In | ✅ Basic events | ❌ | ✅ Signer auth | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Profile fetch | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
-| Profile | ✅ Event structure | ✅ DNS verification | ✅ Read/write | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Image upload | ✅ Profile metadata | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ❌ | Production |
-| Messages | ✅ Event queries | ❌ | ✅ Signing DMs | ❌ | ✅ Gift wraps | ❌ | ❌ | ✅ Encryption | ❌ | ❌ | ❌ | ❌ | ✅ Rumor events | ✅ Encrypted DMs | ❌ | ❌ | ❌ | Production |
-| Payments | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | UI Only |
-| My Shop | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Products | Production |
-| Shop | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Products | Production |
-| My Work | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Work Opportunities | Production |
-| Work | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Work Opportunities | Production |
-| Explore | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Contributions | Production |
-| Meetups | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Not Started |
-| Contribute | ✅ Event creation | ❌ | ✅ Signing | ❌ | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | Production |
-| My Contributions | ✅ Query events | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ Long-form | ✅ Replaceable | ❌ | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | Production |
-| User Event Log | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
+| Feature | NIP-01 | NIP-05 | NIP-07 | NIP-09 | NIP-17 | NIP-19 | NIP-23 | NIP-33 | NIP-44 | NIP-78 | NIP-94 | NIP-96 | Kind 0 | Kind 1 | Kind 5 | Kind 14 | Kind 1059 | Kind 10063 | Kind 24242 | Kind 30023 | Kind 30078 | Status |
+|---------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|--------|---------|-----------|------------|------------|------------|------------|--------|
+| Sign Up | ✅ Basic events | ❌ | ✅ Signer auth | ❌ | ❌ | ✅ npub/nsec | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Avatar upload | ✅ Profile create | ✅ Welcome note | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ❌ | ❌ | Production |
+| Sign In | ✅ Basic events | ❌ | ✅ Signer auth | ❌ | ❌ | ✅ npub/nsec | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Profile fetch | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
+| Profile | ✅ Event structure | ✅ DNS verification | ✅ Read/write | ❌ | ❌ | ✅ npub display | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Image upload | ✅ Profile metadata | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ❌ | ❌ | Production |
+| Messages | ✅ Event queries | ❌ | ✅ Signing DMs | ❌ | ✅ Gift wraps | ✅ npub display | ❌ | ❌ | ✅ Encryption | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Rumor events | ✅ Encrypted DMs | ❌ | ❌ | ❌ | ❌ | Production |
+| Payments | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | UI Only |
+| My Shop | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Products | ❌ | Production |
+| Shop | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Products | ❌ | Production |
+| My Work | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Work Opportunities | ❌ | Production |
+| Work | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Work Opportunities | ❌ | Production |
+| Explore | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Contributions | ❌ | Production |
+| Contribute | ✅ Event creation | ❌ | ✅ Signing | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | ❌ | Production |
+| My Contributions | ✅ Query events | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | ❌ | Production |
+| User Event Log | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
+| Cart (Planned) | ✅ Event creation | ❌ | ✅ Signing | ❌ | ❌ | ✅ npub display | ❌ | ✅ Replaceable | ❌ | ✅ App data | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Cart storage | Planned |
 
 ## NIP Descriptions
 
@@ -28,25 +28,25 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 - **NIP-01**: Basic protocol - event structure, signing, IDs, relay communication ✅
 - **NIP-05**: DNS-based verification - `alice@example.com` identifiers ✅
 - **NIP-07**: Browser extension signer - `window.nostr` interface (Alby, nos2x, Nostore) ✅
+- **NIP-09**: Event deletion - Kind 5 deletion events ✅
 - **NIP-17**: Private DMs - gift-wrapped encrypted messages (double encryption) ✅
 - **NIP-19**: Bech32-encoded entities - npub, nsec, note, nprofile, nevent ✅
+- **NIP-23**: Long-form content - articles, blog posts (Kind 30023) ✅
+- **NIP-33**: Parameterized replaceable events - unique dTag, update-in-place ✅
 - **NIP-44**: Encrypted payloads (v2) - ChaCha20 + HMAC-SHA256 for NIP-17 encryption ✅
+- **NIP-78**: Application-specific data - Kind 30078 for cart/settings storage ✅
+- **NIP-94**: File metadata - imeta tags for media attachments ✅
 
 ### External Protocols (Implemented)
 
-- **Blossom (NIP-96)**: Decentralized CDN - media hosting with Nostr auth, SHA-256 verification ✅
+- **Blossom (NIP-96 based)**: Decentralized CDN - media hosting with Nostr auth (Kind 24242), SHA-256 verification ✅
 
-### NIPs Available but Not Yet Integrated
+### NIPs Planned for Future Integration
 
-- **NIP-09**: ✅ Event deletion - Kind 5 deletion events (✅ IMPLEMENTED in My Contributions feature)
-- **NIP-23**: Long-form content - articles, blog posts (✅ IMPLEMENTED in Contribute/Explore features)
-- **NIP-33**: Parameterized replaceable events - unique dTag, update-in-place (✅ IMPLEMENTED in Contribute/Explore features)
-- **NostrEventService methods**:
-  - `createProductEvent()` - Ready for Shop integration
-  - `createContributionEvent()` - ✅ IN USE for Contribute feature
-  - `createHeritageEvent()` - Available for heritage content
-  - Multi-attachment support with imeta tags
-- **Kind 10063**: User server list - Blossom CDN discovery (implemented in GenericEventService.createUserServerListEvent())
+- **NIP-11**: Relay capability discovery
+- **NIP-46**: Remote signer protocol (mobile apps, Nostr Connect)
+- **NIP-57**: Lightning Zaps (tip creators)
+- **NIP-65**: Relay list metadata (user's preferred relay list)
 
 ## Kind Descriptions
 
@@ -54,15 +54,16 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 
 - **Kind 0**: User metadata - profile info (name, display_name, about, picture, banner, website, nip05, lud16, lud06, birthday) ✅
 - **Kind 1**: Short text note - public posts, welcome messages (used in sign-up verification) ✅
+- **Kind 5**: Event deletion - NIP-09 deletion events (used in My Contributions, My Shop, My Work) ✅
 - **Kind 14**: Rumor - unsigned event wrapped in NIP-17 gift-wrapped messages ✅
 - **Kind 1059**: Gift wrap - encrypted outer layer for NIP-17 DMs (double-wrapped encryption with ephemeral keys) ✅
 - **Kind 24242**: Blossom authorization - signed auth events for Blossom file uploads ✅
+- **Kind 30023**: Long-form content - NIP-23/NIP-33 parameterized replaceable events (Shop, Work, Contributions) ✅
+- **Kind 30078**: Application-specific data - NIP-78 for cart and settings storage ✅
 
-### Event Kinds Available but Not Yet Used
+### Event Kinds Implemented but Not Yet Used
 
-- **Kind 5**: ✅ Event deletion - NIP-09 deletion events (✅ IMPLEMENTED in My Contributions feature)
-- **Kind 10063**: User server list - Blossom CDN server discovery (implemented in GenericEventService)
-- **Kind 30023**: Long-form content - ✅ IN USE for contributions (Contribute/Explore/My Contributions features)
+- **Kind 10063**: User server list - Blossom CDN server discovery (implemented in GenericEventService.createUserServerListEvent())
 
 ## Feature Implementation Details
 
@@ -78,6 +79,7 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 - Background publishing (non-blocking) - user can proceed to Step 2 immediately
 - Clears nsec from memory after backup creation (if using extension)
 - Uses temporary signer during sign-up flow
+- NIP-19 bech32 encoding for npub/nsec display
 
 ### Authentication (Sign In)
 
@@ -361,7 +363,7 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 3. **relay.nostr.band** - Nostr.band explorer with search - supports NIP-01, 11, 15, 20, 33, 45, 50
 4. **relay.primal.net** - Primal relay (strfry) - supports NIP-01, 02, 04, 09, 11, 22, 28, 40
 5. **offchain.pub** - Reliable public relay (strfry) - supports NIP-01, 02, 04, 09, 11, 22, 28, 40
-6. **shu01.shugur.net** - Enterprise HA cluster - supports 35+ NIPs including NIP-17, 23, 33, 44, 47, 52, 57, 59, 60, 61, 72
+6. **shu01.shugur.net** - Enterprise HA cluster - supports 35+ NIPs including NIP-17, 23, 33, 44, 47, 52, 57, 59, 60, 61, 65, 72, 78
 7. **relay.0xchat.com** - Dedicated NIP-17 messaging relay - optimized for private DMs
 8. **relay.nostr.wirednet.jp** - Japan-based relay for Asia-Pacific coverage
 
@@ -384,7 +386,8 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
   - `https://blossom.nostr.build` - Primary shared server
   - `https://blosstr.com` - Alternative shared server
 - **File limits**: 100MB max file size, 10-second connection timeout
-- **Supported formats**: Images (JPEG, PNG, WebP, GIF)
+- **Supported formats**: Images (JPEG, PNG, WebP, GIF), Videos, Audio
+- **Media metadata**: NIP-94 imeta tags for rich media information (dimensions, MIME type, size)
 
 ### Cache Encryption
 
@@ -407,31 +410,27 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 
 ### Planned Feature Integration
 
-- **Shop**: ✅ IMPLEMENTED - Kind 30023 for product listings (NIP-33 parameterized replaceable) with full Nostr integration
-  - Create/edit/delete products via Kind 30023 events
-  - NIP-09 deletion events for removing products
-  - Multi-attachment support via Blossom (images)
-  - Tag pattern: `nostr-for-nomads-shop`
-  - Public browse + authenticated My Shop dashboard
-  - **Service architecture**: ShopBusinessService, ShopService, NostrEventService
-- **Work**: ✅ IMPLEMENTED - Kind 30023 for job/freelance opportunities (NIP-33 parameterized replaceable) with full Nostr integration
-  - Create/edit/delete work opportunities via Kind 30023 events
-  - NIP-09 deletion events for removing work posts
-  - Multi-attachment support via Blossom (images, videos, audio)
-  - Tag pattern: `nostr-for-nomads-work`
-  - Public browse + authenticated My Work dashboard
-  - **Service architecture**: WorkService, GenericWorkService, WorkContentService, WorkValidationService, NostrEventService
-- **Travel/Meetups**: Not started - awaiting implementation
+- **Cart Storage**: Kind 30078 (NIP-78) for persistent cart data across sessions
+  - Implemented: `NostrEventService.createSettingsEvent()` with unified app settings storage
+  - Implemented: `NostrEventService.createCartEvent()` (legacy wrapper)
+  - Architecture: Single event with d='nostr-for-nomads-settings' and multiple feature tags
+  - Status: Service layer complete, UI integration pending
+- **Meetups**: Event management system using Kind 30023
   - Can follow Shop/Work pattern for rapid development
-- **Explore**: ✅ IMPLEMENTED - Query Kind 30023 events for discovery
-- **Contribute**: ✅ IMPLEMENTED - Kind 30023 for community contributions with full Nostr integration
+  - Status: Not started
+- **Lightning Zaps (NIP-57)**: Tip creators with Lightning Network
+  - Relay support: shu01.shugur.net already supports NIP-57
+  - Status: Planned for Q2 2025
 
 ### Media Enhancements
 
-- Video/audio uploads via Blossom
-- Thumbnail generation for video content
-- IPFS fallback URLs for decentralized media hosting
-- Multi-file upload progress tracking (already implemented in services)
+- ✅ Image uploads via Blossom (JPEG, PNG, WebP, GIF)
+- ✅ Video uploads via Blossom (implemented in Work feature)
+- ✅ Audio uploads via Blossom (implemented in Work feature)
+- ✅ NIP-94 imeta tags for rich media metadata (dimensions, MIME type, size, hash)
+- ✅ Multi-file upload progress tracking (implemented in services)
+- ⏳ Thumbnail generation for video content (planned)
+- ⏳ IPFS fallback URLs for decentralized media hosting (planned)
 
 ### Profile Enhancements
 
@@ -450,18 +449,18 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 
 ---
 
-**Last Updated**: November 21, 2025  
-**Codebase Version**: Next.js 15.4.6, React 18  
-**Active NIPs**: 9 implemented (NIP-01, NIP-05, NIP-07, NIP-09, NIP-17, NIP-19, NIP-23, NIP-33, NIP-44 + Blossom)  
-**Active Event Kinds**: 7 kinds (Kind 0, Kind 1, Kind 5, Kind 14, Kind 1059, Kind 24242, Kind 30023)  
+**Last Updated**: November 22, 2025  
+**Codebase Version**: Next.js 15.4.6, React 18, nostr-tools 2.17.0, blossom-client-sdk 4.1.0  
+**Active NIPs**: 11 implemented (NIP-01, NIP-05, NIP-07, NIP-09, NIP-17, NIP-19, NIP-23, NIP-33, NIP-44, NIP-78, NIP-94 + Blossom)  
+**Active Event Kinds**: 8 kinds (Kind 0, Kind 1, Kind 5, Kind 14, Kind 1059, Kind 24242, Kind 30023, Kind 30078)  
 **Production Features**: 11 features (Sign Up, Sign In, Profile, Messages, Explore, Contribute, My Contributions, My Shop, Shop, My Work, Work, User Event Log)  
 **UI Only Features**: 1 feature (Payments)  
 **Removed Features**: 2 features (Meetings, Travel)  
-**Not Started**: 1 feature (Meetups)
+**Planned Features**: 2 features (Cart, Meetups)
 
 **Architecture**: Service-Oriented Architecture (SOA) with strict layer separation
 
-- Presentation Layer: Pages, Components, Hooks
-- Business Logic Layer: AuthBusinessService, ProfileBusinessService, MessagingBusinessService, ContributionService, ShopBusinessService, WorkService
-- Core Services Layer: KVService, LoggingService, ProfileCacheService, MessageCacheService, EventLoggingService
-- Protocol/Data Layer: GenericEventService, GenericRelayService, GenericBlossomService, GenericContributionService, GenericWorkService, ShopService, EncryptionService, NostrEventService, WorkValidationService, WorkContentService
+- **Presentation Layer**: Pages, Components, Hooks
+- **Business Logic Layer**: AuthBusinessService, ProfileBusinessService, MessagingBusinessService, ContributionService, ShopBusinessService, WorkService
+- **Core Services Layer**: KVService, LoggingService, ProfileCacheService, MessageCacheService, EventLoggingService
+- **Protocol/Data Layer**: GenericEventService, GenericRelayService, GenericBlossomService, GenericContributionService, GenericWorkService, GenericShopService, EncryptionService, NostrEventService, WorkValidationService, WorkContentService, ContributionValidationService, ContributionContentService
