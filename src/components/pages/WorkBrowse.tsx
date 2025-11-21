@@ -85,7 +85,7 @@ export default function WorkContent() {
   const grid = filteredWorkItems.slice(2);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50">
       <section className="section-padding bg-white border-b border-gray-200">
         <div className="container-width">
           <motion.div
@@ -94,33 +94,33 @@ export default function WorkContent() {
             transition={{ duration: 0.8 }}
             className="max-w-5xl mx-auto text-center"
           >
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-blue-800 mb-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-purple-800 mb-6">
               Work Opportunities
             </h1>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
               Discover remote work, freelance gigs, and project-based opportunities from the digital nomad community. 
               Connect with projects that match your skills and lifestyle.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-6 text-blue-700">
+            <div className="flex flex-wrap items-center justify-center gap-6 text-purple-700">
               <div
                 className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
                 title="Verified job opportunities"
               >
-                <Briefcase className="w-4 h-4 mr-2 text-cyan-500" />
+                <Briefcase className="w-4 h-4 mr-2 text-orange-500" />
                 <span>Real Opportunities</span>
               </div>
               <div
                 className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
                 title="Remote, on-site, and hybrid positions"
               >
-                <Globe className="w-4 h-4 mr-2 text-cyan-500" />
+                <Globe className="w-4 h-4 mr-2 text-orange-500" />
                 <span>Flexible Locations</span>
               </div>
               <div
                 className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
                 title="Competitive pay in BTC, sats, or USD"
               >
-                <DollarSign className="w-4 h-4 mr-2 text-cyan-500" />
+                <DollarSign className="w-4 h-4 mr-2 text-orange-500" />
                 <span>Fair Pay</span>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default function WorkContent() {
                 placeholder="Search jobs, skills, or technologies..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-4 py-3 text-base rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                className="w-full pl-14 pr-4 py-3 text-base rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20"
               />
             </div>
           </div>
@@ -208,7 +208,7 @@ export default function WorkContent() {
                 {activeFilterCount > 0 && (
                   <button
                     onClick={clearFilters}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="text-sm text-purple-600 hover:text-purple-700 font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={isLoading}
                   >
                     Clear {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''}
@@ -233,7 +233,7 @@ export default function WorkContent() {
 
           {isLoading && (
             <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-12 h-12 text-blue-600 animate-spin mb-4" />
+              <Loader2 className="w-12 h-12 text-purple-600 animate-spin mb-4" />
               <p className="text-gray-600">Loading work opportunities...</p>
             </div>
           )}
@@ -277,7 +277,7 @@ export default function WorkContent() {
               {featured.length > 0 && (
                 <div className="mb-16">
                   <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-3xl font-serif font-bold text-blue-800 flex items-center gap-2">
+                    <h2 className="text-3xl font-serif font-bold text-purple-800 flex items-center gap-2">
                       <TrendingUp className="w-8 h-8" />
                       Featured Opportunities
                     </h2>
@@ -299,7 +299,7 @@ export default function WorkContent() {
               {grid.length > 0 && (
                 <div>
                   <div className="flex items-center justify-between mb-8">
-                    <h2 className="text-2xl font-serif font-bold text-blue-800">
+                    <h2 className="text-2xl font-serif font-bold text-purple-800">
                       {featured.length > 0 ? 'More Opportunities' : 'All Opportunities'}
                     </h2>
                     <span className="text-gray-600">
@@ -346,19 +346,19 @@ export default function WorkContent() {
       </section>
 
       {/* CTA Section */}
-      <section className="section-padding bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+      <section className="section-padding bg-gradient-to-r from-purple-600 to-orange-600 text-white">
         <div className="container-width">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">
               Have a Project or Job Opening?
             </h2>
-            <p className="text-lg mb-8 text-blue-50">
+            <p className="text-lg mb-8 text-purple-50">
               Connect with talented digital nomads and remote workers around the world. 
               Post your opportunity and find the perfect match for your project.
             </p>
             <Link
               href="/work/create"
-              className="btn-primary inline-flex items-center gap-2 bg-white text-blue-600 hover:bg-blue-50"
+              className="btn-primary inline-flex items-center gap-2 bg-white text-purple-600 hover:bg-purple-50"
             >
               <Briefcase className="w-5 h-5" />
               Post a Work Opportunity

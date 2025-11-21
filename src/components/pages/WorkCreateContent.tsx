@@ -114,7 +114,7 @@ export default function WorkCreateContent() {
   // If user hasn't selected a category yet, show the intro/selection screen
   if (selectedCategory === null) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-cyan-50">
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-orange-50">
         {/* Hero Section */}
         <section className="section-padding bg-white border-b border-gray-200">
           <div className="container-width">
@@ -124,33 +124,33 @@ export default function WorkCreateContent() {
               transition={{ duration: 0.8 }}
               className="max-w-5xl mx-auto text-center"
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-blue-800 mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-purple-800 mb-6">
                 Post a Work Opportunity
               </h1>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-8">
                 Connect with skilled digital nomads and remote workers around the world. 
                 Post your job, project, or gig on Nostr and find the perfect match.
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-6 text-blue-700">
+              <div className="flex flex-wrap items-center justify-center gap-6 text-purple-700">
                 <div
                   className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
-                  title="Reach global talent pool"
+                  title="Connect with global talent"
                 >
-                  <Globe className="w-4 h-4 mr-2 text-cyan-500" />
+                  <Globe className="w-4 h-4 mr-2 text-orange-500" />
                   <span>Global Reach</span>
                 </div>
                 <div
                   className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
                   title="Decentralized on Nostr"
                 >
-                  <Briefcase className="w-4 h-4 mr-2 text-cyan-500" />
-                  <span>Decentralized</span>
+                  <Briefcase className="w-4 h-4 mr-2 text-orange-500" />
+                  <span>Remote-First</span>
                 </div>
                 <div
                   className="flex items-center text-sm font-medium bg-white border border-gray-200 rounded-full px-4 py-2 shadow-sm"
                   title="Flexible payment options"
                 >
-                  <DollarSign className="w-4 h-4 mr-2 text-cyan-500" />
+                  <DollarSign className="w-4 h-4 mr-2 text-orange-500" />
                   <span>Flexible Pay</span>
                 </div>
               </div>
@@ -158,8 +158,8 @@ export default function WorkCreateContent() {
               {!isAuthenticated && (
                 <div className="mt-8 p-6 bg-blue-50 border border-blue-200 rounded-xl">
                   <div className="flex items-center justify-center gap-3 mb-4">
-                    <LogIn className="w-6 h-6 text-blue-600" />
-                    <p className="text-blue-900 font-medium">
+                    <LogIn className="w-6 h-6 text-purple-600" />
+                    <p className="text-purple-900 font-medium">
                       Sign in to post work opportunities
                     </p>
                   </div>
@@ -199,10 +199,10 @@ export default function WorkCreateContent() {
                     onClick={() => handleCategorySelection(index)}
                     className="card p-6 cursor-pointer hover:shadow-xl transition-all duration-300 group"
                   >
-                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
-                      <Icon className="w-8 h-8 text-blue-600" />
+                    <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-100 to-orange-100 rounded-2xl mb-4 group-hover:scale-110 transition-transform">
+                      <Icon className="w-8 h-8 text-purple-600" />
                     </div>
-                    <h3 className="text-xl font-serif font-bold text-blue-800 mb-2">
+                    <h3 className="text-xl font-serif font-bold text-purple-800 mb-2">
                       {category.title}
                     </h3>
                     <p className="text-gray-600 mb-4">{category.description}</p>
@@ -212,7 +212,7 @@ export default function WorkCreateContent() {
                           key={i}
                           className="text-sm text-gray-500 flex items-center"
                         >
-                          <CheckCircle className="w-4 h-4 text-cyan-500 mr-2 flex-shrink-0" />
+                          <CheckCircle className="w-4 h-4 text-orange-500 mr-2 flex-shrink-0" />
                           {example}
                         </li>
                       ))}
@@ -228,7 +228,7 @@ export default function WorkCreateContent() {
         <section className="section-padding bg-white">
           <div className="container-width">
             <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-serif font-bold text-blue-800 mb-4">
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-purple-800 mb-4">
                 How posting works
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto">
@@ -245,10 +245,10 @@ export default function WorkCreateContent() {
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   className="text-center"
                 >
-                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-600 to-cyan-600 text-white text-2xl font-bold rounded-full mx-auto mb-4">
+                  <div className="flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-600 to-orange-600 text-white text-2xl font-bold rounded-full mx-auto mb-4">
                     {step.number}
                   </div>
-                  <h3 className="text-lg font-semibold text-blue-800 mb-2">
+                  <h3 className="text-lg font-semibold text-purple-800 mb-2">
                     {step.title}
                   </h3>
                   <p className="text-gray-600 text-sm">{step.description}</p>
@@ -260,13 +260,13 @@ export default function WorkCreateContent() {
 
         {/* CTA */}
         {isAuthenticated && (
-          <section className="section-padding bg-gradient-to-r from-blue-600 to-cyan-600 text-white">
+          <section className="section-padding bg-gradient-to-r from-purple-600 to-orange-600 text-white">
             <div className="container-width">
               <div className="max-w-4xl mx-auto text-center">
                 <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">
                   Ready to find your next team member?
                 </h2>
-                <p className="text-lg mb-8 text-blue-50">
+                <p className="text-lg mb-8 text-purple-50">
                   Choose a category above to get started with your job posting
                 </p>
               </div>
@@ -288,7 +288,7 @@ export default function WorkCreateContent() {
             transition={{ duration: 0.5 }}
           >
             <div className="max-w-4xl mx-auto mb-8 text-center">
-              <h1 className="text-3xl md:text-4xl font-serif font-bold text-blue-800 mb-4">
+              <h1 className="text-3xl md:text-4xl font-serif font-bold text-purple-800 mb-4">
                 Post Your Opportunity
               </h1>
               <p className="text-gray-600">
