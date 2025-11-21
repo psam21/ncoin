@@ -1,0 +1,140 @@
+'use client';
+
+import { useState, useCallback } from 'react';
+import { useNostrSigner } from './useNostrSigner';
+import { useContentPublishing } from './useContentPublishing';
+import { createWork } from '@/services/business/WorkService';
+import type {
+  WorkData,
+  WorkPublishingResult,
+  WorkPublishingProgress,
+  WorkPublishingState,
+} from '@/types/work';
+
+/**
+ * Hook for publishing work opportunities
+ * Manages publishing state and coordinates with work service
+ * 
+ * Uses the generic content publishing wrapper for:
+ * - Signer validation
+ * - Consent dialog for file uploads
+ * - Progress tracking
+ * - Error handling
+ * - Logging
+ */
+export function useWorkPublishing() {
+  const { isAvailable, getSigner } = useNostrSigner();
+  
+  // Publishing state
+  const [state, setState] = useState<WorkPublishingState>({
+    isPublishing: false,
+    uploadProgress: 0,
+    currentStep: 'idle',
+    error: null,
+    result: null,
+  });
+
+  // State setters for the generic wrapper
+  const stateSetters = {
+    setPublishing: (isPublishing: boolean) => {
+      setState(prev => ({ ...prev, isPublishing }));
+    },
+    setProgress: (progress: WorkPublishingProgress | null) => {
+      if (progress) {
+        setState(prev => ({
+          ...prev,
+          uploadProgress: progress.progress,
+          currentStep: progress.step,
+        }));
+      } else {
+        setState(prev => ({
+          ...prev,
+          uploadProgress: 0,
+          currentStep: 'idle',
+        }));
+      }
+    },
+    setResult: (result: WorkPublishingResult | null) => {
+      setState(prev => ({
+        ...prev,
+        result,
+        error: result && !result.success ? result.error || null : null,
+      }));
+    },
+  };
+
+  // Initialize generic publishing wrapper
+  const { publishWithWrapper, consentDialog } = useContentPublishing<
+    WorkData,
+    WorkPublishingResult,
+    WorkPublishingProgress
+  >({
+    serviceName: 'WorkService',
+    methodName: 'createWork',
+    isAvailable,
+    getSigner,
+    stateSetters,
+  });
+
+  /**
+   * Publish a work opportunity
+   */
+  const publishWork = useCallback(
+    async (
+      data: WorkData,
+      attachmentFiles: File[],
+      existingDTag?: string
+    ): Promise<WorkPublishingResult> => {
+      // Reset state
+      setState({
+        isPublishing: true,
+        uploadProgress: 0,
+        currentStep: 'validating',
+        error: null,
+        result: null,
+      });
+
+      // Use wrapper function to adapt parameter order
+      // Generic wrapper expects: (data, files, signer, onProgress)
+      // But createWork expects: (data, files, signer, existingDTag, onProgress)
+      const result = await publishWithWrapper(
+        async (workData, files, signer, onProgress) => {
+          const serviceResult = await createWork(
+            workData,
+            files,
+            signer,
+            existingDTag,
+            onProgress
+          );
+          return serviceResult;
+        },
+        data,
+        attachmentFiles
+      );
+
+      return result;
+    },
+    [publishWithWrapper]
+  );
+
+  /**
+   * Reset publishing state
+   */
+  const resetPublishing = useCallback(() => {
+    setState({
+      isPublishing: false,
+      uploadProgress: 0,
+      currentStep: 'idle',
+      error: null,
+      result: null,
+    });
+  }, []);
+
+  return {
+    publishWork,
+    state,
+    consentDialog,
+    resetPublishing,
+    isSignerAvailable: isAvailable,
+  };
+}

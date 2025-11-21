@@ -5,6 +5,7 @@ import { nostrEventService } from '../nostr/NostrEventService';
 import type { NostrSigner } from '@/types/nostr';
 import { uploadSequentialWithConsent } from '@/services/generic/GenericBlossomService';
 import { fetchPublicWorkOpportunities as fetchPublicWorkFromRelay, type WorkEvent } from '@/services/generic/GenericWorkService';
+import { getRelativeTime } from '@/utils/dateUtils';
 
 export interface CreateWorkResult {
   success: boolean;
@@ -14,6 +15,29 @@ export interface CreateWorkResult {
   failedRelays?: string[];
   error?: string;
   [key: string]: unknown; // For generic wrapper compatibility
+}
+
+/**
+ * Work opportunity explore item for listing view
+ */
+export interface WorkExploreItem {
+  id: string;
+  dTag: string;
+  name: string;
+  location: string;
+  region: string;
+  image: string;
+  jobType: string;
+  duration: string;
+  payRate: number;
+  currency: string;
+  mediaCount: number;
+  tags: string[];
+  description: string;
+  category: string;
+  publishedAt: number;
+  relativeTime: string;
+  pubkey: string; // Author's pubkey for contact functionality
 }
 
 /**
@@ -355,33 +379,73 @@ export async function createWork(
 }
 
 /**
- * Fetch public work opportunities from relay
+ * Transform work event to work explore item
+ */
+function mapToExploreItem(event: WorkEvent): WorkExploreItem {
+  const totalMedia = 
+    event.media.images.length +
+    event.media.audio.length +
+    event.media.videos.length;
+  
+  const image = event.media.images[0]?.url || 
+                event.media.videos[0]?.url || 
+                'https://images.unsplash.com/photo-1553877522-43269d4ea984?w=400&h=300&fit=crop';
+  
+  return {
+    id: event.id,
+    dTag: event.dTag,
+    name: event.title,
+    location: event.region || event.location || 'Remote',
+    region: event.region || 'Global',
+    image,
+    jobType: event.jobType,
+    duration: event.duration,
+    payRate: event.payRate,
+    currency: event.currency,
+    mediaCount: totalMedia,
+    tags: event.tags,
+    description: event.summary,
+    category: event.category,
+    publishedAt: event.publishedAt,
+    relativeTime: getRelativeTime(event.publishedAt),
+    pubkey: event.pubkey,
+  };
+}
+
+/**
+ * Fetch public work opportunities for explore/listing view
+ * Business layer method that orchestrates fetching and data transformation
  * 
  * @param limit - Maximum number of work opportunities to fetch
- * @param until - Optional timestamp for pagination
- * @returns Array of work events with transformed data
+ * @param until - Optional timestamp for pagination (fetch opportunities before this time)
+ * @returns Array of work explore items ready for display
  */
 export async function fetchPublicWorkOpportunities(
   limit = 8,
   until?: number
-): Promise<WorkEvent[]> {
+): Promise<WorkExploreItem[]> {
   try {
     logger.info('Fetching public work opportunities', {
       service: 'WorkService',
       method: 'fetchPublicWorkOpportunities',
       limit,
       until,
+      hasPagination: !!until,
     });
 
-    const workEvents = await fetchPublicWorkFromRelay(limit, until);
-
-    logger.info('Work opportunities fetched successfully', {
+    // Fetch from generic service
+    const events = await fetchPublicWorkFromRelay(limit, until);
+    
+    // Transform to explore items (business logic)
+    const items = events.map(mapToExploreItem);
+    
+    logger.info('Public work opportunities fetched and transformed', {
       service: 'WorkService',
       method: 'fetchPublicWorkOpportunities',
-      count: workEvents.length,
+      itemCount: items.length,
     });
 
-    return workEvents;
+    return items;
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     logger.error('Failed to fetch work opportunities', error instanceof Error ? error : new Error(errorMessage), {
