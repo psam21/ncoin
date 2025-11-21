@@ -116,8 +116,8 @@ export default function WorkCreatePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Intro Section */}
-      <section className="pt-16 lg:pt-20 pb-16 md:pb-20 bg-white">
+      {/* Hero Section */}
+      <section className="pt-16 lg:pt-20 pb-16 md:pb-20 bg-gradient-to-r from-purple-600 to-orange-600 text-white">
         <div className="container-width">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -125,10 +125,10 @@ export default function WorkCreatePage() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-purple-800 mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4">
               What Work Do You Offer?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-purple-50 max-w-2xl mx-auto">
               Select the type of work you want to post. Your skills help the nomad
               community thrive.
             </p>
@@ -145,21 +145,21 @@ export default function WorkCreatePage() {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className={`p-6 rounded-xl border transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+                  className={`p-6 rounded-xl border transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-white ${
                     active
-                      ? 'bg-purple-800 text-white border-purple-700 shadow-lg'
-                      : 'bg-white hover:shadow-md border-gray-200'
+                      ? 'bg-white text-purple-900 border-white shadow-xl scale-105'
+                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-white/20'
                   }`}
                   aria-pressed={active}
                 >
                   <div className={`text-4xl mb-4 ${active ? 'grayscale-0' : ''}`}>{type.icon}</div>
                   <h3 className="font-serif font-bold text-lg mb-2">{type.title}</h3>
                   <p className={`text-sm mb-3 leading-relaxed ${
-                    active ? 'text-orange-100' : 'text-gray-600'
+                    active ? 'text-gray-600' : 'text-purple-100'
                   }`}>
                     {type.description}
                   </p>
-                  <ul className={`text-xs space-y-1 ${active ? 'text-orange-200' : 'text-gray-500'}`}>
+                  <ul className={`text-xs space-y-1 ${active ? 'text-gray-500' : 'text-purple-200'}`}>
                     {type.examples.map((example) => (
                       <li key={example} className="flex items-center">
                         <CheckCircle className="w-3 h-3 mr-2" />

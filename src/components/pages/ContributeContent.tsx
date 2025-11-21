@@ -103,8 +103,8 @@ export default function ContributeContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Contribution Types */}
-      <section className="pt-16 lg:pt-20 pb-16 md:pb-20 bg-white">
+      {/* Hero Section */}
+      <section className="pt-16 lg:pt-20 pb-16 md:pb-20 bg-gradient-to-r from-purple-600 to-orange-600 text-white">
         <div className="container-width">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -112,10 +112,10 @@ export default function ContributeContent() {
             transition={{ duration: 0.6 }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-purple-800 mb-4">
+            <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold mb-4">
               What Can You Contribute?
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-purple-50 max-w-2xl mx-auto">
               Select the type of contribution you want to share. Your knowledge helps the nomad
               community thrive.
             </p>
@@ -133,24 +133,24 @@ export default function ContributeContent() {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
-                  className={`p-6 rounded-xl border transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+                  className={`p-6 rounded-xl border transition-all duration-300 text-left focus:outline-none focus:ring-2 focus:ring-white ${
                     active
-                      ? 'bg-purple-800 text-white border-purple-700 shadow-lg'
-                      : 'bg-white hover:shadow-md border-gray-200'
+                      ? 'bg-white text-purple-900 border-white shadow-xl scale-105'
+                      : 'bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border-white/20'
                   }`}
                   aria-pressed={active}
                 >
                   <Icon
-                    className={`w-8 h-8 mb-4 ${active ? 'text-orange-300' : 'text-purple-700'}`}
+                    className={`w-8 h-8 mb-4 ${active ? 'text-purple-600' : 'text-white'}`}
                   />
                   <h3 className="font-serif font-bold text-lg mb-2">{type.title}</h3>
                   <p
-                    className={`text-sm mb-3 leading-relaxed ${active ? 'text-orange-100' : 'text-gray-600'}`}
+                    className={`text-sm mb-3 leading-relaxed ${active ? 'text-gray-600' : 'text-purple-100'}`}
                   >
                     {type.description}
                   </p>
                   <ul
-                    className={`text-xs space-y-1 ${active ? 'text-orange-200' : 'text-gray-500'}`}
+                    className={`text-xs space-y-1 ${active ? 'text-gray-500' : 'text-purple-200'}`}
                   >
                     {type.examples.map((ex) => (
                       <li key={ex} className="flex items-center">
@@ -169,18 +169,18 @@ export default function ContributeContent() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="bg-gradient-to-br from-purple-50 to-orange-50 border-2 border-purple-200 rounded-xl p-8 text-center"
+              className="bg-white/10 backdrop-blur-sm border-2 border-white/20 rounded-xl p-8 text-center"
             >
-              <LogIn className="w-12 h-12 text-purple-600 mx-auto mb-4" />
-              <h3 className="text-2xl font-serif font-bold text-purple-800 mb-3">
+              <LogIn className="w-12 h-12 text-white mx-auto mb-4" />
+              <h3 className="text-2xl font-serif font-bold text-white mb-3">
                 Sign In to Contribute
               </h3>
-              <p className="text-gray-600 mb-6 max-w-md mx-auto">
+              <p className="text-purple-50 mb-6 max-w-md mx-auto">
                 To share your nomad experiences and help the community, please sign in with your Nostr account.
               </p>
               <button
                 onClick={() => router.push('/signin?returnUrl=' + encodeURIComponent('/contribute'))}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-lg hover:bg-purple-50 transition-colors font-medium"
               >
                 <LogIn className="w-5 h-5" />
                 Sign In to Continue
