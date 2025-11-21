@@ -8,13 +8,15 @@ import { Briefcase } from 'lucide-react';
 
 export default function WorkCreatePage() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const user = useAuthStore((state) => state.user);
+  const _hasHydrated = useAuthStore((state) => state._hasHydrated);
 
   useEffect(() => {
-    if (!user) {
+    // Only check auth after hydration is complete
+    if (_hasHydrated && !user) {
       router.push('/signin?returnUrl=' + encodeURIComponent('/my-work/create'));
     }
-  }, [user, router]);
+  }, [_hasHydrated, user, router]);
 
   const handleWorkCreated = (workId: string) => {
     console.log('Work created:', workId);
@@ -25,8 +27,21 @@ export default function WorkCreatePage() {
     router.push('/my-work');
   };
 
+  // Show loading state while hydrating
+  if (!_hasHydrated) {
+    return (
+      <div className="min-h-screen bg-primary-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // After hydration, if no user, return null (redirect will happen via useEffect)
   if (!user) {
-    return null; // Will redirect via useEffect
+    return null;
   }
 
   return (
