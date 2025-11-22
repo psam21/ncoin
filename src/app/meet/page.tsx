@@ -11,7 +11,9 @@ import {
   List,
   MapPin,
   Users,
+  ArrowRight,
 } from 'lucide-react';
+import Link from 'next/link';
 
 import { usePublicMeetups } from '@/hooks/usePublicMeetups';
 import { MEETUP_CONFIG } from '@/config/meetup';
@@ -332,6 +334,29 @@ export default function MeetPage() {
           </div>
         )}
       </div>
+
+      {/* CTA Section */}
+      <section className="section-padding bg-gradient-to-r from-purple-600 to-orange-600 text-white">
+        <div className="container-width">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">
+              Want to Organize a Meetup?
+            </h2>
+            <p className="text-lg mb-8 text-purple-50">
+              Bring nomads together for workshops, conferences, or social gatherings. 
+              Create your event and connect with the global nomad community.
+            </p>
+            <Link
+              href="/my-meet/create"
+              className="btn-primary inline-flex items-center gap-2 bg-white text-purple-600 hover:bg-purple-50"
+            >
+              <Calendar className="w-5 h-5" />
+              Create Your Meetup
+              <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
