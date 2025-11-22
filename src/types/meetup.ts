@@ -147,6 +147,7 @@ export interface MeetupPublishingProgress {
   progress: number; // 0-100
   message: string;
   details?: string;
+  [key: string]: unknown; // Index signature for generic wrapper compatibility
 }
 
 /**
