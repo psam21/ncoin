@@ -53,10 +53,35 @@ This document outlines the comprehensive, step-by-step implementation of the Mee
 - Plain text or markdown description (detailed event information)
 
 ### RSVP System (Kind 31925)
-Participants respond with Kind 31925 events:
-- `['a', '31923:pubkey:d-tag']` - Reference to calendar event
+Participants respond with Kind 31925 events (NIP-33 parameterized replaceable):
+- `['d', 'rsvp:${eventDTag}']` - **Deterministic dTag** for replaceability (user can update RSVP)
+- `['a', '31923:${eventPubkey}:${eventDTag}']` - **Canonical reference** to calendar event (exact format required)
+- `['e', event_id]` - Optional: specific event snapshot reference
 - `['status', 'accepted' | 'declined' | 'tentative']` - RSVP status
 - `['p', event_creator_pubkey]` - Event creator
+
+**RSVP Replaceability (NIP-33):**
+- Each user can only have ONE active RSVP per meetup (enforced by deterministic dTag)
+- When user changes RSVP status, client publishes new event with same dTag
+- Relays automatically replace old RSVP with new one (NIP-33 semantics)
+- Clients must deduplicate: group by dTag, sort by `created_at` DESC, take latest
+
+**RSVP Deletion:**
+- To delete RSVP: publish Kind 5 deletion event
+- Deletion event must reference ALL event IDs for the dTag across relays
+- Process:
+  1. Query all relays for Kind 31925 with `#d` = `rsvp:${eventDTag}` and author = user's pubkey
+  2. Collect all event IDs returned (may differ across relays)
+  3. Publish Kind 5 with `['e', eventId1]`, `['e', eventId2]`, etc. for each found event ID
+  4. Add `['k', '31925']` tag to specify deleted event kind
+  5. Add reason: "RSVP cancelled for ${meetupName}"
+
+**Canonical 'a' Tag Format:**
+- **Format**: `31923:${eventPubkey}:${eventDTag}` (colon-separated, no spaces)
+- **eventPubkey**: Meetup creator's hex pubkey (64 characters)
+- **eventDTag**: Meetup's dTag value from `['d', ...]` tag
+- Both clients and server must use EXACT same string formatting
+- Example: `31923:abc123...def456:meetup-1732233600-x7k9m`
 
 **Key Difference from Shop/Contributions:**
 - Shop/Contributions: Use Kind 30023 (NIP-23 long-form)
@@ -433,11 +458,14 @@ export interface RSVPData {
 
 /**
  * RSVP Nostr event (Kind 31925)
+ * NIP-33 parameterized replaceable event
  */
 export interface RSVPNostrEvent extends NostrEvent {
   kind: 31925;
   tags: [
-    ['a', string], // '31923:pubkey:d-tag'
+    ['d', string], // Deterministic dTag: 'rsvp:${eventDTag}'
+    ['a', string], // Canonical reference: '31923:${eventPubkey}:${eventDTag}'
+    ['e', string]?, // Optional: specific event snapshot ID
     ['status', 'accepted' | 'declined' | 'tentative'],
     ['p', string], // Event creator pubkey
   ];
@@ -664,9 +692,11 @@ public async createCalendarEvent(
 ```typescript
 /**
  * Create a NIP-52 RSVP event (Kind 31925)
+ * NIP-33 parameterized replaceable event with deterministic dTag
  * 
  * @param rsvpData - RSVP data
  * @param signer - Nostr signer
+ * @param eventId - Optional: specific event snapshot ID to reference
  */
 public async createRSVPEvent(
   rsvpData: {
@@ -675,7 +705,8 @@ public async createRSVPEvent(
     status: 'accepted' | 'declined' | 'tentative';
     comment?: string;
   },
-  signer: NostrSigner
+  signer: NostrSigner,
+  eventId?: string
 ): Promise<{
   success: boolean;
   event?: NostrEvent;
@@ -684,12 +715,24 @@ public async createRSVPEvent(
   try {
     const pubkey = await this.getSignerPubkey(signer);
     
+    // Create deterministic dTag for replaceability (one RSVP per user per meetup)
+    const rsvpDTag = `rsvp:${rsvpData.eventDTag}`;
+    
+    // Build canonical 'a' tag reference (EXACT format required)
+    const canonicalATag = `31923:${rsvpData.eventPubkey}:${rsvpData.eventDTag}`;
+    
     // Build tags array
     const tags: string[][] = [
-      ['a', `31923:${rsvpData.eventPubkey}:${rsvpData.eventDTag}`],
+      ['d', rsvpDTag],
+      ['a', canonicalATag],
       ['status', rsvpData.status],
       ['p', rsvpData.eventPubkey],
     ];
+    
+    // Add optional event snapshot reference
+    if (eventId) {
+      tags.push(['e', eventId]);
+    }
     
     // Create unsigned event
     const unsignedEvent: UnsignedEvent = {
@@ -794,17 +837,35 @@ export async function fetchPublicMeetups(
 
 /**
  * Create an RSVP to a meetup
+ * NIP-33 parameterized replaceable - updates existing RSVP if user already RSVP'd
  * 
  * @param rsvpData - RSVP data
  * @param signer - Nostr signer
+ * @param meetupEventId - Optional: specific meetup event snapshot ID
  */
 export async function createRSVP(
   rsvpData: RSVPData,
-  signer: NostrSigner
+  signer: NostrSigner,
+  meetupEventId?: string
 ): Promise<{ success: boolean; error?: string }>
 
 /**
- * Fetch RSVPs for a specific meetup
+ * Delete an RSVP (cancel attendance)
+ * Publishes Kind 5 deletion event referencing all RSVP event IDs across relays
+ * 
+ * @param eventDTag - Meetup dTag
+ * @param signer - Nostr signer
+ * @param meetupName - Meetup name (for deletion reason)
+ */
+export async function deleteRSVP(
+  eventDTag: string,
+  signer: NostrSigner,
+  meetupName: string
+): Promise<{ success: boolean; error?: string }>
+
+/**
+ * Fetch RSVPs for a specific meetup with deduplication
+ * Groups by dTag, sorts by created_at DESC, takes latest per user
  * 
  * @param eventDTag - Meetup dTag
  * @param eventPubkey - Meetup creator pubkey
@@ -833,8 +894,75 @@ export async function fetchMyRSVPs(
 - Use `GenericEventService.createDeletionEvent()` for NIP-09
 - Use `GenericRelayService.queryEvents()` for queries
 - Query filter: `{ kinds: [31923], '#t': ['nostr-for-nomads-meetup'] }`
-- RSVP query: `{ kinds: [31925], '#a': ['31923:pubkey:dTag'] }`
+- RSVP query: `{ kinds: [31925], '#a': ['31923:${eventPubkey}:${eventDTag}'] }` (use canonical format)
 - Deduplicate by dTag (NIP-33 parameterized replaceable)
+
+**RSVP Deduplication Logic:**
+```typescript
+// Fetch RSVPs with deduplication
+const fetchRSVPs = async (eventDTag: string, eventPubkey: string) => {
+  const canonicalATag = `31923:${eventPubkey}:${eventDTag}`;
+  
+  // Query all RSVPs referencing this meetup
+  const events = await GenericRelayService.queryEvents({
+    kinds: [31925],
+    '#a': [canonicalATag],
+  });
+  
+  // Group by dTag (one RSVP per user)
+  const rsvpMap = new Map<string, NostrEvent>();
+  
+  for (const event of events) {
+    const dTag = event.tags.find(t => t[0] === 'd')?.[1];
+    if (!dTag) continue;
+    
+    // If we already have this dTag, keep the newer one
+    const existing = rsvpMap.get(dTag);
+    if (!existing || event.created_at > existing.created_at) {
+      rsvpMap.set(dTag, event);
+    }
+  }
+  
+  // Convert to ParsedRSVP array
+  return Array.from(rsvpMap.values()).map(event => parseRSVP(event));
+};
+```
+
+**RSVP Deletion Logic:**
+```typescript
+// Delete RSVP across all relays
+const deleteRSVP = async (eventDTag: string, signer: NostrSigner, meetupName: string) => {
+  const pubkey = await signer.getPublicKey();
+  const rsvpDTag = `rsvp:${eventDTag}`;
+  
+  // Query all relays for this user's RSVP
+  const events = await GenericRelayService.queryEvents({
+    kinds: [31925],
+    authors: [pubkey],
+    '#d': [rsvpDTag],
+  });
+  
+  // Collect all event IDs (may differ across relays)
+  const eventIds = events.map(e => e.id);
+  
+  if (eventIds.length === 0) {
+    return { success: false, error: 'No RSVP found to delete' };
+  }
+  
+  // Create deletion event with ALL event IDs
+  const deletionEvent = await GenericEventService.createDeletionEvent(
+    eventIds,
+    pubkey,
+    `RSVP cancelled for ${meetupName}`,
+    [['k', '31925']]
+  );
+  
+  // Publish deletion
+  await GenericEventService.publishEvent(deletionEvent, signer);
+  
+  return { success: true };
+};
+```
 
 ---
 
@@ -947,6 +1075,7 @@ export function useMyRSVPs(userPubkey?: string) {
     isLoading: boolean;
     error: string | null;
     reload: () => Promise<void>;
+    cancelRSVP: (eventDTag: string, meetupName: string) => Promise<void>;
     // Filtered views
     acceptedRSVPs: Array<{...}>;
     tentativeRSVPs: Array<{...}>;
@@ -958,12 +1087,14 @@ export function useMyRSVPs(userPubkey?: string) {
 
 **Implementation Details:**
 1. Query relays for Kind 31925 events authored by user
-2. Parse each RSVP to extract meetup reference (from `#a` tag)
-3. Fetch corresponding meetup details (Kind 31923) for each RSVP
-4. Combine RSVP data with meetup data
-5. Filter into accepted/tentative/declined groups
-6. Sort by meetup start time
-7. Identify upcoming events (accepted RSVPs where startTime > now)
+2. **Deduplicate by dTag**: Group by `['d', ...]` tag, sort by `created_at` DESC, take latest
+3. Parse each RSVP to extract meetup reference (from `#a` tag using canonical format)
+4. Fetch corresponding meetup details (Kind 31923) for each RSVP
+5. Combine RSVP data with meetup data
+6. Filter into accepted/tentative/declined groups
+7. Sort by meetup start time
+8. Identify upcoming events (accepted RSVPs where startTime > now)
+9. Provide `cancelRSVP()` method that publishes Kind 5 deletion across all relays
 
 ---
 
@@ -1248,16 +1379,23 @@ export default function MyRSVPsPage() {
 - [ ] Confirm delete → publishes NIP-09 event
 - [ ] Deleted meetup removed from list
 - [ ] RSVP button works
-- [ ] RSVP publishes Kind 31925 event
-- [ ] Attendees list updates
+- [ ] RSVP publishes Kind 31925 event with deterministic dTag
+- [ ] Verify RSVP event has `['d', 'rsvp:${eventDTag}']` tag
+- [ ] Verify RSVP event has canonical `['a', '31923:pubkey:dTag']` tag
+- [ ] Change RSVP status → new event replaces old one (same dTag)
+- [ ] Attendees list updates with deduplicated RSVPs
+- [ ] Cancel RSVP publishes Kind 5 deletion
+- [ ] Verify deletion event references all RSVP event IDs across relays
 - [ ] Navigate to `/my-meet/rsvps` (authenticated)
-- [ ] See all RSVPs user has made
+- [ ] See all RSVPs user has made (deduplicated by dTag)
 - [ ] Upcoming events section shows only accepted + future
 - [ ] Tabs show Going/Maybe/Declined correctly
 - [ ] RSVP statistics display correctly
 - [ ] Click meetup → navigates to detail page
-- [ ] Change RSVP status works
+- [ ] Change RSVP status works (replaces existing RSVP)
 - [ ] Updated RSVP appears in correct tab
+- [ ] Cancel RSVP works (deletion event published)
+- [ ] Cancelled RSVP disappears from list
 - [ ] Empty states display correctly
 - [ ] Loading states display correctly
 - [ ] Error states display with retry option
@@ -1270,7 +1408,13 @@ export default function MyRSVPsPage() {
 - [ ] Update creates new event with same dTag (NIP-33)
 - [ ] Delete publishes Kind 5 event with correct reference
 - [ ] RSVP publishes Kind 31925 event
-- [ ] RSVP has correct `#a` tag referencing meetup
+- [ ] **RSVP has deterministic dTag**: `['d', 'rsvp:${eventDTag}']`
+- [ ] **RSVP has canonical 'a' tag**: `['a', '31923:${eventPubkey}:${eventDTag}']` (exact format)
+- [ ] **RSVP replaceability works**: New RSVP with same dTag replaces old one
+- [ ] **RSVP deduplication works**: Query returns one RSVP per user (latest by created_at)
+- [ ] **RSVP deletion works**: Kind 5 event references ALL event IDs across relays
+- [ ] **RSVP deletion has 'k' tag**: `['k', '31925']` to specify deleted kind
+- [ ] Deleted RSVPs no longer appear in queries
 - [ ] Deleted meetups no longer appear in queries
 
 ---
