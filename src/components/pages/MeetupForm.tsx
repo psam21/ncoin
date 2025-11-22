@@ -91,14 +91,7 @@ export const MeetupForm = ({
       );
       return result.success;
     },
-    consentDialog: {
-      isOpen: false,
-      consent: null,
-      showConsentDialog: async () => true,
-      acceptConsent: () => {},
-      cancelConsent: () => {},
-      closeDialog: () => {},
-    },
+    consentDialog: publishingHook.consentDialog, // Use publishing hook's consent dialog
   } : publishingHook;
 
   // Get today's date in local timezone for min date
