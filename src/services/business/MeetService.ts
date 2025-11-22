@@ -232,71 +232,31 @@ export async function publishMeetup(
 }
 
 /**
- * Update an existing meetup (republish with same dTag)
+ * Update an existing meetup with full image upload support
+ * Delegates to createMeetup with existingDTag for NIP-33 replacement
+ * 
+ * @param data - Updated meetup data
+ * @param existingDTag - The dTag of the meetup to update
+ * @param imageFile - Optional new event image (replaces existing)
+ * @param signer - Nostr signer
+ * @param onProgress - Optional progress callback
  */
 export async function updateMeetup(
   data: MeetupData,
   existingDTag: string,
-  signer: NostrSigner
+  imageFile: File | null,
+  signer: NostrSigner,
+  onProgress?: (progress: MeetupPublishingProgress) => void
 ): Promise<MeetupPublishingResult> {
-  try {
-    const pubkey = await signer.getPublicKey();
+  logger.info('Updating meetup', {
+    service: 'MeetService',
+    method: 'updateMeetup',
+    dTag: existingDTag,
+    hasNewImage: !!imageFile,
+  });
 
-    // Create the calendar event with existing dTag
-    const eventResult = createCalendarEvent(
-      {
-        name: data.name,
-        description: data.description,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        timezone: data.timezone,
-        location: data.location,
-        geohash: data.geohash,
-        isVirtual: data.isVirtual,
-        virtualLink: data.virtualLink,
-        imageUrl: data.imageUrl,
-        meetupType: data.meetupType,
-        tags: data.tags,
-        hostPubkey: data.hostPubkey,
-        coHosts: data.coHosts,
-      },
-      pubkey,
-      { dTag: existingDTag, systemTag: MEETUP_CONFIG.systemTag }
-    );
-
-    if (!eventResult.success || !eventResult.event) {
-      return {
-        success: false,
-        error: eventResult.error || 'Failed to create calendar event',
-      };
-    }
-
-    // Sign the event
-    const signResult = await signEvent(eventResult.event, signer);
-    
-    if (!signResult.success || !signResult.signedEvent) {
-      return {
-        success: false,
-        error: signResult.error || 'Failed to sign event',
-      };
-    }
-
-    // Publish to relays (will replace old event due to NIP-33)
-    const publishResult = await publishEvent(signResult.signedEvent, signer);
-
-    return {
-      success: publishResult.success,
-      eventId: publishResult.eventId,
-      dTag: existingDTag,
-      publishedRelays: publishResult.publishedRelays,
-      failedRelays: publishResult.failedRelays,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
+  // Delegate to createMeetup with existingDTag for NIP-33 replacement
+  return createMeetup(data, imageFile, signer, existingDTag, onProgress);
 }
 
 /**
