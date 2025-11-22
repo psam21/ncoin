@@ -736,9 +736,8 @@ export class GenericRelayService {
           }
         };
 
-        ws.onerror = () => {
+        ws.onerror = (error) => {
           clearTimeout(timeout);
-          ws.close();
           
           if (!resolved) {
             resolved = true;
@@ -751,6 +750,16 @@ export class GenericRelayService {
               eventsReceived: events.length,
               queryTime: `${Date.now() - startTime}ms`,
             });
+            
+            // Close connection without triggering another error
+            try {
+              if (ws.readyState === 1 || ws.readyState === 0) { // OPEN or CONNECTING
+                ws.close();
+              }
+            } catch (closeError) {
+              // Ignore close errors to prevent recursion
+            }
+            
             resolve(events);
           }
         };
