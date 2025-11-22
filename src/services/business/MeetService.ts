@@ -527,6 +527,103 @@ export async function fetchRSVPsByUser(pubkey: string): Promise<ParsedRSVP[]> {
 }
 
 /**
+ * Fetch all RSVPs created by a user with associated meetup details
+ * Enriches RSVP data with full meetup information
+ * 
+ * @param userPubkey - User's public key
+ * @returns Array of RSVPs with enriched meetup data
+ */
+export async function fetchMyRSVPs(
+  userPubkey: string
+): Promise<Array<{
+  rsvp: ParsedRSVP;
+  meetup: MeetupEvent | null;
+}>> {
+  try {
+    logger.info('Fetching user RSVPs with meetup details', {
+      service: 'MeetService',
+      method: 'fetchMyRSVPs',
+      userPubkey: userPubkey.substring(0, 16),
+    });
+
+    // Step 1: Fetch all user's RSVPs
+    const rsvps = await fetchUserRSVPs(userPubkey);
+
+    // Step 2: Fetch associated meetups for each RSVP
+    const enrichedRSVPs = await Promise.all(
+      rsvps.map(async (rsvp) => {
+        try {
+          // Fetch the meetup using pubkey and dTag from the RSVP
+          const meetup = await fetchMeetupById(rsvp.eventPubkey, rsvp.eventDTag);
+          return {
+            rsvp,
+            meetup,
+          };
+        } catch (error) {
+          logger.error('Failed to fetch meetup for RSVP', error instanceof Error ? error : new Error(String(error)), {
+            service: 'MeetService',
+            method: 'fetchMyRSVPs',
+            eventDTag: rsvp.eventDTag,
+          });
+          return {
+            rsvp,
+            meetup: null,
+          };
+        }
+      })
+    );
+
+    logger.info('User RSVPs fetched with meetup details', {
+      service: 'MeetService',
+      method: 'fetchMyRSVPs',
+      rsvpCount: enrichedRSVPs.length,
+      successfulMeetupFetches: enrichedRSVPs.filter(r => r.meetup !== null).length,
+    });
+
+    return enrichedRSVPs;
+  } catch (error) {
+    logger.error('Failed to fetch user RSVPs', error instanceof Error ? error : new Error(String(error)), {
+      service: 'MeetService',
+      method: 'fetchMyRSVPs',
+      userPubkey: userPubkey.substring(0, 16),
+    });
+    return [];
+  }
+}
+
+/**
+ * Fetch RSVPs for a specific meetup (plan-compliant alias)
+ * 
+ * @param eventDTag - Meetup dTag
+ * @param eventPubkey - Meetup creator pubkey
+ */
+export async function fetchRSVPs(
+  eventDTag: string,
+  eventPubkey: string
+): Promise<ParsedRSVP[]> {
+  return fetchMeetupRSVPs(eventPubkey, eventDTag);
+}
+
+/**
+ * Create an RSVP to a meetup (plan-compliant alias)
+ * 
+ * @param rsvpData - RSVP data
+ * @param signer - Nostr signer
+ * @param _meetupEventId - Optional: specific meetup event snapshot ID (unused)
+ */
+export async function createRSVP(
+  rsvpData: RSVPData,
+  signer: NostrSigner,
+  _meetupEventId?: string
+): Promise<{ success: boolean; error?: string }> {
+  const result = await rsvpToMeetup(rsvpData, signer);
+  return {
+    success: result.success,
+    error: result.error,
+  };
+}
+
+/**
  * Get RSVP count summary for a meetup
  */
 export function getRSVPCounts(rsvps: ParsedRSVP[]) {
