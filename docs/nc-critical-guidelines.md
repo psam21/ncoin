@@ -126,6 +126,68 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 - Placeholder functions → NOT ACCEPTABLE
 - "TODO" comments older than 1 sprint → NOT ACCEPTABLE
 
+### 6. NAVIGATION INCONSISTENCY
+
+**❌ Missing navigation links across mobile and desktop**
+
+**Problem:** Building feature-complete pages but forgetting navigation creates:
+- User confusion (feature exists but unreachable)
+- Desktop/mobile inconsistency (mobile has links, desktop doesn't)
+- Discovery failures (users can't find new features)
+- Adoption blockers (type URL manually or switch to mobile)
+
+**What Went Wrong (Meet Feature November 2025):**
+- ✅ Built all 6 pages: `/meet`, `/meet/[id]`, `/my-meet`, `/my-meet/create`, `/my-meet/edit/[id]`, `/my-meet/rsvps`
+- ✅ Built all 7 components, 6 hooks, services
+- ✅ Tested functionality (RSVP system working)
+- ❌ Desktop navigation ONLY had public links (Explore, Meet, Shop, Work)
+- ❌ Desktop users couldn't access: My Meet, My Shop, My Work, My Contributions, Messages
+- ❌ Mobile had full authenticated menu, desktop didn't → navigation parity violation
+
+**Impact:**
+- Desktop users had NO way to access their dashboards
+- Had to switch to mobile view or type URLs manually
+- Platform-wide issue: ALL authenticated features inaccessible on desktop
+- Meet feature implementation exposed pre-existing navigation gap
+
+**✅ THE FIX:**
+
+**MANDATORY for EVERY new feature:**
+
+1. **Add to Mobile Navigation** (Header.tsx mobile menu)
+   - Public browse link (e.g., `/meet`)
+   - Authenticated dashboard link (e.g., `/my-meet`)
+   - Create link in authenticated section (e.g., `/my-meet/create`)
+
+2. **Add to Desktop Navigation** (Header.tsx desktop nav bar)
+   - Public browse link in main nav
+   - Authenticated dashboard link conditionally rendered
+   - Ensure consistent icon set, hover states, styling
+
+3. **Verify Navigation Parity**
+   - [ ] Mobile menu has all links
+   - [ ] Desktop nav has equivalent access
+   - [ ] Authenticated links use `{isAuthenticated && user && (...)}`
+   - [ ] Icons consistent between mobile/desktop
+   - [ ] Test both unauthenticated and authenticated states
+   - [ ] Test on actual devices (mobile + desktop screens)
+
+4. **Test Navigation Discovery**
+   - [ ] Can unauthenticated users find public browse page?
+   - [ ] Can authenticated users find their dashboard?
+   - [ ] Can authenticated users find create page?
+   - [ ] Are links visible in expected locations?
+   - [ ] Do links work without manual URL typing?
+
+**Red Flags (Navigation Violations):**
+- 🚩 Feature complete but no navigation links added
+- 🚩 Mobile has links but desktop doesn't (parity violation)
+- 🚩 User has to type URL manually to access feature
+- 🚩 "Feature complete" without testing navigation discovery
+- 🚩 Desktop nav only shows public links for authenticated users
+
+**The cardinal rule: A feature isn't complete until users can discover it through navigation. Desktop and mobile must have parity.**
+
 ---
 
 ## ⚡ MANDATORY WORKFLOW
@@ -342,12 +404,15 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 - [ ] Proof collected (event IDs, logs)
 - [ ] User verified it works
 - [ ] Documentation updated
+- [ ] **Navigation links added to mobile AND desktop** ← CRITICAL
+- [ ] **Desktop/mobile navigation parity verified** ← CRITICAL
 
 **After pushing:**
 
 - [ ] Vercel deployment successful
 - [ ] Production testing complete
 - [ ] User confirmation received
+- [ ] **Navigation discovery tested (users can find feature)** ← CRITICAL
 - [ ] Feature marked complete
 
 ---
