@@ -1,7 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Clock, MapPin, Calendar, Users, Video, Tag } from 'lucide-react';
+import { MapPin, Calendar, Users, Video, Tag } from 'lucide-react';
 import { logger } from '@/services/core/LoggingService';
 import type { MeetupCardData } from '@/types/meetup';
 
@@ -123,9 +123,6 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({
   const typeInfo = getMeetupTypeInfo(meetup.meetupType);
   const upcoming = isUpcoming();
   const daysUntil = getDaysUntil();
-  const totalRSVPs = meetup.rsvpCount 
-    ? meetup.rsvpCount.accepted + meetup.rsvpCount.declined + meetup.rsvpCount.tentative 
-    : 0;
 
   // Featured variant
   if (variant === 'featured') {
