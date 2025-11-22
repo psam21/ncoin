@@ -1,0 +1,427 @@
+import { logger } from '../core/LoggingService';
+import type { NostrEvent } from '@/types/nostr';
+import type { MeetupEvent, MeetupCardData, ParsedRSVP } from '@/types/meetup';
+import { MEETUP_CONFIG } from '@/config/meetup';
+import { queryEvents } from './GenericRelayService';
+import type { Filter } from 'nostr-tools';
+
+/**
+ * GenericMeetService
+ * Generic protocol layer for meetup operations
+ * Handles parsing and querying meetup events from relays
+ */
+
+/**
+ * Parse a meetup event from relay
+ */
+function parseMeetupEvent(event: NostrEvent): MeetupEvent | null {
+  try {
+    if (event.kind !== MEETUP_CONFIG.kinds.MEETUP) {
+      return null;
+    }
+
+    const tags = event.tags;
+    const getTag = (name: string): string | undefined => {
+      const tag = tags.find((t) => t[0] === name);
+      return tag ? tag[1] : undefined;
+    };
+
+    const getAllTags = (name: string): string[] => {
+      return tags.filter((t) => t[0] === name).map((t) => t[1]);
+    };
+
+    const dTag = getTag('d');
+    if (!dTag) {
+      logger.warn('Meetup event missing dTag', {
+        service: 'GenericMeetService',
+        method: 'parseMeetupEvent',
+        eventId: event.id,
+      });
+      return null;
+    }
+
+    const name = getTag('name');
+    if (!name) {
+      logger.warn('Meetup event missing name', {
+        service: 'GenericMeetService',
+        method: 'parseMeetupEvent',
+        eventId: event.id,
+      });
+      return null;
+    }
+
+    const startTimeStr = getTag('start');
+    if (!startTimeStr) {
+      logger.warn('Meetup event missing start time', {
+        service: 'GenericMeetService',
+        method: 'parseMeetupEvent',
+        eventId: event.id,
+      });
+      return null;
+    }
+
+    const startTime = parseInt(startTimeStr, 10);
+    if (isNaN(startTime)) {
+      return null;
+    }
+
+    const location = getTag('location');
+    if (!location) {
+      return null;
+    }
+
+    // Optional fields
+    const endTimeStr = getTag('end');
+    const endTime = endTimeStr ? parseInt(endTimeStr, 10) : undefined;
+
+    const timezone = getTag('timezone');
+    const geohash = getTag('g');
+    const imageUrl = getTag('image');
+    const virtualLink = getTag('virtual');
+    const meetupType = getTag('meetup-type') || 'other';
+
+    // Get host and co-hosts
+    const pTags = tags.filter((t) => t[0] === 'p');
+    const hostTag = pTags.find((t) => t[3] === 'host');
+    const hostPubkey = hostTag ? hostTag[1] : event.pubkey;
+    
+    const coHostTags = pTags.filter((t) => t[3] === 'co-host');
+    const coHosts = coHostTags.length > 0 ? coHostTags.map((t) => t[1]) : undefined;
+
+    // Get user tags (exclude system tag)
+    const userTags = getAllTags('t').filter(
+      (t) => t !== MEETUP_CONFIG.systemTag
+    );
+
+    const isVirtual = location.toLowerCase() === 'virtual' || !!virtualLink;
+
+    return {
+      id: event.id || '',
+      dTag,
+      pubkey: event.pubkey,
+      name,
+      description: event.content,
+      startTime,
+      endTime,
+      timezone,
+      location,
+      geohash,
+      isVirtual,
+      virtualLink,
+      imageUrl,
+      meetupType,
+      tags: userTags,
+      hostPubkey,
+      coHosts,
+      createdAt: event.created_at,
+      publishedAt: event.created_at,
+    };
+  } catch (error) {
+    logger.error('Failed to parse meetup event', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericMeetService',
+      method: 'parseMeetupEvent',
+      eventId: event.id,
+    });
+    return null;
+  }
+}
+
+/**
+ * Parse an RSVP event from relay
+ */
+function parseRSVPEvent(event: NostrEvent): ParsedRSVP | null {
+  try {
+    if (event.kind !== MEETUP_CONFIG.kinds.RSVP) {
+      return null;
+    }
+
+    const tags = event.tags;
+    const getTag = (name: string): string | undefined => {
+      const tag = tags.find((t) => t[0] === name);
+      return tag ? tag[1] : undefined;
+    };
+
+    const dTag = getTag('d');
+    if (!dTag) {
+      return null;
+    }
+
+    const aTag = getTag('a');
+    if (!aTag) {
+      return null;
+    }
+
+    const status = getTag('status') as 'accepted' | 'declined' | 'tentative' | undefined;
+    if (!status) {
+      return null;
+    }
+
+    const eventPubkey = getTag('p');
+    if (!eventPubkey) {
+      return null;
+    }
+
+    // Extract eventDTag from aTag (format: 31923:pubkey:dTag)
+    const aTagParts = aTag.split(':');
+    if (aTagParts.length !== 3 || aTagParts[0] !== '31923') {
+      return null;
+    }
+    const eventDTag = aTagParts[2];
+
+    return {
+      pubkey: event.pubkey,
+      eventDTag,
+      eventPubkey,
+      status,
+      comment: event.content || undefined,
+      timestamp: event.created_at,
+    };
+  } catch (error) {
+    logger.error('Failed to parse RSVP event', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericMeetService',
+      method: 'parseRSVPEvent',
+      eventId: event.id,
+    });
+    return null;
+  }
+}
+
+/**
+ * Fetch public meetups from relays
+ */
+export async function fetchPublicMeetups(
+  limit = 20,
+  until?: number,
+  startAfter?: number
+): Promise<MeetupCardData[]> {
+  try {
+    logger.info('Fetching public meetups from relays', {
+      service: 'GenericMeetService',
+      method: 'fetchPublicMeetups',
+      limit,
+      until,
+      startAfter,
+    });
+
+    const filter: Filter = {
+      kinds: [MEETUP_CONFIG.kinds.MEETUP],
+      '#t': [MEETUP_CONFIG.systemTag],
+      limit,
+      until,
+    };
+
+    const queryResult = await queryEvents([filter as Record<string, unknown>]);
+
+    if (!queryResult.success) {
+      logger.error('Failed to fetch meetups', new Error(queryResult.error || 'Query failed'), {
+        service: 'GenericMeetService',
+        method: 'fetchPublicMeetups',
+      });
+      return [];
+    }
+
+    // Parse and deduplicate by dTag (keep most recent)
+    const meetupMap = new Map<string, MeetupEvent>();
+
+    for (const event of queryResult.events) {
+      const meetup = parseMeetupEvent(event);
+      if (!meetup) continue;
+
+      // Filter by startAfter if provided
+      if (startAfter && meetup.startTime < startAfter) {
+        continue;
+      }
+
+      const existing = meetupMap.get(meetup.dTag);
+      if (!existing || meetup.createdAt > existing.createdAt) {
+        meetupMap.set(meetup.dTag, meetup);
+      }
+    }
+
+    // Convert to MeetupCardData
+    const meetups = Array.from(meetupMap.values()).map((m) => ({
+      id: m.id,
+      dTag: m.dTag,
+      name: m.name,
+      description: m.description,
+      startTime: m.startTime,
+      endTime: m.endTime,
+      location: m.location,
+      isVirtual: m.isVirtual,
+      imageUrl: m.imageUrl,
+      meetupType: m.meetupType,
+      tags: m.tags,
+      pubkey: m.pubkey,
+      createdAt: m.createdAt,
+    }));
+
+    logger.info('Successfully fetched public meetups', {
+      service: 'GenericMeetService',
+      method: 'fetchPublicMeetups',
+      count: meetups.length,
+    });
+
+    return meetups;
+  } catch (error) {
+    logger.error('Failed to fetch public meetups', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericMeetService',
+      method: 'fetchPublicMeetups',
+    });
+    return [];
+  }
+}
+
+/**
+ * Fetch meetups by author
+ */
+export async function fetchMeetupsByAuthor(pubkey: string): Promise<MeetupEvent[]> {
+  try {
+    logger.info('Fetching meetups by author', {
+      service: 'GenericMeetService',
+      method: 'fetchMeetupsByAuthor',
+      pubkey: pubkey.substring(0, 8) + '...',
+    });
+
+    const filter: Filter = {
+      kinds: [MEETUP_CONFIG.kinds.MEETUP],
+      authors: [pubkey],
+      '#t': [MEETUP_CONFIG.systemTag],
+    };
+
+    const queryResult = await queryEvents([filter as Record<string, unknown>]);
+
+    if (!queryResult.success) {
+      return [];
+    }
+
+    // Parse and deduplicate by dTag
+    const meetupMap = new Map<string, MeetupEvent>();
+
+    for (const event of queryResult.events) {
+      const meetup = parseMeetupEvent(event);
+      if (!meetup) continue;
+
+      const existing = meetupMap.get(meetup.dTag);
+      if (!existing || meetup.createdAt > existing.createdAt) {
+        meetupMap.set(meetup.dTag, meetup);
+      }
+    }
+
+    return Array.from(meetupMap.values());
+  } catch (error) {
+    logger.error('Failed to fetch meetups by author', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericMeetService',
+      method: 'fetchMeetupsByAuthor',
+    });
+    return [];
+  }
+}
+
+/**
+ * Fetch a single meetup by dTag
+ */
+export async function fetchMeetupById(pubkey: string, dTag: string): Promise<MeetupEvent | null> {
+  try {
+    const filter: Filter = {
+      kinds: [MEETUP_CONFIG.kinds.MEETUP],
+      authors: [pubkey],
+      '#d': [dTag],
+      limit: 1,
+    };
+
+    const queryResult = await queryEvents([filter as Record<string, unknown>]);
+
+    if (!queryResult.success || queryResult.events.length === 0) {
+      return null;
+    }
+
+    const latestEvent = queryResult.events.sort((a, b) => b.created_at - a.created_at)[0];
+    return parseMeetupEvent(latestEvent);
+  } catch (error) {
+    logger.error('Failed to fetch meetup by ID', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericMeetService',
+      method: 'fetchMeetupById',
+    });
+    return null;
+  }
+}
+
+/**
+ * Fetch RSVPs for a meetup
+ */
+export async function fetchMeetupRSVPs(eventPubkey: string, eventDTag: string): Promise<ParsedRSVP[]> {
+  try {
+    const aTag = MEETUP_CONFIG.rsvp.aTagFormat(eventPubkey, eventDTag);
+
+    const filter: Filter = {
+      kinds: [MEETUP_CONFIG.kinds.RSVP],
+      '#a': [aTag],
+    };
+
+    const queryResult = await queryEvents([filter as Record<string, unknown>]);
+
+    if (!queryResult.success) {
+      return [];
+    }
+
+    // Deduplicate RSVPs by pubkey (keep most recent per user)
+    const rsvpMap = new Map<string, ParsedRSVP>();
+
+    for (const event of queryResult.events) {
+      const rsvp = parseRSVPEvent(event);
+      if (!rsvp) continue;
+
+      const existing = rsvpMap.get(rsvp.pubkey);
+      if (!existing || rsvp.timestamp > existing.timestamp) {
+        rsvpMap.set(rsvp.pubkey, rsvp);
+      }
+    }
+
+    return Array.from(rsvpMap.values());
+  } catch (error) {
+    logger.error('Failed to fetch RSVPs', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericMeetService',
+      method: 'fetchMeetupRSVPs',
+    });
+    return [];
+  }
+}
+
+/**
+ * Fetch RSVPs by user
+ */
+export async function fetchUserRSVPs(pubkey: string): Promise<ParsedRSVP[]> {
+  try {
+    const filter: Filter = {
+      kinds: [MEETUP_CONFIG.kinds.RSVP],
+      authors: [pubkey],
+    };
+
+    const queryResult = await queryEvents([filter as Record<string, unknown>]);
+
+    if (!queryResult.success) {
+      return [];
+    }
+
+    // Deduplicate RSVPs by eventDTag (keep most recent per meetup)
+    const rsvpMap = new Map<string, ParsedRSVP>();
+
+    for (const event of queryResult.events) {
+      const rsvp = parseRSVPEvent(event);
+      if (!rsvp) continue;
+
+      const existing = rsvpMap.get(rsvp.eventDTag);
+      if (!existing || rsvp.timestamp > existing.timestamp) {
+        rsvpMap.set(rsvp.eventDTag, rsvp);
+      }
+    }
+
+    return Array.from(rsvpMap.values());
+  } catch (error) {
+    logger.error('Failed to fetch user RSVPs', error instanceof Error ? error : new Error('Unknown error'), {
+      service: 'GenericMeetService',
+      method: 'fetchUserRSVPs',
+    });
+    return [];
+  }
+}

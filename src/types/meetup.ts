@@ -171,6 +171,8 @@ export interface MeetupValidationResult {
  */
 export interface ParsedRSVP {
   pubkey: string;
+  eventDTag: string; // Reference to meetup dTag
+  eventPubkey: string; // Meetup creator pubkey
   status: 'accepted' | 'declined' | 'tentative';
   comment?: string;
   timestamp: number;

@@ -6,8 +6,14 @@ import type {
   ParsedRSVP,
 } from '@/types/meetup';
 import type { NostrEvent, NostrSigner } from '@/types/nostr';
-import { MeetupEventService } from '@/services/nostr/MeetupEventService';
 import { queryEvents, publishEvent } from '@/services/generic/GenericRelayService';
+import {
+  fetchPublicMeetups,
+  fetchMeetupsByAuthor,
+  fetchMeetupById,
+  fetchMeetupRSVPs,
+  fetchUserRSVPs,
+} from '@/services/generic/GenericMeetService';
 import { 
   createCalendarEvent, 
   createRSVPEvent, 
@@ -21,7 +27,7 @@ import type { Filter } from 'nostr-tools';
  * MeetService
  * Business logic layer for meetup operations
  * Layer: Business Service
- * Dependencies: GenericEventService (Event), GenericRelayService (Generic)
+ * Dependencies: GenericEventService (Event), GenericRelayService, GenericMeetService (Generic)
  */
 
 /**
@@ -241,42 +247,20 @@ export async function fetchMeetups(options?: {
   since?: number;
   until?: number;
 }): Promise<MeetupEvent[]> {
-  try {
-    const filter: Filter = {
-      kinds: [MEETUP_CONFIG.kinds.MEETUP],
-      '#t': [MEETUP_CONFIG.systemTag],
-      limit: options?.limit,
-      since: options?.since,
-      until: options?.until,
-    };
-
-    const queryResult = await queryEvents([filter as Record<string, unknown>]);
-
-    if (!queryResult.success) {
-      return [];
-    }
-
-    // Parse and deduplicate by dTag (keep most recent)
-    const meetupMap = new Map<string, MeetupEvent>();
-
-    for (const event of queryResult.events) {
-      try {
-        const meetup = MeetupEventService.parseMeetupEvent(event);
-        
-        const existing = meetupMap.get(meetup.dTag);
-        if (!existing || meetup.createdAt > existing.createdAt) {
-          meetupMap.set(meetup.dTag, meetup);
-        }
-      } catch (error) {
-        console.error('Failed to parse meetup event:', error);
-      }
-    }
-
-    return Array.from(meetupMap.values());
-  } catch (error) {
-    console.error('Failed to fetch meetups:', error);
-    return [];
-  }
+  // Delegate to GenericMeetService
+  const cardData = await fetchPublicMeetups(options?.limit, options?.until);
+  
+  // Convert MeetupCardData to MeetupEvent (add missing fields)
+  return cardData.map(card => ({
+    ...card,
+    description: card.description,
+    timezone: undefined,
+    geohash: undefined,
+    virtualLink: undefined,
+    hostPubkey: card.pubkey,
+    coHosts: undefined,
+    publishedAt: card.createdAt,
+  }));
 }
 
 /**
@@ -286,71 +270,16 @@ export async function fetchMeetupByDTag(
   pubkey: string,
   dTag: string
 ): Promise<MeetupEvent | null> {
-  try {
-    const filter: Filter = {
-      kinds: [MEETUP_CONFIG.kinds.MEETUP],
-      authors: [pubkey],
-      '#d': [dTag],
-      limit: 1,
-    };
-
-    const queryResult = await queryEvents([filter as Record<string, unknown>]);
-
-    if (!queryResult.success || queryResult.events.length === 0) {
-      return null;
-    }
-
-    // Get the most recent event
-    const latestEvent = queryResult.events.sort((a: NostrEvent, b: NostrEvent) => b.created_at - a.created_at)[0];
-    return MeetupEventService.parseMeetupEvent(latestEvent);
-  } catch (error) {
-    console.error('Failed to fetch meetup:', error);
-    return null;
-  }
+  // Delegate to GenericMeetService
+  return fetchMeetupById(pubkey, dTag);
 }
 
 /**
  * Fetch meetups created by a specific user
  */
-export async function fetchUserMeetups(
-  pubkey: string,
-  options?: { limit?: number }
-): Promise<MeetupEvent[]> {
-  try {
-    const filter: Filter = {
-      kinds: [MEETUP_CONFIG.kinds.MEETUP],
-      authors: [pubkey],
-      '#t': [MEETUP_CONFIG.systemTag],
-      limit: options?.limit,
-    };
-
-    const queryResult = await queryEvents([filter as Record<string, unknown>]);
-
-    if (!queryResult.success) {
-      return [];
-    }
-
-    // Parse and deduplicate by dTag
-    const meetupMap = new Map<string, MeetupEvent>();
-
-    for (const event of queryResult.events) {
-      try {
-        const meetup = MeetupEventService.parseMeetupEvent(event);
-        
-        const existing = meetupMap.get(meetup.dTag);
-        if (!existing || meetup.createdAt > existing.createdAt) {
-          meetupMap.set(meetup.dTag, meetup);
-        }
-      } catch (error) {
-        console.error('Failed to parse meetup event:', error);
-      }
-    }
-
-    return Array.from(meetupMap.values());
-  } catch (error) {
-    console.error('Failed to fetch user meetups:', error);
-    return [];
-  }
+export async function fetchUserMeetups(pubkey: string): Promise<MeetupEvent[]> {
+  // Delegate to GenericMeetService
+  return fetchMeetupsByAuthor(pubkey);
 }
 
 /**
@@ -488,84 +417,20 @@ export async function deleteRSVP(
 /**
  * Fetch RSVPs for a specific meetup
  */
-export async function fetchMeetupRSVPs(
+export async function fetchMeetupRSVPsForMeetup(
   eventPubkey: string,
   eventDTag: string
 ): Promise<ParsedRSVP[]> {
-  try {
-    const aTag = MEETUP_CONFIG.rsvp.aTagFormat(eventPubkey, eventDTag);
-
-    const filter: Filter = {
-      kinds: [MEETUP_CONFIG.kinds.RSVP],
-      '#a': [aTag],
-    };
-
-    const queryResult = await queryEvents([filter as Record<string, unknown>]);
-
-    if (!queryResult.success) {
-      return [];
-    }
-
-    // Deduplicate RSVPs by pubkey (keep most recent per user)
-    const rsvpMap = new Map<string, ParsedRSVP>();
-
-    for (const event of queryResult.events) {
-      try {
-        const rsvp = MeetupEventService.parseRSVPEvent(event);
-        
-        const existing = rsvpMap.get(rsvp.pubkey);
-        if (!existing || rsvp.timestamp > existing.timestamp) {
-          rsvpMap.set(rsvp.pubkey, rsvp);
-        }
-      } catch (error) {
-        console.error('Failed to parse RSVP event:', error);
-      }
-    }
-
-    return Array.from(rsvpMap.values());
-  } catch (error) {
-    console.error('Failed to fetch RSVPs:', error);
-    return [];
-  }
+  // Delegate to GenericMeetService
+  return fetchMeetupRSVPs(eventPubkey, eventDTag);
 }
 
 /**
  * Fetch RSVPs created by a specific user
  */
-export async function fetchUserRSVPs(pubkey: string): Promise<ParsedRSVP[]> {
-  try {
-    const filter: Filter = {
-      kinds: [MEETUP_CONFIG.kinds.RSVP],
-      authors: [pubkey],
-    };
-
-    const queryResult = await queryEvents([filter as Record<string, unknown>]);
-
-    if (!queryResult.success) {
-      return [];
-    }
-
-    // Deduplicate RSVPs by eventDTag (keep most recent per meetup)
-    const rsvpMap = new Map<string, ParsedRSVP>();
-
-    for (const event of queryResult.events) {
-      try {
-        const rsvp = MeetupEventService.parseRSVPEvent(event);
-        
-        const existing = rsvpMap.get(rsvp.eventDTag);
-        if (!existing || rsvp.timestamp > existing.timestamp) {
-          rsvpMap.set(rsvp.eventDTag, rsvp);
-        }
-      } catch (error) {
-        console.error('Failed to parse RSVP event:', error);
-      }
-    }
-
-    return Array.from(rsvpMap.values());
-  } catch (error) {
-    console.error('Failed to fetch user RSVPs:', error);
-    return [];
-  }
+export async function fetchRSVPsByUser(pubkey: string): Promise<ParsedRSVP[]> {
+  // Delegate to GenericMeetService
+  return fetchUserRSVPs(pubkey);
 }
 
 /**
