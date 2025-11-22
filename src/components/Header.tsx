@@ -221,6 +221,28 @@ export default function Header() {
                   </Link>
                   
                   <Link
+                    href="/my-meet"
+                    className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg className="w-4 h-4 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    My Meetups
+                  </Link>
+                  
+                  <Link
+                    href="/my-meet/rsvps"
+                    className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg className="w-4 h-4 mr-3 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                    My RSVPs
+                  </Link>
+                  
+                  <Link
                     href="/messages"
                     className="flex items-center px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 transition-colors"
                     onClick={() => setIsOpen(false)}
@@ -290,6 +312,17 @@ export default function Header() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
                     New Work Listing
+                  </Link>
+                  
+                  <Link
+                    href="/my-meet/create"
+                    className="flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50 transition-colors font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <svg className="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                    </svg>
+                    New Meetup
                   </Link>
                   
                   <div className="border-t border-purple-100 my-1"></div>
