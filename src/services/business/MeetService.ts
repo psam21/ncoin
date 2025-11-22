@@ -2,6 +2,7 @@ import type {
   MeetupData,
   MeetupEvent,
   MeetupPublishingResult,
+  MeetupPublishingProgress,
   RSVPData,
   ParsedRSVP,
 } from '@/types/meetup';
@@ -22,6 +23,9 @@ import {
 } from '@/services/generic/GenericEventService';
 import { MEETUP_CONFIG } from '@/config/meetup';
 import type { Filter } from 'nostr-tools';
+import { logger } from '@/services/core/LoggingService';
+import { validateMeetupData } from '@/services/business/MeetValidationService';
+import { uploadSequentialWithConsent } from '@/services/generic/GenericBlossomService';
 
 /**
  * MeetService
@@ -31,35 +35,129 @@ import type { Filter } from 'nostr-tools';
  */
 
 /**
- * Publish a new meetup
+ * Create a new meetup with image upload, event creation and publishing
+ * Matches plan signature and includes Blossom image upload orchestration
+ * 
+ * @param meetupData - Meetup data
+ * @param imageFile - Optional event image
+ * @param signer - Nostr signer
+ * @param existingDTag - Optional dTag for updates
+ * @param onProgress - Optional callback for progress updates
  */
-export async function publishMeetup(
-  data: MeetupData,
-  signer: NostrSigner
+export async function createMeetup(
+  meetupData: MeetupData,
+  imageFile: File | null,
+  signer: NostrSigner,
+  existingDTag?: string,
+  onProgress?: (progress: MeetupPublishingProgress) => void
 ): Promise<MeetupPublishingResult> {
   try {
+    logger.info('Starting meetup creation', {
+      service: 'MeetService',
+      method: 'createMeetup',
+      name: meetupData.name,
+      isEdit: !!existingDTag,
+      hasImage: !!imageFile,
+    });
+
+    // Step 1: Validate meetup data
+    onProgress?.({
+      step: 'validating',
+      progress: 10,
+      message: 'Validating meetup...',
+      details: 'Checking required fields',
+    });
+
+    const validation = validateMeetupData(meetupData);
+    if (!validation.valid) {
+      const errorMsg = Object.values(validation.errors).join(', ');
+      logger.error('Meetup validation failed', new Error(errorMsg), {
+        service: 'MeetService',
+        method: 'createMeetup',
+        errors: validation.errors,
+      });
+      return {
+        success: false,
+        error: errorMsg,
+      };
+    }
+
+    // Step 2: Upload image file (if provided)
+    let imageUrl = meetupData.imageUrl;
+
+    if (imageFile) {
+      onProgress?.({
+        step: 'uploading',
+        progress: 30,
+        message: 'Uploading event image...',
+        details: imageFile.name,
+      });
+
+      logger.info('Uploading event image', {
+        service: 'MeetService',
+        method: 'createMeetup',
+        fileName: imageFile.name,
+        fileSize: imageFile.size,
+      });
+
+      const uploadResult = await uploadSequentialWithConsent(
+        [imageFile],
+        signer,
+        (uploadProgress) => {
+          // Map upload progress (0-1) to publishing progress (30-70)
+          const progressPercent = 30 + (40 * uploadProgress.overallProgress);
+          onProgress?.({
+            step: 'uploading',
+            progress: progressPercent,
+            message: uploadProgress.nextAction,
+            details: imageFile.name,
+          });
+        }
+      );
+
+      // Check for cancellation or failure
+      if (uploadResult.userCancelled) {
+        return {
+          success: false,
+          error: 'User cancelled image upload',
+        };
+      }
+
+      if (uploadResult.successCount === 0) {
+        return {
+          success: false,
+          error: 'Image upload failed',
+        };
+      }
+
+      imageUrl = uploadResult.uploadedFiles[0].url;
+
+      logger.info('Image upload completed', {
+        service: 'MeetService',
+        method: 'createMeetup',
+        imageUrl,
+      });
+    }
+
+    // Step 3: Create calendar event
+    onProgress?.({
+      step: 'publishing',
+      progress: 75,
+      message: 'Creating meetup event...',
+      details: 'Signing event',
+    });
+
     const pubkey = await signer.getPublicKey();
 
-    // Create the calendar event using GenericEventService
     const eventResult = createCalendarEvent(
       {
-        name: data.name,
-        description: data.description,
-        startTime: data.startTime,
-        endTime: data.endTime,
-        timezone: data.timezone,
-        location: data.location,
-        geohash: data.geohash,
-        isVirtual: data.isVirtual,
-        virtualLink: data.virtualLink,
-        imageUrl: data.imageUrl,
-        meetupType: data.meetupType,
-        tags: data.tags,
-        hostPubkey: data.hostPubkey,
-        coHosts: data.coHosts,
+        ...meetupData,
+        imageUrl,
       },
       pubkey,
-      { systemTag: MEETUP_CONFIG.systemTag }
+      existingDTag
+        ? { dTag: existingDTag, systemTag: MEETUP_CONFIG.systemTag }
+        : { systemTag: MEETUP_CONFIG.systemTag }
     );
 
     if (!eventResult.success || !eventResult.event) {
@@ -69,7 +167,7 @@ export async function publishMeetup(
       };
     }
 
-    // Sign the event
+    // Step 4: Sign the event
     const signResult = await signEvent(eventResult.event, signer);
     
     if (!signResult.success || !signResult.signedEvent) {
@@ -79,8 +177,29 @@ export async function publishMeetup(
       };
     }
 
-    // Publish to relays
+    // Step 5: Publish to relays
+    onProgress?.({
+      step: 'publishing',
+      progress: 90,
+      message: 'Publishing to relays...',
+      details: 'Broadcasting event',
+    });
+
     const publishResult = await publishEvent(signResult.signedEvent, signer);
+
+    onProgress?.({
+      step: 'complete',
+      progress: 100,
+      message: 'Meetup published successfully!',
+      details: `Published to ${publishResult.publishedRelays?.length || 0} relays`,
+    });
+
+    logger.info('Meetup creation completed', {
+      service: 'MeetService',
+      method: 'createMeetup',
+      success: publishResult.success,
+      publishedRelays: publishResult.publishedRelays?.length,
+    });
 
     return {
       success: publishResult.success,
@@ -90,11 +209,26 @@ export async function publishMeetup(
       failedRelays: publishResult.failedRelays,
     };
   } catch (error) {
+    logger.error('Meetup creation failed', error instanceof Error ? error : new Error(String(error)), {
+      service: 'MeetService',
+      method: 'createMeetup',
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
+}
+
+/**
+ * Publish a new meetup (backward compatibility wrapper)
+ * Use createMeetup() for new implementations
+ */
+export async function publishMeetup(
+  data: MeetupData,
+  signer: NostrSigner
+): Promise<MeetupPublishingResult> {
+  return createMeetup(data, null, signer);
 }
 
 /**
@@ -166,44 +300,31 @@ export async function updateMeetup(
 }
 
 /**
- * Delete a meetup (publish Kind 5 deletion event)
- * Query all relays for event IDs before deleting
+ * Delete a meetup by publishing NIP-09 deletion event
+ * Matches plan signature: eventId first, correct parameter order
+ * 
+ * @param eventId - The event ID to delete (for targeted deletion)
+ * @param signer - Nostr signer
+ * @param pubkey - Author's public key
+ * @param title - Meetup title (for deletion reason)
  */
 export async function deleteMeetup(
-  pubkey: string,
-  dTag: string,
+  eventId: string,
   signer: NostrSigner,
-  reason?: string
+  pubkey: string,
+  title: string
 ): Promise<MeetupPublishingResult> {
   try {
-    // Query all relays for events with this dTag
-    const filter: Filter = {
-      kinds: [MEETUP_CONFIG.kinds.MEETUP],
-      authors: [pubkey],
-      '#d': [dTag],
-    };
-
-    const queryResult = await queryEvents([filter as Record<string, unknown>]);
-    
-    if (!queryResult.success || queryResult.events.length === 0) {
-      return {
-        success: false,
-        error: 'No events found to delete',
-      };
-    }
-
-    // Collect all event IDs
-    const eventIds = queryResult.events.map((e: NostrEvent) => e.id).filter((id): id is string => !!id);
-
-    if (eventIds.length === 0) {
-      return {
-        success: false,
-        error: 'No valid event IDs found',
-      };
-    }
+    logger.info('Deleting meetup', {
+      service: 'MeetService',
+      method: 'deleteMeetup',
+      eventId,
+      title,
+    });
 
     // Create deletion event using GenericEventService
-    const deletionResult = createDeletionEvent(eventIds, pubkey, { reason });
+    const reason = `Deleted meetup: ${title}`;
+    const deletionResult = createDeletionEvent([eventId], pubkey, { reason });
 
     if (!deletionResult.success || !deletionResult.event) {
       return {
@@ -225,6 +346,13 @@ export async function deleteMeetup(
     // Publish deletion to all relays
     const publishResult = await publishEvent(signResult.signedEvent, signer);
 
+    logger.info('Meetup deletion completed', {
+      service: 'MeetService',
+      method: 'deleteMeetup',
+      success: publishResult.success,
+      publishedRelays: publishResult.publishedRelays?.length,
+    });
+
     return {
       success: publishResult.success,
       eventId: publishResult.eventId,
@@ -232,6 +360,11 @@ export async function deleteMeetup(
       failedRelays: publishResult.failedRelays,
     };
   } catch (error) {
+    logger.error('Meetup deletion failed', error instanceof Error ? error : new Error(String(error)), {
+      service: 'MeetService',
+      method: 'deleteMeetup',
+      eventId,
+    });
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

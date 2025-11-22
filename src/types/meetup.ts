@@ -163,6 +163,7 @@ export interface MeetupValidationResult {
     virtualLink?: string;
     meetupType?: string;
     tags?: string;
+    coHosts?: string;
   };
 }
 
