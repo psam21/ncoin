@@ -270,12 +270,6 @@ export default function MeetPage() {
         {/* Upcoming Events */}
         {upcomingMeetups.length > 0 && (
           <div className="mb-12">
-            <div className="flex items-center gap-2 mb-6">
-              <Calendar className="w-5 h-5 text-green-600" />
-              <h3 className="text-lg font-semibold text-purple-900">
-                Upcoming Events ({upcomingMeetups.length})
-              </h3>
-            </div>
             <div
               className={
                 viewMode === 'grid'
