@@ -195,9 +195,8 @@ export default function CreateMeetupPage() {
         </section>
       )}
 
-      {/* Process Steps - Hide when form is active */}
-      {selectedType === null && (
-        <section className="section-padding bg-white">
+      {/* Process Steps */}
+      <section className="section-padding bg-white">
         <div className="container-width">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -232,7 +231,6 @@ export default function CreateMeetupPage() {
           </div>
         </div>
       </section>
-      )}
     </div>
   );
 }
