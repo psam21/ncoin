@@ -85,13 +85,6 @@ export default function CreateMeetupPage() {
 
   const handleTypeSelection = (index: number) => {
     setSelectedType(index);
-    // Scroll to form after a brief delay to allow render
-    setTimeout(() => {
-      const formSection = document.getElementById('meetup-form-section');
-      if (formSection) {
-        formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }
-    }, 100);
   };
 
   const handleMeetupCreated = (meetupId: string) => {
@@ -178,7 +171,7 @@ export default function CreateMeetupPage() {
 
       {/* Meetup Form - Only show when type is selected */}
       {selectedType !== null && (
-        <section id="meetup-form-section" className="section-padding bg-gray-50">
+        <section className="section-padding bg-gray-50">
           <div className="container-width">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
