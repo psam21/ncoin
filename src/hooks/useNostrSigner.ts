@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { logger } from '@/services/core/LoggingService';
 import { NostrSigner } from '@/types/nostr';
 import { useAuthStore } from '@/stores/useAuthStore';
@@ -42,7 +42,8 @@ export const useNostrSigner = () => {
 
   // Helper to get signer when needed (LAZY - only called when signing events)
   // Caches result in store for reuse
-  const getSigner = async (): Promise<NostrSigner> => {
+  // Memoized with useCallback to prevent recreating on every render
+  const getSigner = useCallback(async (): Promise<NostrSigner> => {
     const { isAuthenticated, user, nsec: nsecFromStore, signer: cachedSigner } = useAuthStore.getState();
     
     if (!isAuthenticated || !user) {
@@ -101,7 +102,7 @@ export const useNostrSigner = () => {
       ErrorCategory.AUTHENTICATION,
       ErrorSeverity.HIGH
     );
-  };
+  }, [nsec, nsecSigner, setSigner]); // Memoize with dependencies
 
   // Simple detection: Only check if extension exists for non-authenticated users (sign-in button)
   // For authenticated users, get signer once and cache it
@@ -148,7 +149,7 @@ export const useNostrSigner = () => {
         useAuthStore.getState().setLoading(false);
       });
     }
-  }, [nsec, setSignerAvailable, getSigner]);
+  }, [nsec, setSignerAvailable, getSigner]); // getSigner is now stable with useCallback
 
   return { 
     isAvailable, 
