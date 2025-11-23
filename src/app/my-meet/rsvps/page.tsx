@@ -129,7 +129,7 @@ export default function MyRSVPsPage() {
           <div className="max-w-5xl mx-auto text-center">
             <div className="flex items-center justify-center mb-6">
               <Users className="w-12 h-12 mr-4" />
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-center">
                 My RSVPs
               </h1>
             </div>
