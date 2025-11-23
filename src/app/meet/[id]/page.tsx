@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
-import { fetchMeetupByDTag } from '@/services/business/MeetService';
+import { contentDetailService, ContentDetailProvider } from '@/services/business/ContentDetailService';
+import { meetContentService, type MeetCustomFields } from '@/services/business/MeetContentService';
 import { ContentNotFound } from '@/components/generic/ContentNotFound';
 import { MeetupDetail } from '@/components/pages/MeetupDetail';
 
@@ -9,6 +10,12 @@ type MeetupPageProps = {
   params: Promise<{ id: string }>;
 };
 
+// Register meet provider (cast needed due to generic type constraints)
+contentDetailService.registerProvider(
+  'meet',
+  meetContentService as ContentDetailProvider
+);
+
 export async function generateMetadata({
   params,
 }: {
@@ -17,16 +24,20 @@ export async function generateMetadata({
   try {
     const { id } = await params;
     const decodedId = decodeURIComponent(id);
-    const meetup = await fetchMeetupByDTag('', decodedId);
+    const result = await contentDetailService.getContentDetail<MeetCustomFields>(
+      'meet',
+      decodedId
+    );
 
-    if (!meetup) {
+    if (!result.success || !result.content) {
       return {
         title: 'Meetup Not Found',
         description: 'The meetup you are looking for could not be found.',
       };
     }
 
-    const date = new Date(meetup.startTime * 1000);
+    const { content } = result;
+    const date = new Date(content.customFields.startTime * 1000);
     const formattedDate = date.toLocaleDateString('en-US', {
       weekday: 'long',
       year: 'numeric',
@@ -36,12 +47,12 @@ export async function generateMetadata({
     });
 
     return {
-      title: `${meetup.name} | Meetups`,
-      description: meetup.description || `${meetup.name} - ${formattedDate} at ${meetup.location}`,
+      title: `${content.title} | Meetups`,
+      description: content.description || `${content.title} - ${formattedDate} at ${content.customFields.location}`,
       openGraph: {
-        title: meetup.name,
-        description: meetup.description || `Join us at ${meetup.location}`,
-        images: meetup.media.images.length > 0 ? meetup.media.images.map(img => ({ url: img.url })) : [],
+        title: content.title,
+        description: content.description || `Join us at ${content.customFields.location}`,
+        images: content.media.length > 0 ? content.media.map(m => ({ url: m.source.url })) : [],
       },
     };
   } catch (error) {
@@ -57,11 +68,57 @@ export default async function MeetupPage({ params }: MeetupPageProps) {
   try {
     const { id } = await params;
     const decodedId = decodeURIComponent(id);
-    const meetup = await fetchMeetupByDTag('', decodedId);
+    const result = await contentDetailService.getContentDetail<MeetCustomFields>(
+      'meet',
+      decodedId
+    );
 
-    if (!meetup) {
+    if (!result.success || !result.content) {
       return <ContentNotFound />;
     }
+
+    // Convert ContentDetail to MeetupEvent format for MeetupDetail component
+    const { content } = result;
+    const meetup = {
+      id: content.id,
+      dTag: decodedId,
+      pubkey: content.author.pubkey,
+      name: content.title,
+      description: content.description,
+      startTime: content.customFields.startTime,
+      endTime: content.customFields.endTime,
+      timezone: content.customFields.timezone,
+      location: content.customFields.location,
+      geohash: content.customFields.geohash,
+      isVirtual: content.customFields.isVirtual,
+      virtualLink: content.customFields.virtualLink,
+      media: {
+        images: content.media.filter(m => m.type === 'image').map(m => ({
+          url: m.source.url,
+          mimeType: m.source.mimeType,
+          hash: m.source.hash,
+          size: m.source.size,
+        })),
+        videos: content.media.filter(m => m.type === 'video').map(m => ({
+          url: m.source.url,
+          mimeType: m.source.mimeType,
+          hash: m.source.hash,
+          size: m.source.size,
+        })),
+        audio: content.media.filter(m => m.type === 'audio').map(m => ({
+          url: m.source.url,
+          mimeType: m.source.mimeType,
+          hash: m.source.hash,
+          size: m.source.size,
+        })),
+      },
+      meetupType: content.customFields.meetupType,
+      tags: content.tags,
+      hostPubkey: content.customFields.hostPubkey,
+      coHosts: content.customFields.coHosts,
+      createdAt: content.publishedAt,
+      publishedAt: content.publishedAt,
+    };
 
     return (
       <div className="min-h-screen bg-primary-50">

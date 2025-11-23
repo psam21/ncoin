@@ -161,7 +161,26 @@ export async function createProduct(
       });
     }
 
-    // Step 3: Create product event
+    // Step 3: Merge existing attachments (from productData) with newly uploaded ones
+    // During edit, productData.attachments contains existing media that should be preserved
+    const existingAttachments = productData.attachments
+      .filter(att => att.url && !(att as unknown as { originalFile?: File }).originalFile) // Only existing (have URL but no originalFile)
+      .map(att => ({
+        id: att.id || `existing-${Date.now()}`,
+        url: att.url!,
+        type: att.type,
+        hash: att.hash || '',
+        name: att.name,
+        size: att.size || 0,
+        mimeType: att.mimeType || 'image/jpeg',
+      }));
+
+    const allAttachments = [
+      ...existingAttachments,
+      ...uploadedAttachments,
+    ];
+
+    // Step 4: Create product event
     onProgress?.({
       step: 'publishing',
       progress: 75,
@@ -171,13 +190,15 @@ export async function createProduct(
 
     const dataWithAttachments = {
       ...productData,
-      attachments: uploadedAttachments,
+      attachments: allAttachments,
     };
 
     logger.info('Creating product event', {
       service: 'ShopService',
       method: 'createProduct',
       hasExistingDTag: !!existingDTag,
+      existingAttachmentsCount: existingAttachments.length,
+      newAttachmentsCount: uploadedAttachments.length,
     });
 
     const event = await nostrEventService.createProductEvent(

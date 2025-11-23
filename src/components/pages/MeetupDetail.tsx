@@ -40,6 +40,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
     allRSVPs,
     isSubmitting: rsvpLoading,
     rsvp: handleRSVP,
+    deleteRSVP: handleDeleteRSVP,
     getRSVPCounts,
   } = useRSVP(meetup.dTag, meetup.hostPubkey);
 
@@ -412,12 +413,27 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
                       </p>
                     </div>
                   </div>
-                  <RSVPButton
-                    currentStatus={myRSVP?.status || null}
-                    onStatusChange={handleRSVP}
-                    isLoading={rsvpLoading}
-                    size="lg"
-                  />
+                  <div className="space-y-3">
+                    <RSVPButton
+                      currentStatus={myRSVP?.status || null}
+                      onStatusChange={handleRSVP}
+                      isLoading={rsvpLoading}
+                      size="lg"
+                    />
+                    {myRSVP && (
+                      <button
+                        onClick={async () => {
+                          if (confirm('Are you sure you want to cancel your RSVP?')) {
+                            await handleDeleteRSVP();
+                          }
+                        }}
+                        disabled={rsvpLoading}
+                        className="w-full px-4 py-2 text-sm font-medium text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        Cancel RSVP
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </section>

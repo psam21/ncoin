@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { logger } from '@/services/core/LoggingService';
-import { createRSVP, fetchRSVPs } from '@/services/business/MeetService';
+import { createRSVP, fetchRSVPs, deleteRSVP as deleteRSVPService } from '@/services/business/MeetService';
 import type { RSVPData, ParsedRSVP } from '@/types/meetup';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useNostrSigner } from './useNostrSigner';
@@ -154,6 +154,74 @@ export function useRSVP(eventDTag: string, eventPubkey: string) {
   }, [getSigner, isAuthenticated, eventDTag, eventPubkey, loadRSVPs]);
 
   /**
+   * Delete RSVP completely
+   */
+  const deleteRSVP = useCallback(async (): Promise<{ success: boolean; error?: string }> => {
+    if (!isAuthenticated) {
+      const error = 'Please sign in to delete RSVP';
+      logger.error('Delete RSVP failed: not authenticated', new Error(error), {
+        service: 'useRSVP',
+        method: 'deleteRSVP',
+      });
+      setError(error);
+      return { success: false, error };
+    }
+
+    if (!myRSVP) {
+      const error = 'No RSVP to delete';
+      return { success: false, error };
+    }
+
+    try {
+      logger.info('Deleting RSVP', {
+        service: 'useRSVP',
+        method: 'deleteRSVP',
+        eventDTag,
+      });
+
+      setIsSubmitting(true);
+      setError(null);
+
+      // Get signer lazily when needed
+      const signer = await getSigner();
+
+      // Call delete service with dTag format: "rsvp:{eventDTag}"
+      const result = await deleteRSVPService(`rsvp:${eventDTag}`, signer);
+
+      if (result.success) {
+        logger.info('RSVP deleted successfully', {
+          service: 'useRSVP',
+          method: 'deleteRSVP',
+        });
+
+        // Clear local RSVP state and reload
+        setMyRSVP(null);
+        await loadRSVPs();
+      } else {
+        logger.error('RSVP deletion failed', new Error(result.error || 'Unknown error'), {
+          service: 'useRSVP',
+          method: 'deleteRSVP',
+        });
+        setError(result.error || 'Failed to delete RSVP');
+      }
+
+      return result;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to delete RSVP';
+      
+      logger.error('Exception during RSVP deletion', err instanceof Error ? err : new Error(errorMessage), {
+        service: 'useRSVP',
+        method: 'deleteRSVP',
+      });
+
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [getSigner, isAuthenticated, eventDTag, myRSVP, loadRSVPs]);
+
+  /**
    * Get RSVP counts by status
    */
   const getRSVPCounts = useCallback(() => {
@@ -177,6 +245,7 @@ export function useRSVP(eventDTag: string, eventPubkey: string) {
     error,
     isSubmitting,
     rsvp,
+    deleteRSVP,
     loadRSVPs, // Manual refresh
     getRSVPCounts,
   };
