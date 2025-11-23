@@ -15,6 +15,8 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 | Shop | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Products | ❌ | Production |
 | My Work | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Work Opportunities | ❌ | Production |
 | Work | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Work Opportunities | ❌ | Production |
+| Meet | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ❌ | ❌ | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
+| My Meet | ✅ Full CRUD | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ❌ | ❌ | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ❌ | ❌ | Production |
 | Explore | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Contributions | ❌ | Production |
 | My Contributions | ✅ Full CRUD | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | ❌ | Production |
 | User Event Log | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
@@ -122,11 +124,12 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 - Self-message filtering (sender === recipient) to prevent invalid conversations
 - Cache migration system for data cleanup
 
-### Meetings
+### Meetings (Video Calls)
 
 - **Status**: Removed - feature deprecated
 - URL creator interface for Jitsi/meet.jit.si rooms removed from navigation
 - No Nostr integration, UI removed from application
+- **Note**: Different from "Meet" (meetups/events) which is in production
 
 ### Payments
 
@@ -187,10 +190,15 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 - **Status**: Production - location-based meetup organizer
 - **My Meet**: Full CRUD operations for user's own Kind 31923 meetup events
   - Create/edit/delete meetups via Kind 31923 calendar events (NIP-52)
+  - **Edit architecture**: Uses generic `useMeetupEditing` hook with `updateMeetup()` function
   - NIP-09 deletion events for removing meetups
-  - Multi-attachment support via Blossom (images)
+  - **Single-image design** (intentional): One hero/banner image per event (see media config documentation)
+    - Rationale: Matches calendar event best practices (Meetup.com, Eventbrite, Lu.ma)
+    - Simplified UX for faster event creation
+    - Consistent visual presentation in event listings
+    - Better performance for calendar views
   - Tag pattern: `nostr-for-nomads-meetup`
-  - Statistics dashboard: Total meetups, upcoming, past, total RSVPs
+  - Statistics dashboard: Total meetups, upcoming, past, total RSVPs (standardized with StatCard/StatBreakdown components)
   - Filters: Search, meetup type, status (upcoming/past)
   - RSVP management: Track RSVPs via Kind 31925 events
 - **Public Meet**: Browse all meetups from network
@@ -200,6 +208,8 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
   - Click to view meetup details with full RSVP list
 - **Service architecture**:
   - `MeetService` - Business logic orchestration
+  - `MeetUpdateService` - Update service for editing meetups
+  - `useMeetupEditing` - Generic edit hook (56 lines, follows Contribution/Shop/Work pattern)
   - `GenericMeetService` - Relay queries and parsing
   - `GenericEventService.createCalendarEvent()` - NIP-52 event creation
   - `GenericEventService.createRSVPEvent()` - RSVP event creation
@@ -213,7 +223,7 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
   - RSVP events with `a` tag referencing parent meetup
   - Deterministic dTag for replaceability: `rsvp:{eventDTag}`
 - **dTag prefix**: `meetup-{timestamp}-{random}` for stable IDs
-- Full integration with relays, Blossom uploads, NIP-33 replaceable events
+- Full integration with relays, Blossom uploads, NIP-52 calendar events (NOT NIP-33)
 
 ### Travel
 
@@ -482,11 +492,15 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 **Codebase Version**: Next.js 15.4.6, React 18, nostr-tools 2.17.0, blossom-client-sdk 4.1.0
 **Active NIPs**: 12 implemented (NIP-01, NIP-05, NIP-07, NIP-09, NIP-17, NIP-19, NIP-23, NIP-33, NIP-44, NIP-52, NIP-78, NIP-94 + Blossom)
 **Active Event Kinds**: 10 kinds (Kind 0, 1, 5, 14, 1059, 24242, 30023, 30078, 31923, 31925)
-**Production Features**: 12 features (Sign Up, Sign In, Profile, Messages, Explore, My Contributions, My Shop, Shop, My Work, Work, My Meet, Meet, User Event Log)
-**UI Only Features**: 1 feature (Payments)  
+**Production Features**: 14 features (Sign Up, Sign In, Profile, Messages, Explore, My Contributions, My Shop, Shop, My Work, Work, My Meet, Meet, User Event Log, Payments UI)
 **Removed Features**: 1 feature (Travel)  
 **Planned Features**: 1 feature (Cart)
-**Architectural Refactor (Nov 2025)**: Moved `/contribute` → `/my-contributions/create` for pattern consistency
+**Major Refactors (Nov 2025)**:
+- Moved `/contribute` → `/my-contributions/create` for pattern consistency
+- Work edit architecture: Added `WorkUpdateService.ts` + `useWorkEditing` hook with selective attachment operations
+- Meet edit refactor: Reduced `useMeetupEditing` from 171 lines to 56 lines (68% reduction) using generic pattern
+- Statistics dashboards: Created reusable `StatCard` and `StatBreakdown` components, standardized all 4 My pages (Contributions/Shop/Work/Meet)
+- Meet single-image design: Intentional limitation to one hero image per event (documented in meetup.ts config)
 
 **Architecture**: Service-Oriented Architecture (SOA) with strict layer separation
 

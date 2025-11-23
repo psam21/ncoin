@@ -81,11 +81,12 @@ Built on battle-tested protocols (Nostr + Bitcoin), not venture-backed extractio
 **Meetups & Events**
 - **🤝 Meet** (Live in Production)
   - Organize local meetups and events with **0% commission**
-  - 4 types: Social Gathering, Workshop, Conference, Networking
+  - 6 types: Social Gathering, Workshop, Conference, Networking, Casual, Other
   - Virtual and in-person events with RSVP tracking
-  - Full CRUD operations (My Meet dashboard)
-  - NIP-52 calendar events for time-based discovery
-  - Multi-media event listings (images)
+  - Full CRUD operations with generic edit architecture (My Meet dashboard)
+  - NIP-52 calendar events (Kind 31923 + 31925) for time-based discovery
+  - **Single hero image per event** (intentional design matching industry standards)
+  - Statistics dashboard: Total/Upcoming/Past/RSVPs with reusable components
   - RSVP management with accepted/declined/tentative status
 
 ### 🚀 Coming Soon (6-12 Months)
@@ -779,13 +780,16 @@ For 15 years, we've been told:
 
 **Metrics (as of November 2025)**
 - ✅ 12 NIPs implemented (01, 05, 07, 09, 17, 19, 23, 33, 44, 52, 78, 94, 96)
-- ✅ 8 Event kinds (Kinds 0, 1, 5, 14, 1059, 24242, 30023, 30078, 31923, 31925)
-- ✅ 13 Features in production (Profiles, Articles, Messaging, Shop, My Shop, Work, My Work, Meet, My Meet, Contributions, Payments, Relay Management, User Activity)
+- ✅ 10 Event kinds (Kinds 0, 1, 5, 14, 1059, 24242, 30023, 30078, 31923, 31925)
+- ✅ 14 Features in production (Sign Up, Sign In, Profile, Messages, Explore, My Contributions, My Shop, Shop, My Work, Work, My Meet, Meet, User Event Log, Payments UI)
 - ✅ 8 high-reliability global relays integrated
-- ✅ Service-Oriented Architecture (4-layer design with 20+ services)
+- ✅ Service-Oriented Architecture (4-layer design with 25+ services)
 - ✅ Production deployment on Vercel
 - ✅ 99.9% uptime target
-- ✅ Full CRUD for Shop, Work, Meet, and Contributions features
+- ✅ Full CRUD with generic edit architecture for Shop, Work, Meet, and Contributions
+- ✅ Standardized statistics dashboards across all My pages (reusable StatCard/StatBreakdown components)
+- ✅ Selective attachment operations for multi-image features (Contributions/Shop/Work)
+- ✅ Single-image design for Meet events (intentional, industry-standard pattern)
 - 🚀 Early adopter user base growing
 - 🚀 Community feedback driving roadmap
 
