@@ -323,11 +323,11 @@ export async function fetchMeetupsByAuthor(pubkey: string): Promise<MeetupEvent[
  */
 export async function fetchMeetupById(pubkey: string, dTag: string): Promise<MeetupEvent | null> {
   try {
-    // Query by d-tag only (like Shop service) - pubkey kept for backward compatibility
+    // Query by d-tag only - DO NOT filter by system tag for backward compatibility
+    // dTag is already specific enough and we need to support old meetups without the tag
     const filter: Filter = {
       kinds: [MEETUP_CONFIG.kinds.MEETUP],
       '#d': [dTag],
-      '#t': [MEETUP_CONFIG.systemTag],
       limit: 1,
     };
 
@@ -355,10 +355,12 @@ export async function fetchMeetupRSVPs(eventPubkey: string, eventDTag: string): 
   try {
     const aTag = MEETUP_CONFIG.rsvp.aTagFormat(eventPubkey, eventDTag);
 
+    // Query by 'a' tag reference to specific meetup
+    // DO NOT filter by system tag here - the 'a' tag is already specific to one meetup
+    // This allows RSVPs to old meetups (before system tag was added) to still be fetched
     const filter: Filter = {
       kinds: [MEETUP_CONFIG.kinds.RSVP],
       '#a': [aTag],
-      '#t': [MEETUP_CONFIG.systemTag],
     };
 
     const queryResult = await queryEvents([filter as Record<string, unknown>]);
