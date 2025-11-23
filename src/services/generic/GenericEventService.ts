@@ -1,5 +1,6 @@
 import { logger } from '../core/LoggingService';
 import { NostrSigner, NostrEvent, NIP23Event, NIP23Content } from '../../types/nostr';
+import { getRelayUrls } from '@/config/relays';
 
 export interface EventCreationOptions {
   tags?: string[][];
@@ -600,6 +601,9 @@ export class GenericEventService {
       const now = Math.floor(Date.now() / 1000);
       const dTag = options.dTag || `meetup-${now}-${userPubkey.slice(0, 8)}`;
 
+      // Get default relay hint for participant tags (use first configured relay)
+      const defaultRelayHint = getRelayUrls()[0] || '';
+
       // Build tags array following NIP-52
       const tags: string[][] = [
         ['d', dTag],
@@ -608,7 +612,7 @@ export class GenericEventService {
         ['name', meetupData.name],
         ['start', meetupData.startTime.toString()],
         ['location', meetupData.location],
-        ['p', userPubkey, 'wss://relay.damus.io', 'host'], // NIP-52 p-tag: [pubkey, relay, role]
+        ['p', userPubkey, defaultRelayHint, 'host'], // NIP-52 p-tag: [pubkey, relay, role]
       ];
 
       // Optional tags
@@ -637,7 +641,7 @@ export class GenericEventService {
       // Add co-hosts
       if (meetupData.coHosts && meetupData.coHosts.length > 0) {
         meetupData.coHosts.forEach((coHost) => {
-          tags.push(['p', coHost, 'wss://relay.damus.io', 'co-host']); // NIP-52 p-tag: [pubkey, relay, role]
+          tags.push(['p', coHost, defaultRelayHint, 'co-host']); // NIP-52 p-tag: [pubkey, relay, role]
         });
       }
 
