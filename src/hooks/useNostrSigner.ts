@@ -106,6 +106,8 @@ export const useNostrSigner = () => {
   // Priority: Authenticated user's nsec > Browser Extension (sign-in only) > None
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    let pollInterval: NodeJS.Timeout | null = null;
+    
     const initializeSigner = async () => {
       const { isAuthenticated, user } = useAuthStore.getState();
       
@@ -192,16 +194,63 @@ export const useNostrSigner = () => {
             }
           })();
         } else {
-          // Extension not loaded yet - set null signer but DON'T logout
-          // Extension might still be loading (async script injection)
-          logger.warn('Extension user authenticated but window.nostr not available yet - waiting for extension', {
+          // Extension not loaded yet - poll for it
+          logger.warn('Extension user authenticated but window.nostr not available - polling for extension', {
             service: 'useNostrSigner',
             method: 'initializeSigner',
             userPubkey: user.pubkey.substring(0, 8) + '...',
           });
+          
+          let attempts = 0;
+          const maxAttempts = 20; // Poll for 2 seconds (20 * 100ms)
+          
+          pollInterval = setInterval(() => {
+            attempts++;
+            
+            if (typeof window !== 'undefined' && window.nostr) {
+              // Extension loaded!
+              logger.info('Extension loaded after polling', {
+                service: 'useNostrSigner',
+                method: 'initializeSigner',
+                attempts,
+                userPubkey: user.pubkey.substring(0, 8) + '...',
+              });
+              
+              if (pollInterval) clearInterval(pollInterval);
+              
+              setSigner(window.nostr);
+              setSignerAvailable(true);
+              useAuthStore.getState().setLoading(false);
+              
+              // Initialize message cache
+              (async () => {
+                try {
+                  const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
+                  await messagingBusinessService.initializeCache(user.pubkey);
+                } catch (error) {
+                  console.warn('Failed to initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
+                }
+              })();
+            } else if (attempts >= maxAttempts) {
+              // Give up after max attempts
+              logger.error('Extension failed to load after polling - logging out', new Error('Extension not available'), {
+                service: 'useNostrSigner',
+                method: 'initializeSigner',
+                attempts,
+                userPubkey: user.pubkey.substring(0, 8) + '...',
+              });
+              
+              if (pollInterval) clearInterval(pollInterval);
+              
+              // Force logout - extension user with no extension
+              useAuthStore.getState().logout();
+            }
+          }, 100); // Check every 100ms
+          
+          // Set loading state while polling
           setSigner(null);
-          setSignerAvailable(true); // Assume available, just not loaded yet
-          useAuthStore.getState().setLoading(false);
+          setSignerAvailable(false);
+          useAuthStore.getState().setLoading(true);
         }
         return;
       }
@@ -245,11 +294,12 @@ export const useNostrSigner = () => {
 
     initializeSigner();
     
-    // No need for polling - signer initialization happens once on mount
-    // and re-runs only when nsec or nsecSigner changes (due to sign-in/sign-up/logout)
-    
-    // Cleanup (nothing to clean up now)
-    return () => {};
+    // Cleanup: clear polling interval if component unmounts
+    return () => {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+      }
+    };
     // Note: `signer` intentionally excluded from deps to prevent infinite loop
     // We only want to re-initialize when `nsec` or `nsecSigner` changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
