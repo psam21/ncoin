@@ -358,9 +358,11 @@ export async function fetchMeetupById(pubkey: string, dTag: string): Promise<Mee
       pubkey: pubkey ? pubkey.substring(0, 8) + '...' : 'not provided',
     });
 
-    // Query by d-tag WITH system tag - must match author query for consistency
+    // Query by AUTHOR + d-tag - some relays may not index d-tag alone
+    // For NIP-33 parameterized replaceable events, the combination of (kind, pubkey, d-tag) is the unique identifier
     const filter: Filter = {
       kinds: [MEETUP_CONFIG.kinds.MEETUP],
+      authors: pubkey ? [pubkey] : undefined,
       '#d': [dTag],
       '#t': [MEETUP_CONFIG.systemTag],
       limit: 50, // Increased from 1 to handle replaceable events properly
