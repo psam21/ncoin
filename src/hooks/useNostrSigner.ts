@@ -202,7 +202,7 @@ export const useNostrSigner = () => {
           });
           
           let attempts = 0;
-          const maxAttempts = 20; // Poll for 2 seconds (20 * 100ms)
+          const maxAttempts = 10; // Poll for 5 seconds (10 * 500ms)
           
           pollInterval = setInterval(() => {
             attempts++;
@@ -245,7 +245,7 @@ export const useNostrSigner = () => {
               // Force logout - extension user with no extension
               useAuthStore.getState().logout();
             }
-          }, 100); // Check every 100ms
+          }, 500); // Check every 500ms
           
           // Set loading state while polling
           setSigner(null);
