@@ -17,6 +17,13 @@ import type { Filter } from 'nostr-tools';
 function parseMeetupEvent(event: NostrEvent): MeetupEvent | null {
   try {
     if (event.kind !== MEETUP_CONFIG.kinds.MEETUP) {
+      logger.warn('Event is not a meetup kind', {
+        service: 'GenericMeetService',
+        method: 'parseMeetupEvent',
+        eventId: event.id,
+        kind: event.kind,
+        expectedKind: MEETUP_CONFIG.kinds.MEETUP,
+      });
       return null;
     }
 
@@ -36,6 +43,7 @@ function parseMeetupEvent(event: NostrEvent): MeetupEvent | null {
         service: 'GenericMeetService',
         method: 'parseMeetupEvent',
         eventId: event.id,
+        availableTags: tags.map(t => t[0]).join(', '),
       });
       return null;
     }
@@ -46,6 +54,8 @@ function parseMeetupEvent(event: NostrEvent): MeetupEvent | null {
         service: 'GenericMeetService',
         method: 'parseMeetupEvent',
         eventId: event.id,
+        dTag,
+        availableTags: tags.map(t => t[0]).join(', '),
       });
       return null;
     }
@@ -56,17 +66,35 @@ function parseMeetupEvent(event: NostrEvent): MeetupEvent | null {
         service: 'GenericMeetService',
         method: 'parseMeetupEvent',
         eventId: event.id,
+        dTag,
+        name,
+        availableTags: tags.map(t => t[0]).join(', '),
       });
       return null;
     }
 
     const startTime = parseInt(startTimeStr, 10);
     if (isNaN(startTime)) {
+      logger.warn('Meetup event has invalid start time', {
+        service: 'GenericMeetService',
+        method: 'parseMeetupEvent',
+        eventId: event.id,
+        dTag,
+        startTimeStr,
+      });
       return null;
     }
 
     const location = getTag('location');
     if (!location) {
+      logger.warn('Meetup event missing location', {
+        service: 'GenericMeetService',
+        method: 'parseMeetupEvent',
+        eventId: event.id,
+        dTag,
+        name,
+        availableTags: tags.map(t => t[0]).join(', '),
+      });
       return null;
     }
 
