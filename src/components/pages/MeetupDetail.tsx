@@ -358,7 +358,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
 
               {/* RSVP Section */}
               {isUpcoming && user && (
-                <div className="rounded-2xl bg-white/70 p-6 shadow-inner ring-1 ring-primary-100">
+                <div className="rounded-2xl bg-white/70 p-6 shadow-inner ring-1 ring-primary-100" suppressHydrationWarning>
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <p className="text-sm text-gray-600 mb-1">Your RSVP</p>
@@ -429,6 +429,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
                   </button>
                 </div>
               </div>
+              <div suppressHydrationWarning>
               {!isOwner && (
                 <button
                   type="button"
@@ -439,6 +440,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
                   Contact Host
                 </button>
               )}
+              </div>
             </div>
 
             {/* Meetup Type */}
@@ -459,7 +461,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
               <dl className="space-y-2 text-sm">
                 <div>
                   <dt className="text-gray-500">Status</dt>
-                  <dd className="text-gray-900 font-medium">
+                  <dd className="text-gray-900 font-medium" suppressHydrationWarning>
                     {isUpcoming ? (
                       <span className="text-green-600">Upcoming</span>
                     ) : (
