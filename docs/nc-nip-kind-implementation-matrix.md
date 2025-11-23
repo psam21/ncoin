@@ -16,8 +16,7 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 | My Work | ✅ Event creation | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Work Opportunities | ❌ | Production |
 | Work | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Work Opportunities | ❌ | Production |
 | Explore | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Contributions | ❌ | Production |
-| Contribute | ✅ Event creation | ❌ | ✅ Signing | ❌ | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | ❌ | Production |
-| My Contributions | ✅ Query events | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | ❌ | Production |
+| My Contributions | ✅ Full CRUD | ❌ | ✅ Signing | ✅ Deletion | ❌ | ✅ npub display | ✅ Long-form | ✅ Replaceable | ❌ | ❌ | ✅ imeta tags | ✅ Media upload | ❌ | ❌ | ✅ Delete events | ❌ | ❌ | ❌ | ✅ Upload auth | ✅ Contributions | ❌ | Production |
 | User Event Log | ✅ Query events | ❌ | ❌ | ❌ | ❌ | ✅ npub display | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Production |
 | Cart (Planned) | ✅ Event creation | ❌ | ✅ Signing | ❌ | ❌ | ✅ npub display | ❌ | ✅ Replaceable | ❌ | ✅ App data | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | ✅ Cart storage | Planned |
 
@@ -222,11 +221,21 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
 - Travel route removed from application
 - No code, no UI, no services
 
-### Explore & Contribute
+### Explore & My Contributions
 
 - **Status**: Production - nomad contributions platform
-- Publishes Kind 30023 parameterized replaceable events (NIP-23 + NIP-33)
-- Full Nostr integration with relay publishing
+- **Explore page**: Browse all contributions from network
+  - Fetches Kind 30023 events with contribution tag
+  - Contribution cards with type, category, location, media
+  - Click to view contribution details
+- **My Contributions**: Full CRUD operations for user's own Kind 30023 contributions
+  - Create at `/my-contributions/create` (auth-required)
+  - Edit/delete contributions via Kind 30023 events
+  - NIP-09 deletion events for removing contributions
+  - Multi-attachment support via Blossom (images, videos, audio)
+  - Tag pattern: `nostr-for-nomads-contribution`
+  - Statistics dashboard: Total contributions, by type, by category
+  - Filters: Search, contribution type, category
 - **Service architecture**:
   - `ContributionService` - Business logic orchestration
   - `ContributionValidationService` - Field validation
@@ -234,44 +243,29 @@ Reference document for Nostr protocol implementation across Nostr for Nomads (nc
   - `GenericContributionService` - Relay queries and parsing
   - `NostrEventService.createContributionEvent()` - Event creation
 - **Media support**: Blossom uploads with Kind 24242 authorization
-- **Tag system**: Uses `nostr-for-nomads-contribution` discovery tag
 - **dTag prefix**: `contribution-{timestamp}-{random}` for stable IDs
-- **Explore page**: Fetches and displays public contributions from relays
-- **My Contributions**: Create/edit contribution workflow with media attachments
 - Supports images, videos, and audio with NIP-94 imeta tags
 - Field-level validation (title, description, category, type, location, etc.)
 - Multi-attachment support with progress tracking
 - Auto-redirect to detail page after successful publish (1 second delay)
 
-### My Contributions
+### Architecture Pattern: Public Browse vs Personal Management
 
-- **Status**: Production - personal contribution management dashboard
-- Full CRUD operations for user's own Kind 30023 contributions
-- **Core operations**:
-  - `fetchContributionsByAuthor()` - Query by author pubkey + system tag
-  - `fetchContributionById()` - Fetch single contribution by dTag for editing
-  - `deleteContribution()` - NIP-09 Kind 5 deletion event publishing
-  - Edit workflow - Reuses ContributionForm in edit mode
-- **Dashboard features**:
-  - Statistics: Total contributions, by type, by category
-  - Filters: Search, contribution type, category
-  - Grid layout: Responsive (1/2/3 columns)
-  - Card actions: View (/explore/[dTag]), Edit, Delete
-- **Delete workflow**:
-  - Modal confirmation with contribution title
-  - Fetches full contribution to get eventId
-  - Publishes NIP-09 Kind 5 deletion event
-  - Multi-relay publishing with success tracking
-  - Optimistic local state removal
-- **Edit page**:
-  - Ownership verification (redirect if pubkey mismatch)
-  - Converts ContributionEvent to form defaultValues
-  - Maps media URLs to GenericAttachment format
-  - Reuses existing ContributionForm in edit mode
-  - Success redirects to dashboard after 1.5s
-- **Auth-gated**: Redirects to signin if not authenticated
-- **Navigation**: Mobile menu link (authenticated users only)
-- **SOA compliant**: Page → Component → Service layer architecture
+All content features follow consistent architecture:
+
+| **Public Browse** | **Personal Management** | **Create Route** | **Event Kind** |
+|-------------------|-------------------------|------------------|----------------|
+| `/explore` | `/my-contributions` | `/my-contributions/create` | Kind 30023 |
+| `/shop` | `/my-shop` | `/my-shop/create` | Kind 30078 |
+| `/work` | `/my-work` | `/my-work/create` | Kind 30023 |
+| `/meet` | `/my-meet` | `/my-meet/create` | Kind 31923 |
+
+**Pattern consistency (Nov 2025 refactor)**:
+- Public pages: Browse/discover for all users (authenticated or not)
+- My-* pages: Full CRUD operations for authenticated user's own content
+- Create routes: Auth-required, under `/my-{feature}/create` namespace
+- Edit routes: `/my-{feature}/edit/[dTag]` with ownership verification
+- All features use same SOA layers, tag patterns, service architecture
 
 ### User Event Log
 
@@ -487,11 +481,12 @@ The application uses 8 high-reliability Nostr relays with comprehensive NIP supp
 **Last Updated**: November 23, 2025  
 **Codebase Version**: Next.js 15.4.6, React 18, nostr-tools 2.17.0, blossom-client-sdk 4.1.0
 **Active NIPs**: 12 implemented (NIP-01, NIP-05, NIP-07, NIP-09, NIP-17, NIP-19, NIP-23, NIP-33, NIP-44, NIP-52, NIP-78, NIP-94 + Blossom)
-**Active Event Kinds**: 8 kinds (Kind 0, Kind 1, Kind 5, Kind 14, Kind 1059, Kind 24242, Kind 30023, Kind 30078, Kind 31923, Kind 31925)
-**Production Features**: 13 features (Sign Up, Sign In, Profile, Messages, Explore, Contribute, My Contributions, My Shop, Shop, My Work, Work, My Meet, Meet, User Event Log)
+**Active Event Kinds**: 10 kinds (Kind 0, 1, 5, 14, 1059, 24242, 30023, 30078, 31923, 31925)
+**Production Features**: 12 features (Sign Up, Sign In, Profile, Messages, Explore, My Contributions, My Shop, Shop, My Work, Work, My Meet, Meet, User Event Log)
 **UI Only Features**: 1 feature (Payments)  
 **Removed Features**: 1 feature (Travel)  
 **Planned Features**: 1 feature (Cart)
+**Architectural Refactor (Nov 2025)**: Moved `/contribute` → `/my-contributions/create` for pattern consistency
 
 **Architecture**: Service-Oriented Architecture (SOA) with strict layer separation
 
