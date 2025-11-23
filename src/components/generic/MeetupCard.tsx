@@ -127,8 +127,8 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({
   // Featured variant
   if (variant === 'featured') {
     return (
-      <Link href={`/meet/${meetup.dTag}`}>
-        <div className="culture-card group p-0 overflow-hidden cursor-pointer">
+      <Link href={`/meet/${meetup.dTag}`} className="block cursor-pointer">
+        <div className="culture-card group p-0 overflow-hidden">
           <div className="relative aspect-video">
             {meetup.imageUrl ? (
               <Image
@@ -232,8 +232,8 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({
   // List variant
   if (variant === 'list') {
     return (
-      <Link href={`/meet/${meetup.dTag}`}>
-        <div className="culture-card group cursor-pointer flex gap-4 hover:shadow-lg transition-shadow">
+      <Link href={`/meet/${meetup.dTag}`} className="block cursor-pointer">
+        <div className="culture-card group flex gap-4 hover:shadow-lg transition-shadow">
           <div className="relative w-48 h-48 flex-shrink-0">
             {meetup.imageUrl ? (
               <Image
@@ -315,8 +315,8 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({
 
   // Grid variant (default)
   return (
-    <Link href={`/meet/${meetup.dTag}`}>
-      <div className="culture-card group cursor-pointer hover:shadow-xl transition-all duration-300">
+    <Link href={`/meet/${meetup.dTag}`} className="block cursor-pointer">
+      <div className="culture-card group hover:shadow-xl transition-all duration-300">
         <div className="relative aspect-[4/3] bg-gray-50 rounded-t-lg overflow-hidden">
           {meetup.imageUrl ? (
             <Image

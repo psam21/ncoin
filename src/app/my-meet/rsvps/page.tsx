@@ -127,9 +127,9 @@ export default function MyRSVPsPage() {
       <section className="pt-16 lg:pt-20 pb-16 md:pb-20 bg-gradient-to-r from-purple-600 to-orange-600 text-white">
         <div className="container-width">
           <div className="max-w-5xl mx-auto text-center">
-            <div className="flex items-center justify-center mb-6">
-              <Users className="w-12 h-12 mr-4" />
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-center">
+            <div className="flex flex-col sm:flex-row items-center justify-center mb-6 gap-3">
+              <Users className="w-12 h-12" />
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold">
                 My RSVPs
               </h1>
             </div>

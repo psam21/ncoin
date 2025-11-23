@@ -172,6 +172,13 @@ export const useNostrSigner = () => {
           // For authenticated users: just use the extension without verification
           // We already verified the pubkey during sign-in, no need to prompt again
           if (isAuthenticated && user) {
+            logger.info('Setting up extension signer for authenticated user', {
+              service: 'useNostrSigner',
+              method: 'initializeSigner',
+              userPubkey: user.pubkey.substring(0, 8) + '...',
+              hasWindowNostr: !!window.nostr,
+            });
+            
             setSigner(window.nostr);
             setSignerAvailable(true);
             useAuthStore.getState().setLoading(false);
@@ -187,7 +194,7 @@ export const useNostrSigner = () => {
               }
             })();
             
-            logger.info('Using extension signer for authenticated user (extension-only session)', {
+            logger.info('Extension signer setup complete for authenticated user', {
               service: 'useNostrSigner',
               method: 'initializeSigner',
               userPubkey: user.pubkey.substring(0, 8) + '...',
@@ -207,24 +214,45 @@ export const useNostrSigner = () => {
           });
           return;
         } catch (error) {
-          logger.error('Failed to verify extension signer', error instanceof Error ? error : new Error('Unknown error'), {
+          logger.error('ERROR in extension signer setup - THIS CAUSES LOGOUT', error instanceof Error ? error : new Error('Unknown error'), {
             service: 'useNostrSigner',
             method: 'initializeSigner',
+            isAuthenticated,
+            hasUser: !!user,
+            userPubkey: user?.pubkey?.substring(0, 8) + '...',
           });
-          // Fall through to no signer state
+          // For authenticated users with extension, don't fall through to logout
+          // Just set signer to null and let them continue (they can retry)
+          if (isAuthenticated && user) {
+            logger.warn('Extension error for authenticated user - setting null signer but NOT logging out', {
+              service: 'useNostrSigner',
+              method: 'initializeSigner',
+              userPubkey: user.pubkey.substring(0, 8) + '...',
+            });
+            setSigner(null);
+            setSignerAvailable(false);
+            useAuthStore.getState().setLoading(false);
+            return;
+          }
+          // For non-authenticated users, fall through to no signer state
         }
       }
 
       // Priority 3: No signer available
+      // This should ONLY be reached for authenticated users with NO nsec AND NO extension
+      // which indicates a corrupted auth state
       if (isAuthenticated && user) {
-        logger.error('Authenticated user has no valid signer - forcing re-authentication', new Error('No valid signer for authenticated user'), {
+        logger.error('CRITICAL: Authenticated user has no valid signer - forcing re-authentication', new Error('No valid signer for authenticated user'), {
           service: 'useNostrSigner',
           method: 'initializeSigner',
           userPubkey: user.pubkey.substring(0, 8) + '...',
+          hasNsec: !!nsec,
+          hasWindowNostr: !!(typeof window !== 'undefined' && window.nostr),
+          reason: 'This indicates corrupted auth state - user is authenticated but has no way to sign events',
         });
         useAuthStore.getState().logout();
       } else {
-        logger.info('No signer available for non-authenticated user', {
+        logger.info('No signer available for non-authenticated user (expected)', {
           service: 'useNostrSigner',
           method: 'initializeSigner',
         });
