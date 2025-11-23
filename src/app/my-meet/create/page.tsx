@@ -83,6 +83,17 @@ export default function CreateMeetupPage() {
     }
   }, [_hasHydrated, user, router]);
 
+  const handleTypeSelection = (index: number) => {
+    setSelectedType(index);
+    // Scroll to form after a brief delay to allow render
+    setTimeout(() => {
+      const formSection = document.getElementById('meetup-form-section');
+      if (formSection) {
+        formSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
   const handleMeetupCreated = (meetupId: string) => {
     console.log('Meetup created:', meetupId);
     router.push('/my-meet');
@@ -135,7 +146,7 @@ export default function CreateMeetupPage() {
                 <motion.button
                   key={index}
                   type="button"
-                  onClick={() => setSelectedType(index)}
+                  onClick={() => handleTypeSelection(index)}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
@@ -167,19 +178,26 @@ export default function CreateMeetupPage() {
 
       {/* Meetup Form - Only show when type is selected */}
       {selectedType !== null && (
-        <section className="section-padding bg-gray-50">
+        <section id="meetup-form-section" className="section-padding bg-gray-50">
           <div className="container-width">
-            <MeetupForm
-              onMeetupCreated={handleMeetupCreated}
-              onCancel={handleCancel}
-              isEditMode={false}
-            />
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <MeetupForm
+                onMeetupCreated={handleMeetupCreated}
+                onCancel={handleCancel}
+                isEditMode={false}
+              />
+            </motion.div>
           </div>
         </section>
       )}
 
-      {/* Process Steps */}
-      <section className="section-padding bg-white">
+      {/* Process Steps - Hide when form is active */}
+      {selectedType === null && (
+        <section className="section-padding bg-white">
         <div className="container-width">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -214,6 +232,7 @@ export default function CreateMeetupPage() {
           </div>
         </div>
       </section>
+      )}
     </div>
   );
 }
