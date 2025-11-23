@@ -82,7 +82,7 @@ export function useMeetPublishing() {
   const publishMeetup = useCallback(
     async (
       data: MeetupData,
-      imageFile: File | null,
+      attachmentFiles: File[],
       existingDTag?: string
     ): Promise<MeetupPublishingResult> => {
       // Reset state
@@ -96,12 +96,12 @@ export function useMeetPublishing() {
 
       // Use wrapper function to adapt parameter order
       // Generic wrapper expects: (data, files, signer, onProgress)
-      // But createMeetup expects: (data, imageFile, signer, existingDTag, onProgress)
+      // But createMeetup expects: (data, attachmentFiles, signer, existingDTag, onProgress)
       const result = await publishWithWrapper(
         async (meetupData, _files, signer, onProgress) => {
           const serviceResult = await createMeetup(
             meetupData,
-            imageFile,
+            attachmentFiles,
             signer,
             existingDTag,
             onProgress
@@ -110,7 +110,7 @@ export function useMeetPublishing() {
           return serviceResult;
         },
         data,
-        imageFile ? [imageFile] : [] // Convert single file to array for wrapper
+        attachmentFiles
       );
 
       return result;

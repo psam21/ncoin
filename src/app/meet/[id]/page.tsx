@@ -41,7 +41,7 @@ export async function generateMetadata({
       openGraph: {
         title: meetup.name,
         description: meetup.description || `Join us at ${meetup.location}`,
-        images: meetup.imageUrl ? [{ url: meetup.imageUrl }] : [],
+        images: meetup.media.images.length > 0 ? meetup.media.images.map(img => ({ url: img.url })) : [],
       },
     };
   } catch (error) {

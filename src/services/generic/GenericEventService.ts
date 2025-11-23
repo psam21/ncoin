@@ -568,7 +568,7 @@ export class GenericEventService {
 
   /**
    * Create a NIP-52 calendar event (Kind 31923)
-   * Time-based calendar event for meetups/events
+   * Time-based calendar event for meetups/events with multi-attachment support
    */
   public createCalendarEvent(
     meetupData: {
@@ -581,7 +581,14 @@ export class GenericEventService {
       geohash?: string;
       isVirtual: boolean;
       virtualLink?: string;
-      imageUrl?: string;
+      attachments?: Array<{
+        url: string;
+        type: string;
+        hash?: string;
+        name: string;
+        size?: number;
+        mimeType?: string;
+      }>;
       meetupType: string;
       tags: string[];
       hostPubkey: string;
@@ -596,6 +603,7 @@ export class GenericEventService {
         method: 'createCalendarEvent',
         userPubkey: userPubkey.substring(0, 8) + '...',
         name: meetupData.name,
+        attachmentCount: meetupData.attachments?.length || 0,
       });
 
       const now = Math.floor(Date.now() / 1000);
@@ -628,8 +636,24 @@ export class GenericEventService {
         tags.push(['g', meetupData.geohash]);
       }
 
-      if (meetupData.imageUrl) {
-        tags.push(['image', meetupData.imageUrl]);
+      // Add media attachments with NIP-94 imeta tags
+      if (meetupData.attachments && meetupData.attachments.length > 0) {
+        meetupData.attachments.forEach(media => {
+          tags.push([media.type, media.url]);
+          if (media.hash) {
+            const imetaParts = [`url ${media.url}`, `x ${media.hash}`];
+            
+            if (media.mimeType) {
+              imetaParts.push(`m ${media.mimeType}`);
+            }
+            
+            if (media.size) {
+              imetaParts.push(`size ${media.size}`);
+            }
+            
+            tags.push(['imeta', ...imetaParts]);
+          }
+        });
       }
 
       if (meetupData.isVirtual && meetupData.virtualLink) {
@@ -810,7 +834,14 @@ export const createCalendarEvent = (
     geohash?: string;
     isVirtual: boolean;
     virtualLink?: string;
-    imageUrl?: string;
+    attachments?: Array<{
+      url: string;
+      type: string;
+      hash?: string;
+      name: string;
+      size?: number;
+      mimeType?: string;
+    }>;
     meetupType: string;
     tags: string[];
     hostPubkey: string;

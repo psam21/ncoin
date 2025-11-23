@@ -2,16 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import { MEETUP_CONFIG } from '@/config/meetup';
 import { UserConsentDialog } from '@/components/generic/UserConsentDialog';
+import { AttachmentManager } from '@/components/generic/AttachmentManager';
 import { X, Loader2, Calendar, MapPin, Video, Globe } from 'lucide-react';
 import { useMeetPublishing } from '@/hooks/useMeetPublishing';
 import { useMeetupEditing } from '@/hooks/useMeetupEditing';
 import { validateMeetupData } from '@/services/business/MeetValidationService';
 import { filterVisibleTags } from '@/utils/tagFilter';
 import type { MeetupData } from '@/types/meetup';
+import type { GenericAttachment } from '@/types/attachments';
 
 // Dynamic import for RichTextEditor (client-side only)
 const RichTextEditor = dynamic(
@@ -31,7 +32,6 @@ interface MeetupFormData {
   isVirtual: boolean;
   virtualLink: string;
   meetupType: string;
-  imageFile: File | null;
   tags: string[];
 }
 
@@ -39,7 +39,7 @@ interface MeetupFormProps {
   onMeetupCreated?: (dTag: string) => void;
   onCancel?: () => void;
   defaultValues?: Partial<MeetupFormData & { 
-    imageUrl?: string;
+    attachments?: GenericAttachment[];
     dTag?: string;
   }>;
   isEditMode?: boolean;
@@ -72,7 +72,7 @@ export const MeetupForm = ({
     currentStep: editingHook.updateProgress?.step || 'idle',
     error: editingHook.updateError,
     result: editingHook.updateResult,
-    publishMeetup: async (data: MeetupData, imageFile: File | null) => {
+    publishMeetup: async (data: MeetupData, attachmentFiles: File[]) => {
       const result = await editingHook.updateMeetupContent(
         defaultValues.dTag!,
         {
@@ -86,8 +86,9 @@ export const MeetupForm = ({
           meetupType: data.meetupType,
           tags: data.tags,
           hostPubkey: data.hostPubkey,
+          attachments: data.attachments,
         },
-        imageFile
+        attachmentFiles
       );
       return result.success;
     },
@@ -110,13 +111,12 @@ export const MeetupForm = ({
     isVirtual: defaultValues?.isVirtual || false,
     virtualLink: defaultValues?.virtualLink || '',
     meetupType: defaultValues?.meetupType || 'gathering',
-    imageFile: null,
     tags: defaultValues?.tags || [],
   });
 
+  const [attachments, setAttachments] = useState<GenericAttachment[]>(defaultValues?.attachments || []);
   const [tagInput, setTagInput] = useState('');
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [imagePreview, setImagePreview] = useState<string | null>(defaultValues?.imageUrl || null);
 
   // Clear validation errors when user changes field
   useEffect(() => {
@@ -144,41 +144,15 @@ export const MeetupForm = ({
     setFormData(prev => ({ ...prev, description: content }));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // Validate image
-      const maxSize = 10 * 1024 * 1024; // 10MB
-      if (file.size > maxSize) {
-        setValidationErrors(prev => ({
-          ...prev,
-          imageFile: 'Image must be less than 10MB'
-        }));
-        return;
-      }
-
-      if (!file.type.startsWith('image/')) {
-        setValidationErrors(prev => ({
-          ...prev,
-          imageFile: 'File must be an image'
-        }));
-        return;
-      }
-
-      setFormData(prev => ({ ...prev, imageFile: file }));
-      
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleAttachmentsChange = (newAttachments: GenericAttachment[]) => {
+    setAttachments(newAttachments);
+    if (validationErrors.attachments) {
+      setValidationErrors(prev => ({ ...prev, attachments: '' }));
     }
   };
 
-  const handleRemoveImage = () => {
-    setFormData(prev => ({ ...prev, imageFile: null }));
-    setImagePreview(null);
+  const handleAttachmentError = (error: string) => {
+    setValidationErrors(prev => ({ ...prev, attachments: error }));
   };
 
   const handleAddTag = () => {
@@ -230,6 +204,7 @@ export const MeetupForm = ({
       meetupType: formData.meetupType as MeetupData['meetupType'],
       tags: filterVisibleTags(formData.tags),
       hostPubkey: '', // Will be set by hook from auth
+      attachments: attachments,
     };
 
     // Validate
@@ -239,8 +214,13 @@ export const MeetupForm = ({
       return;
     }
 
+    // Extract File objects from attachments
+    const filesToUpload = attachments
+      .map(att => att.originalFile)
+      .filter((file): file is File => file !== undefined);
+
     // Publish
-    await publishMeetup(meetupData, formData.imageFile);
+    await publishMeetup(meetupData, filesToUpload);
   };
 
   const handleCancel = () => {
@@ -463,55 +443,26 @@ export const MeetupForm = ({
           </div>
         )}
 
-        {/* Event Image */}
+        {/* Media Attachments */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Event Image
+            Event Media
           </label>
-          {imagePreview ? (
-            <div className="relative w-full h-64">
-              <Image
-                src={imagePreview}
-                alt="Preview"
-                fill
-                className="object-cover rounded-lg"
-              />
-              <button
-                type="button"
-                onClick={handleRemoveImage}
-                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors z-10"
-                disabled={isPublishing}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-400 transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                id="image-upload"
-                disabled={isPublishing}
-              />
-              <label
-                htmlFor="image-upload"
-                className="cursor-pointer flex flex-col items-center"
-              >
-                <Calendar className="w-12 h-12 text-gray-400 mb-2" />
-                <span className="text-sm text-gray-600">
-                  Click to upload event image
-                </span>
-                <span className="text-xs text-gray-500 mt-1">
-                  Max 10MB, JPG/PNG
-                </span>
-              </label>
-            </div>
+          <AttachmentManager
+            initialAttachments={attachments}
+            onAttachmentsChange={handleAttachmentsChange}
+            onError={handleAttachmentError}
+            config={{
+              maxAttachments: 10,
+              supportedTypes: ['image/*', 'video/*', 'audio/*'],
+            }}
+          />
+          {validationErrors.attachments && (
+            <p className="mt-1 text-sm text-red-600">{validationErrors.attachments}</p>
           )}
-          {validationErrors.imageFile && (
-            <p className="mt-1 text-sm text-red-600">{validationErrors.imageFile}</p>
-          )}
+          <p className="mt-1 text-xs text-gray-500">
+            Add images, videos, or audio to showcase your event
+          </p>
         </div>
 
         {/* Tags */}

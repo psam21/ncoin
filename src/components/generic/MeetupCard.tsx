@@ -103,7 +103,7 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({
       component: 'MeetupCard',
       method: 'handleImageError',
       meetupId: meetup.id,
-      imageUrl: meetup.imageUrl,
+      imageUrl: meetup.media.images[0]?.url,
     });
     
     const target = e.target as HTMLImageElement;
@@ -130,9 +130,9 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({
       <Link href={`/meet/${meetup.dTag}`} className="block cursor-pointer">
         <div className="culture-card group p-0 overflow-hidden">
           <div className="relative aspect-video">
-            {meetup.imageUrl ? (
+            {meetup.media.images.length > 0 ? (
               <Image
-                src={meetup.imageUrl}
+                src={meetup.media.images[0].url}
                 alt={meetup.name}
                 fill
                 sizes="(max-width: 1024px) 100vw, 50vw"
@@ -235,9 +235,9 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({
       <Link href={`/meet/${meetup.dTag}`} className="block cursor-pointer">
         <div className="culture-card group flex gap-4 hover:shadow-lg transition-shadow">
           <div className="relative w-48 h-48 flex-shrink-0">
-            {meetup.imageUrl ? (
+            {meetup.media.images.length > 0 ? (
               <Image
-                src={meetup.imageUrl}
+                src={meetup.media.images[0].url}
                 alt={meetup.name}
                 fill
                 sizes="192px"
@@ -318,9 +318,9 @@ export const MeetupCard: React.FC<MeetupCardProps> = ({
     <Link href={`/meet/${meetup.dTag}`} className="block cursor-pointer">
       <div className="culture-card group hover:shadow-xl transition-all duration-300">
         <div className="relative aspect-[4/3] bg-gray-50 rounded-t-lg overflow-hidden">
-          {meetup.imageUrl ? (
+          {meetup.media.images.length > 0 ? (
             <Image
-              src={meetup.imageUrl}
+              src={meetup.media.images[0].url}
               alt={meetup.name}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"

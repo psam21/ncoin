@@ -1,4 +1,5 @@
 import type { NostrEvent } from './nostr';
+import type { GenericAttachment } from './attachments';
 
 /**
  * Meetup form data interface
@@ -23,8 +24,8 @@ export interface MeetupData {
   // Categorization
   meetupType: 'gathering' | 'workshop' | 'conference' | 'casual' | 'networking' | 'other';
   
-  // Media
-  imageUrl?: string; // Event image
+  // Media & Attachments
+  attachments: GenericAttachment[];
   
   // Tags & Keywords
   tags: string[];
@@ -58,7 +59,11 @@ export interface MeetupEvent {
   geohash?: string;
   isVirtual: boolean;
   virtualLink?: string;
-  imageUrl?: string;
+  media: {
+    images: Array<{ url: string; mimeType?: string; hash?: string; size?: number; dimensions?: { width: number; height: number } }>;
+    videos: Array<{ url: string; mimeType?: string; hash?: string; size?: number }>;
+    audio: Array<{ url: string; mimeType?: string; hash?: string; size?: number }>;
+  };
   meetupType: string;
   tags: string[];
   hostPubkey: string;
@@ -84,7 +89,11 @@ export interface MeetupCardData {
   endTime?: number;
   location: string;
   isVirtual: boolean;
-  imageUrl?: string;
+  media: {
+    images: Array<{ url: string; mimeType?: string; hash?: string }>;
+    videos: Array<{ url: string; mimeType?: string; hash?: string }>;
+    audio: Array<{ url: string; mimeType?: string; hash?: string }>;
+  };
   meetupType: string;
   tags: string[];
   pubkey: string; // Host for ownership check

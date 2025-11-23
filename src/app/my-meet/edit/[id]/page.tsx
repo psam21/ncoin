@@ -138,6 +138,37 @@ export default function EditMeetupPage() {
   const startTimeISO = new Date(meetup.startTime * 1000).toISOString().slice(0, 16);
   const endTimeISO = meetup.endTime ? new Date(meetup.endTime * 1000).toISOString().slice(0, 16) : '';
 
+  // Convert media to GenericAttachment format
+  const attachments = [
+    ...meetup.media.images.map((img, idx) => ({
+      id: `image-${idx}`,
+      type: 'image' as const,
+      url: img.url,
+      hash: img.hash,
+      name: `image-${idx}`,
+      size: img.size || 0,
+      mimeType: img.mimeType || 'image/jpeg',
+    })),
+    ...meetup.media.videos.map((vid, idx) => ({
+      id: `video-${idx}`,
+      type: 'video' as const,
+      url: vid.url,
+      hash: vid.hash,
+      name: `video-${idx}`,
+      size: vid.size || 0,
+      mimeType: vid.mimeType || 'video/mp4',
+    })),
+    ...meetup.media.audio.map((aud, idx) => ({
+      id: `audio-${idx}`,
+      type: 'audio' as const,
+      url: aud.url,
+      hash: aud.hash,
+      name: `audio-${idx}`,
+      size: aud.size || 0,
+      mimeType: aud.mimeType || 'audio/mpeg',
+    })),
+  ];
+
   const defaultValues = {
     name: meetup.name,
     description: meetup.description,
@@ -147,7 +178,7 @@ export default function EditMeetupPage() {
     isVirtual: meetup.isVirtual,
     virtualLink: meetup.virtualLink || '',
     meetupType: meetup.meetupType,
-    imageUrl: meetup.imageUrl,
+    attachments: attachments,
     tags: meetup.tags,
     dTag,
   };

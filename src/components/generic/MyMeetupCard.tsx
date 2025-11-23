@@ -107,7 +107,7 @@ export const MyMeetupCard: React.FC<MyMeetupCardProps> = ({
       component: 'MyMeetupCard',
       method: 'handleImageError',
       meetupId: meetup.id,
-      imageUrl: meetup.imageUrl,
+      imageUrl: meetup.media.images[0]?.url,
     });
     
     const target = e.target as HTMLImageElement;
@@ -132,9 +132,9 @@ export const MyMeetupCard: React.FC<MyMeetupCardProps> = ({
     <div className="card overflow-hidden hover:shadow-xl transition-all duration-300 group">
       {/* Meetup Image */}
       <div className="relative aspect-[4/3] bg-purple-50">
-        {meetup.imageUrl ? (
+        {meetup.media.images.length > 0 ? (
           <Image
-            src={meetup.imageUrl}
+            src={meetup.media.images[0].url}
             alt={meetup.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"

@@ -44,12 +44,12 @@ export function useMeetupEditing() {
    * 
    * @param dTag - Existing meetup dTag
    * @param updatedData - Updated meetup data
-   * @param imageFile - Optional new image (null keeps existing, File replaces)
+   * @param attachmentFiles - Array of new media files to upload
    */
   const updateMeetupContent = useCallback(async (
     dTag: string,
     updatedData: MeetupData,
-    imageFile: File | null = null
+    attachmentFiles: File[] = []
   ): Promise<MeetupPublishingResult> => {
     let signer;
     try {
@@ -76,7 +76,7 @@ export function useMeetupEditing() {
         service: 'useMeetupEditing',
         method: 'updateMeetupContent',
         dTag,
-        hasNewImage: !!imageFile,
+        attachmentCount: attachmentFiles.length,
       });
 
       setState({
@@ -89,7 +89,7 @@ export function useMeetupEditing() {
       const result = await updateMeetup(
         updatedData,
         dTag,
-        imageFile,
+        attachmentFiles,
         signer,
         (progress: MeetupPublishingProgress) => {
           setState((prev) => ({

@@ -143,7 +143,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
       recipient: meetup.hostPubkey,
       context: `meetup:${meetup.dTag}`,
       contextTitle: meetup.name,
-      ...(meetup.imageUrl && { contextImage: meetup.imageUrl }),
+      ...(meetup.media.images.length > 0 && { contextImage: meetup.media.images[0].url }),
     });
 
     router.push(`/messages?${params.toString()}`);
@@ -154,19 +154,54 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
     onDelete?.();
   };
 
-  // Convert meetup image to ContentMediaGallery format
+  // Convert meetup media to ContentMediaGallery format
   const mediaItems: ContentMediaItem[] = useMemo(() => {
-    if (!meetup.imageUrl) return [];
+    const items: ContentMediaItem[] = [];
 
-    return [{
-      id: 'meetup-image',
-      type: 'image' as const,
-      source: {
-        url: meetup.imageUrl,
-        mimeType: 'image/jpeg',
-      },
-    }];
-  }, [meetup.imageUrl]);
+    // Add images
+    meetup.media.images.forEach((img, idx) => {
+      items.push({
+        id: `image-${idx}`,
+        type: 'image' as const,
+        source: {
+          url: img.url,
+          mimeType: img.mimeType || 'image/jpeg',
+          hash: img.hash,
+          size: img.size,
+        },
+      });
+    });
+
+    // Add videos
+    meetup.media.videos.forEach((vid, idx) => {
+      items.push({
+        id: `video-${idx}`,
+        type: 'video' as const,
+        source: {
+          url: vid.url,
+          mimeType: vid.mimeType || 'video/mp4',
+          hash: vid.hash,
+          size: vid.size,
+        },
+      });
+    });
+
+    // Add audio
+    meetup.media.audio.forEach((aud, idx) => {
+      items.push({
+        id: `audio-${idx}`,
+        type: 'audio' as const,
+        source: {
+          url: aud.url,
+          mimeType: aud.mimeType || 'audio/mpeg',
+          hash: aud.hash,
+          size: aud.size,
+        },
+      });
+    });
+
+    return items;
+  }, [meetup.media]);
 
   // Format date and time
   const formattedDate = useMemo(() => {

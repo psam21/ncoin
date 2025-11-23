@@ -104,9 +104,63 @@ function parseMeetupEvent(event: NostrEvent): MeetupEvent | null {
 
     const timezone = getTag('timezone');
     const geohash = getTag('g');
-    const imageUrl = getTag('image');
     const virtualLink = getTag('virtual');
     const meetupType = getTag('meetup-type') || 'other';
+
+    // Parse media attachments from imeta tags (NIP-94)
+    const images: Array<{ url: string; mimeType?: string; hash?: string; size?: number }> = [];
+    const videos: Array<{ url: string; mimeType?: string; hash?: string; size?: number }> = [];
+    const audio: Array<{ url: string; mimeType?: string; hash?: string; size?: number }> = [];
+
+    for (const tag of tags) {
+      if (tag[0] === 'imeta') {
+        const metaMap = new Map<string, string>();
+        for (let i = 1; i < tag.length; i++) {
+          const part = tag[i];
+          const spaceIndex = part.indexOf(' ');
+          if (spaceIndex > 0) {
+            const key = part.substring(0, spaceIndex);
+            const value = part.substring(spaceIndex + 1);
+            metaMap.set(key, value);
+          }
+        }
+
+        const url = metaMap.get('url');
+        const mimeType = metaMap.get('m');
+        const hash = metaMap.get('x');
+        const sizeStr = metaMap.get('size');
+        const size = sizeStr ? parseInt(sizeStr, 10) : undefined;
+
+        if (url) {
+          const mediaItem = { url, mimeType, hash, size };
+          
+          if (mimeType?.startsWith('video/')) {
+            videos.push(mediaItem);
+          } else if (mimeType?.startsWith('audio/')) {
+            audio.push(mediaItem);
+          } else {
+            images.push(mediaItem);
+          }
+        }
+      }
+    }
+
+    // Backward compatibility: Check for old 'image' tag if no imeta tags found
+    if (images.length === 0 && videos.length === 0 && audio.length === 0) {
+      const legacyImageUrl = getTag('image');
+      if (legacyImageUrl) {
+        images.push({
+          url: legacyImageUrl,
+          mimeType: 'image/jpeg',
+        });
+      }
+    }
+
+    const media = {
+      images,
+      videos,
+      audio,
+    };
 
     // Get host and co-hosts
     const pTags = tags.filter((t) => t[0] === 'p');
@@ -136,7 +190,7 @@ function parseMeetupEvent(event: NostrEvent): MeetupEvent | null {
       geohash,
       isVirtual,
       virtualLink,
-      imageUrl,
+      media,
       meetupType,
       tags: userTags,
       hostPubkey,
@@ -277,7 +331,7 @@ export async function fetchPublicMeetups(
       endTime: m.endTime,
       location: m.location,
       isVirtual: m.isVirtual,
-      imageUrl: m.imageUrl,
+      media: m.media,
       meetupType: m.meetupType,
       tags: m.tags,
       pubkey: m.pubkey,
