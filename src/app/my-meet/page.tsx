@@ -6,17 +6,28 @@ import Link from 'next/link';
 import { useAuthStore } from '@/stores/useAuthStore';
 import { useAuthHydration } from '@/hooks/useAuthHydration';
 import { useMyMeetups } from '@/hooks/useMyMeetups';
+import { useNostrSigner } from '@/hooks/useNostrSigner';
+import { deleteMeetup, fetchMeetupByDTag } from '@/services/business/MeetService';
 import { MyMeetupCard } from '@/components/generic/MyMeetupCard';
+import { DeleteConfirmationModal } from '@/components/generic/DeleteConfirmationModal';
 import { Calendar, Plus, Search, Filter } from 'lucide-react';
+import { logger } from '@/services/core/LoggingService';
 import { MEETUP_CONFIG } from '@/config/meetup';
+import type { MeetupCardData } from '@/types/meetup';
 
 export default function MyMeetPage() {
   const router = useRouter();
   const { user } = useAuthStore();
   const isHydrated = useAuthHydration();
+  const { getSigner } = useNostrSigner();
   
   // Fetch user's meetups
-  const { meetups, isLoading, error } = useMyMeetups();
+  const { meetups, isLoading, error, loadMyMeetups } = useMyMeetups();
+
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [meetupToDelete, setMeetupToDelete] = useState<MeetupCardData | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Filter state
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,9 +94,55 @@ export default function MyMeetPage() {
   };
 
   const handleDelete = async (meetupId: string) => {
-    // TODO: Implement deletion with confirmation modal
-    console.log('Delete meetup:', meetupId);
-    alert('Delete functionality will be implemented with confirmation modal');
+    const meetup = meetups.find(m => m.id === meetupId);
+    if (meetup) {
+      setMeetupToDelete(meetup);
+      setDeleteModalOpen(true);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!meetupToDelete || !user) return;
+
+    try {
+      setIsDeleting(true);
+      logger.info('Deleting meetup', {
+        service: 'MyMeetPage',
+        method: 'handleDeleteConfirm',
+        meetupId: meetupToDelete.id,
+      });
+
+      const signer = await getSigner();
+      if (!signer) {
+        throw new Error('No signer available');
+      }
+
+      // Delete using MeetService
+      const result = await deleteMeetup(
+        meetupToDelete.id,
+        signer,
+        user.pubkey,
+        meetupToDelete.name
+      );
+
+      if (result.success) {
+        // Refetch meetups to update list
+        await loadMyMeetups();
+        setDeleteModalOpen(false);
+        setMeetupToDelete(null);
+      } else {
+        throw new Error(result.error || 'Failed to delete meetup');
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to delete meetup';
+      logger.error('Error deleting meetup', err instanceof Error ? err : new Error(errorMsg), {
+        service: 'MyMeetPage',
+        method: 'handleDeleteConfirm',
+      });
+      alert(`Error: ${errorMsg}`);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleClearFilters = () => {
@@ -397,6 +454,19 @@ export default function MyMeetPage() {
           </div>
         </div>
       </section>
+
+      {/* Delete Confirmation Modal */}
+      <DeleteConfirmationModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false);
+          setMeetupToDelete(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={meetupToDelete?.name || ''}
+        message="This will publish a deletion event to Nostr relays. This action cannot be undone."
+        isDeleting={isDeleting}
+      />
     </div>
   );
 }

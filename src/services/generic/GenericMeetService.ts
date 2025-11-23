@@ -203,9 +203,10 @@ export async function fetchPublicMeetups(
       startAfter,
     });
 
+    // Query by kind only - don't filter by system tag for backward compatibility
+    // This allows old meetups without system tag to be discovered
     const filter: Filter = {
       kinds: [MEETUP_CONFIG.kinds.MEETUP],
-      '#t': [MEETUP_CONFIG.systemTag],
       limit,
       until,
     };
@@ -326,6 +327,7 @@ export async function fetchMeetupById(pubkey: string, dTag: string): Promise<Mee
     const filter: Filter = {
       kinds: [MEETUP_CONFIG.kinds.MEETUP],
       '#d': [dTag],
+      '#t': [MEETUP_CONFIG.systemTag],
       limit: 1,
     };
 

@@ -150,7 +150,7 @@ export default function CreateMeetupPage() {
                   }`}
                   aria-pressed={active}
                 >
-                  <span className="text-4xl mb-4 block">{type.icon}</span>
+                  <div className={`text-4xl mb-4 ${active ? 'grayscale-0' : ''}`}>{type.icon}</div>
                   <h3 className="font-serif font-bold text-lg mb-2">{type.title}</h3>
                   <p className={`text-sm mb-3 leading-relaxed ${active ? 'text-gray-600' : 'text-purple-100'}`}>
                     {type.description}

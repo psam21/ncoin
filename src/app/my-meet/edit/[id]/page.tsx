@@ -30,11 +30,16 @@ export default function EditMeetupPage() {
         return;
       }
 
+      if (!user) {
+        // Wait for user to be loaded
+        return;
+      }
+
       try {
         setIsLoading(true);
         setError(null);
 
-        const meetupData = await fetchMeetupByDTag('', dTag);
+        const meetupData = await fetchMeetupByDTag(user.pubkey, dTag);
 
         if (!meetupData) {
           setError('Meetup not found');
@@ -42,7 +47,7 @@ export default function EditMeetupPage() {
         }
 
         // Verify ownership
-        if (meetupData.pubkey !== user?.pubkey) {
+        if (meetupData.pubkey !== user.pubkey) {
           setError('You can only edit your own meetups');
           return;
         }

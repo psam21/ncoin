@@ -608,7 +608,7 @@ export class GenericEventService {
         ['name', meetupData.name],
         ['start', meetupData.startTime.toString()],
         ['location', meetupData.location],
-        ['p', meetupData.hostPubkey, 'host'], // NIP-52 p-tag: [pubkey, role]
+        ['p', userPubkey, 'host'], // NIP-52 p-tag: [pubkey, role] - use event author pubkey
       ];
 
       // Optional tags
