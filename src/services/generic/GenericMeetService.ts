@@ -358,11 +358,11 @@ export async function fetchMeetupById(pubkey: string, dTag: string): Promise<Mee
       pubkey: pubkey ? pubkey.substring(0, 8) + '...' : 'not provided',
     });
 
-    // Query by d-tag only - DO NOT filter by system tag for backward compatibility
-    // dTag is already specific enough and we need to support old meetups without the tag
+    // Query by d-tag WITH system tag - must match author query for consistency
     const filter: Filter = {
       kinds: [MEETUP_CONFIG.kinds.MEETUP],
       '#d': [dTag],
+      '#t': [MEETUP_CONFIG.systemTag],
       limit: 50, // Increased from 1 to handle replaceable events properly
     };
 
