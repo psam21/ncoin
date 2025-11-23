@@ -43,8 +43,9 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
     getRSVPCounts,
   } = useRSVP(meetup.dTag, meetup.hostPubkey);
 
-  const isOwner = user?.pubkey === meetup.hostPubkey;
-  const isUpcoming = meetup.startTime > Math.floor(Date.now() / 1000);
+  // Only compute these after mount to avoid hydration mismatch
+  const isOwner = mounted ? user?.pubkey === meetup.hostPubkey : false;
+  const isUpcoming = mounted ? meetup.startTime > Math.floor(Date.now() / 1000) : false;
 
   const handleShare = async () => {
     const url = `${window.location.origin}/meet/${encodeURIComponent(meetup.dTag)}`;
