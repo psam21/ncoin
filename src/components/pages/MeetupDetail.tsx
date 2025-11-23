@@ -281,6 +281,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
             <section
               aria-labelledby="event-details"
               className="space-y-5 rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-primary-100"
+              suppressHydrationWarning
             >
               <h2
                 id="event-details"
@@ -382,6 +383,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
               <section
                 aria-labelledby="attendees"
                 className="space-y-5 rounded-2xl bg-white/80 p-6 shadow-sm ring-1 ring-primary-100"
+                suppressHydrationWarning
               >
                 <div className="flex items-center justify-between">
                   <h2
@@ -409,7 +411,7 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
         sidebar={
           <div className="space-y-4">
             {/* Host Info */}
-            <div className="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-primary-100">
+            <div className="rounded-2xl bg-white/80 p-4 shadow-sm ring-1 ring-primary-100" suppressHydrationWarning>
               <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500 mb-3">
                 Host
               </h3>
@@ -429,7 +431,6 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
                   </button>
                 </div>
               </div>
-              <div suppressHydrationWarning>
               {!isOwner && (
                 <button
                   type="button"
@@ -440,7 +441,6 @@ export function MeetupDetail({ meetup, backHref = '/meet', onEdit, onDelete }: M
                   Contact Host
                 </button>
               )}
-              </div>
             </div>
 
             {/* Meetup Type */}
