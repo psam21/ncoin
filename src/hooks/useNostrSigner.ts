@@ -40,43 +40,13 @@ export const useNostrSigner = () => {
     return createNsecSigner(nsec);
   }, [nsec]);
 
-  // Helper to get signer when needed
+  // Helper to get signer when needed (LAZY - only called when signing events)
   const getSigner = async (): Promise<NostrSigner> => {
-    // CRITICAL: Only use authenticated user's signer, never mix with browser extension
     const { isAuthenticated, user, nsec: nsecFromStore } = useAuthStore.getState();
     
-    // First priority: Check for nsec (persisted from sign-up)
-    if (nsecFromStore && isAuthenticated && user) {
-      logger.info('Getting signer from authenticated user nsec', {
-        service: 'useNostrSigner',
-        method: 'getSigner',
-        hasNsec: true,
-        userPubkey: user.pubkey.substring(0, 8) + '...',
-      });
-      
-      // Use memoized signer if available, otherwise create new one
-      if (nsecSigner) {
-        return await nsecSigner;
-      }
-      
-      return await createNsecSigner(nsecFromStore);
-    }
-    
-    // Second priority: Check for cached signer (only if user is authenticated)
-    if (signer && isAuthenticated && user) {
-      logger.info('Getting cached Nostr signer instance for authenticated user', {
-        service: 'useNostrSigner',
-        method: 'getSigner',
-        userPubkey: user.pubkey.substring(0, 8) + '...',
-      });
-      return signer;
-    }
-    
-    // NEVER fall back to browser extension for authenticated users
-    // This prevents privacy breaches where extension user != authenticated user
-    if (isAuthenticated) {
+    if (!isAuthenticated || !user) {
       throw new AppError(
-        'Authenticated user has no valid signer - sign in required',
+        'User not authenticated',
         ErrorCode.SIGNER_NOT_DETECTED,
         HttpStatus.UNAUTHORIZED,
         ErrorCategory.AUTHENTICATION,
@@ -84,226 +54,79 @@ export const useNostrSigner = () => {
       );
     }
     
-    // Only use browser extension for non-authenticated users (sign-in flow)
-    if (typeof window !== 'undefined' && window.nostr && !isAuthenticated) {
-      logger.info('Getting Nostr signer from browser extension for sign-in', {
+    // Priority 1: Nsec user (has nsec in store)
+    if (nsecFromStore) {
+      logger.info('Getting signer from nsec', {
         service: 'useNostrSigner',
         method: 'getSigner',
+        userPubkey: user.pubkey.substring(0, 8) + '...',
+      });
+      
+      if (nsecSigner) {
+        return await nsecSigner;
+      }
+      
+      return await createNsecSigner(nsecFromStore);
+    }
+    
+    // Priority 2: Extension user (no nsec, must use window.nostr)
+    if (typeof window !== 'undefined' && window.nostr) {
+      logger.info('Getting signer from extension', {
+        service: 'useNostrSigner',
+        method: 'getSigner',
+        userPubkey: user.pubkey.substring(0, 8) + '...',
       });
       return window.nostr;
     }
     
+    // No signer available - this is an error state
     throw new AppError(
-      'No signer available',
+      'No signer available - extension not found',
       ErrorCode.SIGNER_NOT_DETECTED,
       HttpStatus.UNAUTHORIZED,
       ErrorCategory.AUTHENTICATION,
-      ErrorSeverity.MEDIUM
+      ErrorSeverity.HIGH
     );
   };
 
-  // Unified signer management: Strict user isolation - no extension fallback for authenticated users
-  // Priority: Authenticated user's nsec > Browser Extension (sign-in only) > None
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Simple detection: Only check if extension exists for non-authenticated users (sign-in button)
+  // For authenticated users, trust Zustand state and get signer lazily when needed
   useEffect(() => {
-    let pollInterval: NodeJS.Timeout | null = null;
+    const { isAuthenticated, user } = useAuthStore.getState();
     
-    const initializeSigner = async () => {
-      const { isAuthenticated, user } = useAuthStore.getState();
-      
-      logger.info('Initializing signer', {
-        service: 'useNostrSigner',
-        method: 'initializeSigner',
-        hasExtension: !!(typeof window !== 'undefined' && window.nostr),
-        hasNsec: !!nsec,
-        isAuthenticated,
-        hasUser: !!user,
-      });
-
-      // Set loading state
-      useAuthStore.getState().setLoading(true);
-
-      // Priority 1: Nsec (authenticated user - maintain consistent identity)
-      if (nsec && nsecSigner && isAuthenticated && user) {
-        try {
-          logger.info('Using authenticated user nsec signer', {
-            service: 'useNostrSigner',
-            method: 'initializeSigner',
-            userPubkey: user.pubkey.substring(0, 8) + '...',
-          });
-
-          const resolvedSigner = await nsecSigner;
-          
-          setSigner(resolvedSigner);
-          setSignerAvailable(true);
-          useAuthStore.getState().setLoading(false);
-          
-          // Initialize message cache proactively to avoid lazy initialization delay
-          (async () => {
-            try {
-              const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
-              await messagingBusinessService.initializeCache(user.pubkey);
-            } catch (error) {
-              // Non-blocking - cache will be initialized lazily if this fails
-              console.warn('Failed to proactively initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
-            }
-          })();
-          
-          logger.info('Signer initialized for authenticated user with NIP-44 support', {
-            service: 'useNostrSigner',
-            method: 'initializeSigner',
-            userPubkey: user.pubkey.substring(0, 8) + '...',
-          });
-        } catch (error) {
-          logger.error('Failed to initialize signer for authenticated user', 
-            error instanceof Error ? error : new Error('Unknown error'), {
-            service: 'useNostrSigner',
-            method: 'initializeSigner',
-            userPubkey: user?.pubkey.substring(0, 8) + '...',
-          });
-          setSigner(null);
-          setSignerAvailable(false);
-          useAuthStore.getState().setLoading(false);
-        }
-        return;
-      }
-
-      // Priority 2: Browser extension (for authenticated extension-only sessions or non-auth sign-in)
-      // For authenticated extension users, assume extension exists even if not loaded yet
-      if (isAuthenticated && user && !nsec) {
-        // Extension user (has no nsec, authenticated via extension)
-        if (typeof window !== 'undefined' && window.nostr) {
-          // Extension loaded - use it
-          logger.info('Extension signer available for authenticated extension user', {
-            service: 'useNostrSigner',
-            method: 'initializeSigner',
-            userPubkey: user.pubkey.substring(0, 8) + '...',
-          });
-          
-          setSigner(window.nostr);
-          setSignerAvailable(true);
-          useAuthStore.getState().setLoading(false);
-          
-          // Initialize message cache proactively
-          (async () => {
-            try {
-              const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
-              await messagingBusinessService.initializeCache(user.pubkey);
-            } catch (error) {
-              console.warn('Failed to proactively initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
-            }
-          })();
-        } else {
-          // Extension not loaded yet - poll for it
-          logger.warn('Extension user authenticated but window.nostr not available - polling for extension', {
-            service: 'useNostrSigner',
-            method: 'initializeSigner',
-            userPubkey: user.pubkey.substring(0, 8) + '...',
-          });
-          
-          let attempts = 0;
-          const maxAttempts = 10; // Poll for 5 seconds (10 * 500ms)
-          
-          pollInterval = setInterval(() => {
-            attempts++;
-            
-            if (typeof window !== 'undefined' && window.nostr) {
-              // Extension loaded!
-              logger.info('Extension loaded after polling', {
-                service: 'useNostrSigner',
-                method: 'initializeSigner',
-                attempts,
-                userPubkey: user.pubkey.substring(0, 8) + '...',
-              });
-              
-              if (pollInterval) clearInterval(pollInterval);
-              
-              setSigner(window.nostr);
-              setSignerAvailable(true);
-              useAuthStore.getState().setLoading(false);
-              
-              // Initialize message cache
-              (async () => {
-                try {
-                  const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
-                  await messagingBusinessService.initializeCache(user.pubkey);
-                } catch (error) {
-                  console.warn('Failed to initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
-                }
-              })();
-            } else if (attempts >= maxAttempts) {
-              // Give up after max attempts
-              logger.error('Extension failed to load after polling - logging out', new Error('Extension not available'), {
-                service: 'useNostrSigner',
-                method: 'initializeSigner',
-                attempts,
-                userPubkey: user.pubkey.substring(0, 8) + '...',
-              });
-              
-              if (pollInterval) clearInterval(pollInterval);
-              
-              // Force logout - extension user with no extension
-              useAuthStore.getState().logout();
-            }
-          }, 500); // Check every 500ms
-          
-          // Set loading state while polling
-          setSigner(null);
-          setSignerAvailable(false);
-          useAuthStore.getState().setLoading(true);
-        }
-        return;
-      }
-      
-      // For non-authenticated users: check if extension exists for sign-in
-      if (typeof window !== 'undefined' && window.nostr && !isAuthenticated) {
-        setSigner(null);
-        setSignerAvailable(true);
-        useAuthStore.getState().setLoading(false);
-        logger.info('Browser extension detected - available for sign-in', {
-          service: 'useNostrSigner',
-          method: 'initializeSigner',
-        });
-        return;
-      }
-
-      // Priority 3: No signer available
-      // This should ONLY be reached for authenticated users with NO nsec AND NO extension
-      // which indicates a corrupted auth state
-      if (isAuthenticated && user) {
-        logger.error('CRITICAL: Authenticated user has no valid signer - forcing re-authentication', new Error('No valid signer for authenticated user'), {
-          service: 'useNostrSigner',
-          method: 'initializeSigner',
-          userPubkey: user.pubkey.substring(0, 8) + '...',
-          hasNsec: !!nsec,
-          hasWindowNostr: !!(typeof window !== 'undefined' && window.nostr),
-          reason: 'This indicates corrupted auth state - user is authenticated but has no way to sign events',
-        });
-        useAuthStore.getState().logout();
-      } else {
-        logger.info('No signer available for non-authenticated user (expected)', {
-          service: 'useNostrSigner',
-          method: 'initializeSigner',
-        });
-      }
-      
-      setSigner(null);
-      setSignerAvailable(false);
+    // For non-authenticated users: detect if extension is available for sign-in
+    if (!isAuthenticated) {
+      const hasExtension = typeof window !== 'undefined' && !!window.nostr;
+      setSignerAvailable(hasExtension);
       useAuthStore.getState().setLoading(false);
-    };
-
-    initializeSigner();
-    
-    // Cleanup: clear polling interval if component unmounts
-    return () => {
-      if (pollInterval) {
-        clearInterval(pollInterval);
+      
+      if (hasExtension) {
+        logger.info('Extension detected - available for sign-in', {
+          service: 'useNostrSigner',
+          method: 'useEffect',
+        });
       }
-    };
-    // Note: `signer` intentionally excluded from deps to prevent infinite loop
-    // We only want to re-initialize when `nsec` or `nsecSigner` changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nsec, nsecSigner, setSigner, setSignerAvailable]);
+      return;
+    }
+    
+    // For authenticated users: trust Zustand, set available based on auth method
+    if (isAuthenticated && user) {
+      const hasNsec = !!nsec;
+      const hasExtension = typeof window !== 'undefined' && !!window.nostr;
+      
+      // Available if they have nsec OR extension
+      setSignerAvailable(hasNsec || hasExtension);
+      useAuthStore.getState().setLoading(false);
+      
+      logger.info('Authenticated user - signer will be retrieved lazily when needed', {
+        service: 'useNostrSigner',
+        method: 'useEffect',
+        hasNsec,
+        hasExtension,
+        userPubkey: user.pubkey.substring(0, 8) + '...',
+      });
+    }
+  }, [nsec, setSignerAvailable]);
 
   return { 
     isAvailable, 
