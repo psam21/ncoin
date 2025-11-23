@@ -66,6 +66,53 @@ export interface RelayConfig {
 
 export const NOSTR_RELAYS: RelayConfig[] = [
   {
+    url: 'wss://shu01.shugur.net',
+    name: 'Shugur Network',
+    description: 'Enterprise-grade distributed HA relay cluster - 35+ NIPs including Time Capsules, Calendar, Zaps, Encryption, Communities, Cashu Wallets',
+    region: 'Global',
+    reliability: 'high',
+    // Core Protocol NIPs (NIP-01 through NIP-11)
+    supportsNip01: true,  // Basic Protocol Flow
+    supportsNip02: true,  // Contact List and Petnames
+    supportsNip03: true,  // OpenTimestamps Attestations
+    supportsNip04: true,  // Encrypted Direct Message (deprecated)
+    supportsNip09: true,  // Event Deletion
+    supportsNip11: true,  // Relay Information Document
+    // Enhanced Features NIPs (NIP-15 through NIP-26)
+    supportsNip15: true,  // End of Stored Events Notice
+    supportsNip16: true,  // Event Treatment
+    supportsNip17: true,  // Private Direct Messages
+    supportsNip20: true,  // Command Results
+    supportsNip22: true,  // Event created_at Limits
+    supportsNip23: true,  // Long-form Content
+    supportsNip24: true,  // Extra metadata fields and tags
+    supportsNip25: true,  // Reactions
+    supportsNip26: true,  // Delegated Event Signing
+    // Advanced Features NIPs (NIP-28 through NIP-65)
+    supportsNip28: true,  // Public Chat
+    supportsNip33: true,  // Parameterized Replaceable Events
+    supportsNip40: true,  // Expiration Timestamp
+    supportsNip42: true,  // Authentication
+    supportsNip44: true,  // Encrypted Payloads (Versioned)
+    supportsNip45: true,  // Counting Events
+    supportsNip47: true,  // Nostr Wallet Connect (NWC)
+    supportsNip50: true,  // Search Capability
+    supportsNip51: true,  // Lists
+    supportsNip52: true,  // Calendar Events
+    supportsNip53: true,  // Live Activities
+    supportsNip54: true,  // Wiki
+    supportsNip56: true,  // Reporting
+    supportsNip57: true,  // Lightning Zaps
+    supportsNip58: true,  // Badges
+    supportsNip59: true,  // Gift Wrap
+    supportsNip60: true,  // Cashu Wallets
+    supportsNip61: true,  // Nutzaps (P2PK Cashu tokens)
+    supportsNip65: true,  // Relay List Metadata
+    supportsNip72: true,  // Moderated Communities
+    supportsNip78: true,  // Application-specific data
+    rateLimit: { requestsPerMinute: 120, burstSize: 20 }
+  },
+  {
     url: 'wss://relay.damus.io',
     name: 'Damus Relay',
     description: 'Official relay for Damus app (strfry) - 315ms response time',
@@ -143,53 +190,6 @@ export const NOSTR_RELAYS: RelayConfig[] = [
     supportsNip28: true,  // Public Chat
     supportsNip40: true,  // Expiration Timestamp
     rateLimit: { requestsPerMinute: 80, burstSize: 12 }
-  },
-  {
-    url: 'wss://shu01.shugur.net',
-    name: 'Shugur Network',
-    description: 'Enterprise-grade distributed HA relay cluster - 35+ NIPs including Time Capsules, Calendar, Zaps, Encryption, Communities, Cashu Wallets',
-    region: 'Global',
-    reliability: 'high',
-    // Core Protocol NIPs (NIP-01 through NIP-11)
-    supportsNip01: true,  // Basic Protocol Flow
-    supportsNip02: true,  // Contact List and Petnames
-    supportsNip03: true,  // OpenTimestamps Attestations
-    supportsNip04: true,  // Encrypted Direct Message (deprecated)
-    supportsNip09: true,  // Event Deletion
-    supportsNip11: true,  // Relay Information Document
-    // Enhanced Features NIPs (NIP-15 through NIP-26)
-    supportsNip15: true,  // End of Stored Events Notice
-    supportsNip16: true,  // Event Treatment
-    supportsNip17: true,  // Private Direct Messages
-    supportsNip20: true,  // Command Results
-    supportsNip22: true,  // Event created_at Limits
-    supportsNip23: true,  // Long-form Content
-    supportsNip24: true,  // Extra metadata fields and tags
-    supportsNip25: true,  // Reactions
-    supportsNip26: true,  // Delegated Event Signing
-    // Advanced Features NIPs (NIP-28 through NIP-65)
-    supportsNip28: true,  // Public Chat
-    supportsNip33: true,  // Parameterized Replaceable Events
-    supportsNip40: true,  // Expiration Timestamp
-    supportsNip42: true,  // Authentication
-    supportsNip44: true,  // Encrypted Payloads (Versioned)
-    supportsNip45: true,  // Counting Events
-    supportsNip47: true,  // Nostr Wallet Connect (NWC)
-    supportsNip50: true,  // Search Capability
-    supportsNip51: true,  // Lists
-    supportsNip52: true,  // Calendar Events
-    supportsNip53: true,  // Live Activities
-    supportsNip54: true,  // Wiki
-    supportsNip56: true,  // Reporting
-    supportsNip57: true,  // Lightning Zaps
-    supportsNip58: true,  // Badges
-    supportsNip59: true,  // Gift Wrap
-    supportsNip60: true,  // Cashu Wallets
-    supportsNip61: true,  // Nutzaps (P2PK Cashu tokens)
-    supportsNip65: true,  // Relay List Metadata
-    supportsNip72: true,  // Moderated Communities
-    supportsNip78: true,  // Application-specific data
-    rateLimit: { requestsPerMinute: 120, burstSize: 20 }
   },
   {
     url: 'wss://relay.0xchat.com',
