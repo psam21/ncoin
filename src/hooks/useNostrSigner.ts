@@ -167,75 +167,55 @@ export const useNostrSigner = () => {
       }
 
       // Priority 2: Browser extension (for authenticated extension-only sessions or non-auth sign-in)
-      if (typeof window !== 'undefined' && window.nostr) {
-        try {
-          // For authenticated users: just use the extension without verification
-          // We already verified the pubkey during sign-in, no need to prompt again
-          if (isAuthenticated && user) {
-            logger.info('Setting up extension signer for authenticated user', {
-              service: 'useNostrSigner',
-              method: 'initializeSigner',
-              userPubkey: user.pubkey.substring(0, 8) + '...',
-              hasWindowNostr: !!window.nostr,
-            });
-            
-            setSigner(window.nostr);
-            setSignerAvailable(true);
-            useAuthStore.getState().setLoading(false);
-            
-            // Initialize message cache proactively to avoid lazy initialization delay
-            (async () => {
-              try {
-                const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
-                await messagingBusinessService.initializeCache(user.pubkey);
-              } catch (error) {
-                // Non-blocking - cache will be initialized lazily if this fails
-                console.warn('Failed to proactively initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
-              }
-            })();
-            
-            logger.info('Extension signer setup complete for authenticated user', {
-              service: 'useNostrSigner',
-              method: 'initializeSigner',
-              userPubkey: user.pubkey.substring(0, 8) + '...',
-            });
-            return;
-          }
-
-          // For non-authenticated users: detect extension availability but DON'T set signer
-          // This prevents premature permission prompts on page load
-          // The signer will be set when user actually clicks "Sign In"
-          setSigner(null);
+      // For authenticated extension users, assume extension exists even if not loaded yet
+      if (isAuthenticated && user && !nsec) {
+        // Extension user (has no nsec, authenticated via extension)
+        if (typeof window !== 'undefined' && window.nostr) {
+          // Extension loaded - use it
+          logger.info('Extension signer available for authenticated extension user', {
+            service: 'useNostrSigner',
+            method: 'initializeSigner',
+            userPubkey: user.pubkey.substring(0, 8) + '...',
+          });
+          
+          setSigner(window.nostr);
           setSignerAvailable(true);
           useAuthStore.getState().setLoading(false);
-          logger.info('Browser extension detected - available for sign-in', {
+          
+          // Initialize message cache proactively
+          (async () => {
+            try {
+              const { messagingBusinessService } = await import('@/services/business/MessagingBusinessService');
+              await messagingBusinessService.initializeCache(user.pubkey);
+            } catch (error) {
+              console.warn('Failed to proactively initialize message cache:', error instanceof Error ? error.message : 'Unknown error');
+            }
+          })();
+        } else {
+          // Extension not loaded yet - set null signer but DON'T logout
+          // Extension might still be loading (async script injection)
+          logger.warn('Extension user authenticated but window.nostr not available yet - waiting for extension', {
             service: 'useNostrSigner',
             method: 'initializeSigner',
+            userPubkey: user.pubkey.substring(0, 8) + '...',
           });
-          return;
-        } catch (error) {
-          logger.error('ERROR in extension signer setup - THIS CAUSES LOGOUT', error instanceof Error ? error : new Error('Unknown error'), {
-            service: 'useNostrSigner',
-            method: 'initializeSigner',
-            isAuthenticated,
-            hasUser: !!user,
-            userPubkey: user?.pubkey?.substring(0, 8) + '...',
-          });
-          // For authenticated users with extension, don't fall through to logout
-          // Just set signer to null and let them continue (they can retry)
-          if (isAuthenticated && user) {
-            logger.warn('Extension error for authenticated user - setting null signer but NOT logging out', {
-              service: 'useNostrSigner',
-              method: 'initializeSigner',
-              userPubkey: user.pubkey.substring(0, 8) + '...',
-            });
-            setSigner(null);
-            setSignerAvailable(false);
-            useAuthStore.getState().setLoading(false);
-            return;
-          }
-          // For non-authenticated users, fall through to no signer state
+          setSigner(null);
+          setSignerAvailable(true); // Assume available, just not loaded yet
+          useAuthStore.getState().setLoading(false);
         }
+        return;
+      }
+      
+      // For non-authenticated users: check if extension exists for sign-in
+      if (typeof window !== 'undefined' && window.nostr && !isAuthenticated) {
+        setSigner(null);
+        setSignerAvailable(true);
+        useAuthStore.getState().setLoading(false);
+        logger.info('Browser extension detected - available for sign-in', {
+          service: 'useNostrSigner',
+          method: 'initializeSigner',
+        });
+        return;
       }
 
       // Priority 3: No signer available
