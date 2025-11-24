@@ -573,31 +573,6 @@ export default function MyWorkPage() {
         message="This will publish a deletion event to Nostr relays. This action cannot be undone."
         isDeleting={isDeleting}
       />
-
-      {/* CTA Section - Always visible */}
-      <section className="py-16 bg-gradient-to-r from-purple-600 to-orange-600 text-white">
-        <div className="container-width">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">
-              Have a Project or Job Opening?
-            </h2>
-            <p className="text-lg mb-8 text-purple-50">
-              Connect with talented digital nomads and remote workers around the world. 
-              Post your opportunity and find the perfect match for your project.
-            </p>
-            <Link
-              href="/my-work/create"
-              className="btn-primary inline-flex items-center gap-2 bg-white text-purple-600 hover:bg-purple-50"
-            >
-              <Briefcase className="w-5 h-5" />
-              Post a Work Opportunity
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-              </svg>
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }
