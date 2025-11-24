@@ -192,14 +192,14 @@ Hook → Manually build events → Publish    // ARCHITECTURAL VIOLATION
 
 ## ⚡ MANDATORY WORKFLOW
 
-### Build → Fix → Commit → Push → Verify → ANALYZE LOGS
+### Build → Fix → Commit → Push (triggers auto-deploy) → Verify → ANALYZE LOGS
 
 **EVERY. SINGLE. TIME.**
 
 1. **Build:** `npm run build` (ALWAYS full build, NEVER pipe to tail/head/grep - catches ALL compile errors)
 2. **Fix:** ALL errors first but iteratively, and then get to iteratively fixing warnings
 3. **Commit:** use `git add .` with CONCISE commit message (auto-approves for faster push)
-4. **Push:** `git push origin main`
+4. **Push:** `git push origin main` (Vercel auto-deploys on push - NO manual `npx vercel --prod` needed)
 5. **Verify:** User tests on https://nostrcoin.vercel.app and not localhost
 6. **Confirm:** Get explicit confirmation before marking complete
 7. **Avoid:** Creating new documentation without permission
