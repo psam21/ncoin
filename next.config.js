@@ -45,11 +45,11 @@ const baseConfig = {
   eslint: {
     ignoreDuringBuilds: false,
   },
-  // Exclude temp-cb-reference from compilation
+  // Exclude temp-cb-reference and temp-formstr-reference from compilation
   webpack: (config, { isServer }) => {
     config.watchOptions = {
       ...config.watchOptions,
-      ignored: ['**/temp-cb-reference/**', '**/node_modules/**'],
+      ignored: ['**/temp-cb-reference/**', '**/temp-formstr-reference/**', '**/node_modules/**'],
     };
     return config;
   },

@@ -40,3 +40,4 @@ yarn-error.log*
 
 # Temporary reference files (not for production)
 temp-cb-reference/
+temp-formstr-reference/

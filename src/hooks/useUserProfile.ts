@@ -290,8 +290,8 @@ export function useUserProfile(): UseUserProfileReturn {
       errors.display_name = 'Display name must be 100 characters or less';
     }
 
-    if (profile.about && profile.about.length > 1000) {
-      errors.about = 'About section must be 1000 characters or less';
+    if (profile.about && profile.about.length > 500) {
+      errors.about = 'About section must be 500 characters or less';
     }
 
     if (profile.website && !/^https?:\/\/.+/.test(profile.website)) {

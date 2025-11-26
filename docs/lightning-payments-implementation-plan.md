@@ -12,12 +12,11 @@ Implement Lightning Network payments for Shop and Work features using a **multi-
 **Key Metrics:**
 - **Coverage:** WebLN (0.4% desktop power users) + Lightning Links (60% mobile) + QR Codes (35% any device) + Manual Copy/Paste (100% fallback)
 - **Cost:** $0/month infrastructure (vs $100-500/month self-hosted)
-- **Development Time:** 1-2 weeks MVP vs 2-3 months backend solution
 - **Custody Risk:** Zero (users control their own wallets)
 
 ---
 
-## Phase 1: Custom Lightning Address Proxy (Priority: HIGH, Time: 2-3 hours)
+## Phase 1: Custom Lightning Address Proxy (Priority: HIGH)
 
 ### Objective
 Enable branded Lightning addresses (`user@nostr.co.in`) that forward to users' actual wallet addresses (`user@primal.net`, `user@getalby.com`, etc.) without custody.
@@ -53,7 +52,7 @@ Enable branded Lightning addresses (`user@nostr.co.in`) that forward to users' a
 
 ---
 
-## Phase 2: Multi-Method Payment Integration (Priority: HIGH, Time: 3-5 days)
+## Phase 2: Multi-Method Payment Integration (Priority: HIGH)
 
 ### Objective
 Support multiple payment methods to cover 95%+ of users across desktop and mobile devices.
@@ -122,7 +121,7 @@ Support multiple payment methods to cover 95%+ of users across desktop and mobil
 
 ---
 
-## Phase 3: Zero-Fee Payment Corridors (Priority: MEDIUM, Time: 2-3 weeks)
+## Phase 3: Zero-Fee Payment Corridors (Priority: MEDIUM)
 
 ### Objective
 Partner with wallet providers to offer **0% fee transactions** when both buyer and seller use the same wallet, creating competitive advantage and reducing costs for users.
@@ -202,7 +201,7 @@ Nostr for Nomads Team
 
 ---
 
-## Phase 4: NIP-57 Zaps for Tipping (Priority: LOW, Time: 1 week, Optional)
+## Phase 4: NIP-57 Zaps for Tipping (Priority: LOW, Optional)
 
 ### Objective
 Enable social tipping ("zaps") for content creators using Nostr-native protocol. This is OPTIONAL and separate from marketplace payments.
@@ -278,7 +277,7 @@ Enable social tipping ("zaps") for content creators using Nostr-native protocol.
 
 ## Implementation Checklist
 
-### Phase 1: Lightning Address Proxy (Week 1, Days 1-2)
+### Phase 1: Lightning Address Proxy
 - [ ] Create `/api/.well-known/lnurlp/[username]/route.ts`
 - [ ] Configure Next.js rewrites for `.well-known` handling
 - [ ] Add `forwardToLightningAddress` field to profile schema
@@ -287,7 +286,7 @@ Enable social tipping ("zaps") for content creators using Nostr-native protocol.
 - [ ] Deploy to staging environment
 - [ ] User acceptance testing with real Lightning wallets
 
-### Phase 2: Multi-Method Payment UI (Week 1-2, Days 3-10)
+### Phase 2: Multi-Method Payment UI
 - [ ] Build `GenericLightningService.ts` with LNURL-pay helpers
 - [ ] Create `useLightningPayment.ts` hook with method detection
 - [ ] Implement `PaymentMethodSelector.tsx` component
@@ -302,7 +301,7 @@ Enable social tipping ("zaps") for content creators using Nostr-native protocol.
 - [ ] Test manual copy/paste fallback
 - [ ] Deploy to production
 
-### Phase 3: Zero-Fee Partnerships (Week 2-4, Parallel)
+### Phase 3: Zero-Fee Partnerships
 - [ ] Draft partnership pitch emails (Alby, Primal, Strike)
 - [ ] Send outreach to partner teams
 - [ ] Schedule intro calls with interested partners
@@ -432,7 +431,7 @@ Track payment volume, success rates, popular methods, wallet distributions. Info
 
 1. **Scope Approval:** Does Phase 1-2 scope match MVP requirements? Any features missing?
 
-2. **Timeline Validation:** Is 1-2 week timeline realistic for Phase 1-2? Any blockers anticipated?
+2. **Resource Allocation:** What development resources are available for Phase 1-2? Any blockers anticipated?
 
 3. **Partnership Priority:** Should we pursue Phase 3 partnerships immediately or wait for Phase 2 completion and user traction?
 

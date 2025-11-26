@@ -89,10 +89,10 @@ export const validateDisplayName = (value: string): ValidationResult => {
 export const validateAbout = (value: string): ValidationResult => {
   if (!value) return { isValid: true }; // Optional field
   
-  if (value.length > 1000) {
+  if (value.length > 500) {
     return {
       isValid: false,
-      error: 'About text must be 1000 characters or less'
+      error: 'About text must be 500 characters or less'
     };
   }
   

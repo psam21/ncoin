@@ -419,7 +419,7 @@ export default function ProfilePage() {
                         value={editForm.about || ''}
                         onChange={(value) => handleInputChange('about', value)}
                         placeholder="Tell us about yourself using rich formatting..."
-                        maxLength={1000}
+                        maxLength={500}
                         minHeight={150}
                       />
                     ) : (

@@ -261,8 +261,8 @@ export class ProfileBusinessService {
       errors.push('Display name must be 100 characters or less');
     }
 
-    if (profile.about && profile.about.length > 1000) {
-      errors.push('About section must be 1000 characters or less');
+    if (profile.about && profile.about.length > 500) {
+      errors.push('About section must be 500 characters or less');
     }
 
     if (profile.website && !this.isValidUrl(profile.website)) {
